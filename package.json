@@ -1,0 +1,25 @@
+{
+  "name": "mockflow",
+  "version": "0.1.0",
+  "description": "Collaborative API mock server platform",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/dashboard",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev:api": "cd apps/api && npm run dev",
+    "dev:dashboard": "cd apps/dashboard && npm run dev",
+    "dev": "concurrently npm:dev:api npm:dev:dashboard",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write \"**/*.{js,ts,tsx,json,md}\"",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "prettier": "^3.0.0"
+  }
+}

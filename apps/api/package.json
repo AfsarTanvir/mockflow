@@ -1,0 +1,41 @@
+{
+  "name": "@mockflow/api",
+  "version": "0.1.0",
+  "description": "MockFlow API - AdonisJS backend",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch server.ts",
+    "build": "node ace build",
+    "start": "node build/index.js",
+    "test": "node ace test",
+    "migration:run": "node ace migration:run",
+    "migration:rollback": "node ace migration:rollback",
+    "migration:refresh": "node ace migration:refresh",
+    "db:seed": "node ace db:seed",
+    "lint": "eslint . --ext=.ts",
+    "format": "prettier --write \"**/*.ts\""
+  },
+  "devDependencies": {
+    "@adonisjs/core": "^6.4.0",
+    "@adonisjs/eslint-config": "^1.2.1",
+    "@types/node": "^20.10.4",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@adonisjs/lucid": "^21.2.0",
+    "@adonisjs/auth": "^9.1.0",
+    "@adonisjs/hash": "^7.0.0",
+    "pg": "^8.11.3",
+    "@faker-js/faker": "^8.3.0",
+    "path-to-regexp": "^6.2.1",
+    "bullmq": "^5.1.0"
+  },
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
