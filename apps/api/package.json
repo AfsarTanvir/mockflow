@@ -5,37 +5,48 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx watch server.ts",
-    "build": "node ace build",
-    "start": "node build/index.js",
-    "test": "node ace test",
-    "migration:run": "node ace migration:run",
-    "migration:rollback": "node ace migration:rollback",
-    "migration:refresh": "node ace migration:refresh",
-    "db:seed": "node ace db:seed",
+    "dev": "node --import tsx/esm ace serve --watch",
+    "build": "node --import tsx/esm ace build",
+    "start": "node build/bin/server.js",
+    "migration:run": "node --import tsx/esm ace migration:run",
+    "migration:rollback": "node --import tsx/esm ace migration:rollback",
+    "migration:fresh": "node --import tsx/esm ace migration:fresh --seed",
+    "db:seed": "node --import tsx/esm ace db:seed",
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write \"**/*.ts\""
   },
+  "imports": {
+    "#app/*": "./app/*.js",
+    "#config/*": "./config/*.js",
+    "#database/*": "./database/*.js",
+    "#middleware/*": "./app/middleware/*.js",
+    "#start/*": "./start/*.js"
+  },
   "devDependencies": {
-    "@adonisjs/core": "^6.4.0",
-    "@adonisjs/eslint-config": "^1.2.1",
+    "@adonisjs/assembler": "^8.4.0",
+    "@adonisjs/core": "^7.3.2",
+    "@adonisjs/eslint-config": "^3.0.0",
+    "@types/luxon": "^3.7.1",
     "@types/node": "^20.10.4",
     "eslint": "^8.56.0",
+    "hot-hook": "^0.3.0",
     "prettier": "^3.1.1",
-    "tsx": "^4.7.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@adonisjs/lucid": "^21.2.0",
-    "@adonisjs/auth": "^9.1.0",
+    "@adonisjs/auth": "^10.1.0",
     "@adonisjs/hash": "^7.0.0",
-    "pg": "^8.11.3",
+    "@adonisjs/lucid": "^22.4.2",
+    "@adonisjs/tsconfig": "^2.0.0",
     "@faker-js/faker": "^8.3.0",
+    "@poppinss/ts-exec": "^1.4.4",
+    "@vinejs/vine": "^2.1.0",
+    "bullmq": "^5.1.0",
+    "luxon": "^3.4.4",
+    "next": "^9.3.3",
     "path-to-regexp": "^6.2.1",
-    "bullmq": "^5.1.0"
-  },
-  "main": "index.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+    "pg": "^8.11.3",
+    "reflect-metadata": "^0.2.2"
+  }
 }

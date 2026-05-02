@@ -23,15 +23,16 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "next": "^14.0.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "axios": "^1.6.2",
-    "react-query": "^3.39.3",
-    "zustand": "^4.4.1",
-    "react-hook-form": "^7.49.0",
-    "zod": "^3.22.4",
+    "@adonisjs/core": "7.3.2",
     "@hookform/resolvers": "^3.3.4",
-    "date-fns": "^2.30.0"
+    "axios": "^1.6.2",
+    "date-fns": "^2.30.0",
+    "next": "^16.2.4",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-hook-form": "^7.49.0",
+    "react-query": "^3.39.3",
+    "zod": "^3.22.4",
+    "zustand": "^4.4.1"
   }
 }
