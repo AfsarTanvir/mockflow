@@ -3,6 +3,8 @@ import { middleware } from './kernel.js';
 
 const AuthController = () => import('../app/controllers/auth_controller.js');
 const ProjectsController = () => import('../app/controllers/projects_controller.js');
+const EndpointsController = () => import('../app/controllers/endpoints_controller.js');
+const MockController = () => import('../app/controllers/mock_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +47,29 @@ router
   })
   .prefix('/api/projects')
   .use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| Endpoint Routes (Protected)
+|--------------------------------------------------------------------------
+*/
+router
+  .group(() => {
+    router.get('/api/projects/:projectId/endpoints', [EndpointsController, 'index']);
+    router.post('/api/projects/:projectId/endpoints', [EndpointsController, 'store']);
+    router.get('/api/endpoints/:id', [EndpointsController, 'show']);
+    router.put('/api/endpoints/:id', [EndpointsController, 'update']);
+    router.delete('/api/endpoints/:id', [EndpointsController, 'destroy']);
+    router.patch('/api/endpoints/:id/toggle', [EndpointsController, 'toggle']);
+  })
+  .use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| Mock Execution (Public)
+|--------------------------------------------------------------------------
+*/
+router.any('/mock/:projectSlug/*', [MockController, 'execute']);
 
 /*
 |--------------------------------------------------------------------------

@@ -13,6 +13,23 @@ export type AuthResponse = {
   token: string;
 };
 
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+export type Endpoint = {
+  id: string;
+  projectId: string;
+  method: HttpMethod;
+  path: string;
+  statusCode: number;
+  responseBody: Record<string, unknown> | null;
+  responseHeaders: Record<string, string>;
+  delayMs: number;
+  isActive: boolean;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ProjectSettings = {
   cors: boolean;
   log_requests: boolean;

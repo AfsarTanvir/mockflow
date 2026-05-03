@@ -149,9 +149,14 @@ export default function ProjectsClient({ initialUser }: { initialUser: User }) {
                 key={project.id}
                 className="bg-white rounded-xl shadow p-5 flex items-center justify-between"
               >
-                <div>
+                <Link
+                  href={`/dashboard/projects/${project.id}`}
+                  className="flex-1 min-w-0 group"
+                >
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-gray-900">{project.name}</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {project.name}
+                    </h3>
                     {project.isPublic && (
                       <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                         Public
@@ -164,7 +169,7 @@ export default function ProjectsClient({ initialUser }: { initialUser: User }) {
                       <span className="ml-2 text-gray-300">base: {project.basePath}</span>
                     )}
                   </p>
-                </div>
+                </Link>
                 <button
                   onClick={() => {
                     if (confirm(`Delete "${project.name}"?`)) deleteProject(project.id);
