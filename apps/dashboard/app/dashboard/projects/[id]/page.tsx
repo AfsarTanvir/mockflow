@@ -6,19 +6,9 @@ import ProjectDetailClient from './client';
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  let user = null;
-  try {
-    user = await getAuthUser();
-  } catch {
-    redirect('/auth/login');
-  }
+  const [user, project] = await Promise.all([getAuthUser(), getProject(id).catch(() => null)]);
 
-  let project = null;
-  try {
-    project = await getProject(id);
-  } catch {
-    redirect('/dashboard/projects');
-  }
+  if (!project) redirect('/dashboard/projects');
 
   return <ProjectDetailClient initialUser={user} initialProject={project} />;
 }
