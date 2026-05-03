@@ -2,6 +2,7 @@ import router from '@adonisjs/core/services/router';
 import { middleware } from './kernel.js';
 
 const AuthController = () => import('../app/controllers/auth_controller.js');
+const ProjectsController = () => import('../app/controllers/projects_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,22 @@ router
     router.post('/logout', [AuthController, 'logout']);
   })
   .prefix('/api/auth')
+  .use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| Project Routes (Protected)
+|--------------------------------------------------------------------------
+*/
+router
+  .group(() => {
+    router.get('/', [ProjectsController, 'index']);
+    router.post('/', [ProjectsController, 'store']);
+    router.get('/:id', [ProjectsController, 'show']);
+    router.put('/:id', [ProjectsController, 'update']);
+    router.delete('/:id', [ProjectsController, 'destroy']);
+  })
+  .prefix('/api/projects')
   .use(middleware.auth());
 
 /*

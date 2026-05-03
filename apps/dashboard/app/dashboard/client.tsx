@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useUser, useSignOut } from '@/query/auth';
 import type { User } from '@/types';
 
@@ -22,7 +23,20 @@ export default function DashboardClient({ initialUser }: { initialUser: User }) 
         </button>
       </header>
 
-      <main className="max-w-2xl mx-auto mt-10 px-4">
+      <main className="max-w-2xl mx-auto mt-10 px-4 space-y-6">
+        <div className="bg-white rounded-xl shadow p-5 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900">Projects</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Create and manage your mock APIs</p>
+          </div>
+          <Link
+            href="/dashboard/projects"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            View Projects
+          </Link>
+        </div>
+
         <div className="bg-white rounded-xl shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">My Profile</h2>
 
