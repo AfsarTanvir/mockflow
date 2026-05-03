@@ -2,20 +2,10 @@ import type { HttpContext } from '@adonisjs/core/http';
 import { match } from 'path-to-regexp';
 import Project from '../models/project.js';
 import Endpoint from '../models/endpoint.js';
+import { evaluateBody } from '../services/faker_evaluator.js';
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function evaluateBody(
-  body: Record<string, unknown> | null,
-  params: Record<string, string>
-): unknown {
-  if (body === null) return null;
-  const json = JSON.stringify(body);
-  // Replace {{param.name}} with matched path params
-  const resolved = json.replace(/\{\{param\.(\w+)\}\}/g, (_, key) => params[key] ?? `{{param.${key}}}`);
-  return JSON.parse(resolved);
 }
 
 export default class MockController {
