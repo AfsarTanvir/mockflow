@@ -25,6 +25,8 @@
   "dependencies": {
     "@adonisjs/core": "7.3.2",
     "@hookform/resolvers": "^3.3.4",
+    "@tanstack/react-query": "^5.100.8",
+    "@tanstack/react-query-devtools": "^5.100.8",
     "axios": "^1.6.2",
     "date-fns": "^2.30.0",
     "next": "^16.2.4",

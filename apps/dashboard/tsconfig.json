@@ -2,11 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "useDefineForClassFields": true,
-    "lib": [
-      "ES2022",
-      "dom",
-      "dom.iterable"
-    ],
+    "lib": ["ES2022", "dom", "dom.iterable"],
     "module": "esnext",
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -24,7 +20,10 @@
         "name": "next"
       }
     ],
-    "incremental": true
+    "incremental": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
@@ -33,7 +32,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
