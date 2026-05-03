@@ -3,7 +3,10 @@ import server from '@adonisjs/core/services/server';
 
 server.errorHandler(() => import('../app/exceptions/handler.js'));
 
-server.use([() => import('@adonisjs/core/bodyparser_middleware')]);
+server.use([
+  () => import('@adonisjs/cors/cors_middleware'),
+  () => import('@adonisjs/core/bodyparser_middleware'),
+]);
 
 router.use([() => import('@adonisjs/auth/initialize_auth_middleware')]);
 

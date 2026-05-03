@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@adonisjs/auth": "^10.1.0",
+    "@adonisjs/cors": "^3.0.0",
     "@adonisjs/hash": "^7.0.0",
     "@adonisjs/lucid": "^22.4.2",
     "@adonisjs/tsconfig": "^2.0.0",
@@ -44,9 +45,9 @@
     "@vinejs/vine": "^2.1.0",
     "bullmq": "^5.1.0",
     "luxon": "^3.4.4",
-    "next": "^9.3.3",
     "path-to-regexp": "^6.2.1",
     "pg": "^8.11.3",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "youch": "^4.1.1"
   }
 }
