@@ -38,7 +38,6 @@ export const dashboardNavGroups: NavGroup[] = [
         label: 'Team',
         icon: Users,
         href: '/dashboard/team',
-        disabled: true,
       },
       {
         label: 'Settings',

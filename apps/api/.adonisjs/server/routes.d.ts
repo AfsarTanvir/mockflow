@@ -20,6 +20,14 @@ export type ScannedRoutes = {
     'endpoints.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'endpoints.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'endpoints.toggle': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'team.index': { paramsTuple: [ParamValue]; params: {'projectId': ParamValue} }
+    'team.invite': { paramsTuple: [ParamValue]; params: {'projectId': ParamValue} }
+    'team.update_role': { paramsTuple: [ParamValue,ParamValue]; params: {'projectId': ParamValue,'memberId': ParamValue} }
+    'team.remove_member': { paramsTuple: [ParamValue,ParamValue]; params: {'projectId': ParamValue,'memberId': ParamValue} }
+    'team.revoke_invite': { paramsTuple: [ParamValue,ParamValue]; params: {'projectId': ParamValue,'inviteId': ParamValue} }
+    'team.my_memberships': { paramsTuple?: []; params?: {} }
+    'invite.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'invite.accept': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'mock.execute': { paramsTuple: [ParamValue,...ParamValue[]]; params: {'projectSlug': ParamValue,'*': ParamValue[]} }
   }
   POST: {
@@ -29,6 +37,8 @@ export type ScannedRoutes = {
     'auth.logout': { paramsTuple?: []; params?: {} }
     'projects.store': { paramsTuple?: []; params?: {} }
     'endpoints.store': { paramsTuple: [ParamValue]; params: {'projectId': ParamValue} }
+    'team.invite': { paramsTuple: [ParamValue]; params: {'projectId': ParamValue} }
+    'invite.accept': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'mock.execute': { paramsTuple: [ParamValue,...ParamValue[]]; params: {'projectSlug': ParamValue,'*': ParamValue[]} }
   }
   GET: {
@@ -37,6 +47,9 @@ export type ScannedRoutes = {
     'projects.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'endpoints.index': { paramsTuple: [ParamValue]; params: {'projectId': ParamValue} }
     'endpoints.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'team.index': { paramsTuple: [ParamValue]; params: {'projectId': ParamValue} }
+    'team.my_memberships': { paramsTuple?: []; params?: {} }
+    'invite.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'mock.execute': { paramsTuple: [ParamValue,...ParamValue[]]; params: {'projectSlug': ParamValue,'*': ParamValue[]} }
   }
   HEAD: {
@@ -45,16 +58,22 @@ export type ScannedRoutes = {
     'projects.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'endpoints.index': { paramsTuple: [ParamValue]; params: {'projectId': ParamValue} }
     'endpoints.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'team.index': { paramsTuple: [ParamValue]; params: {'projectId': ParamValue} }
+    'team.my_memberships': { paramsTuple?: []; params?: {} }
+    'invite.show': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'mock.execute': { paramsTuple: [ParamValue,...ParamValue[]]; params: {'projectSlug': ParamValue,'*': ParamValue[]} }
   }
   PUT: {
     'projects.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'endpoints.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'team.update_role': { paramsTuple: [ParamValue,ParamValue]; params: {'projectId': ParamValue,'memberId': ParamValue} }
     'mock.execute': { paramsTuple: [ParamValue,...ParamValue[]]; params: {'projectSlug': ParamValue,'*': ParamValue[]} }
   }
   DELETE: {
     'projects.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'endpoints.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'team.remove_member': { paramsTuple: [ParamValue,ParamValue]; params: {'projectId': ParamValue,'memberId': ParamValue} }
+    'team.revoke_invite': { paramsTuple: [ParamValue,ParamValue]; params: {'projectId': ParamValue,'inviteId': ParamValue} }
     'mock.execute': { paramsTuple: [ParamValue,...ParamValue[]]; params: {'projectSlug': ParamValue,'*': ParamValue[]} }
   }
   PATCH: {

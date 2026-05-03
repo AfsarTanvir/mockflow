@@ -27,7 +27,7 @@ export const useUser = (options?: { initialData?: User }) => {
   });
 };
 
-export const useSignIn = () => {
+export const useSignIn = (redirectTo = '/dashboard') => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -36,12 +36,12 @@ export const useSignIn = () => {
     onSuccess: (data) => {
       setToken(data.token);
       queryClient.setQueryData([QueryKey.AUTH_USER], data.user);
-      router.push('/dashboard');
+      router.push(redirectTo);
     },
   });
 };
 
-export const useSignUp = () => {
+export const useSignUp = (redirectTo = '/dashboard') => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -50,7 +50,7 @@ export const useSignUp = () => {
     onSuccess: (data) => {
       setToken(data.token);
       queryClient.setQueryData([QueryKey.AUTH_USER], data.user);
-      router.push('/dashboard');
+      router.push(redirectTo);
     },
   });
 };

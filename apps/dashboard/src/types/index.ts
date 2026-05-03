@@ -46,3 +46,44 @@ export type Project = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type TeamRole = 'owner' | 'admin' | 'member' | 'viewer';
+
+export type TeamMember = {
+  id: string;
+  role: TeamRole;
+  invitedAt: string;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl: string | null;
+  };
+};
+
+export type ProjectInvite = {
+  id: string;
+  email: string;
+  role: Exclude<TeamRole, 'owner'>;
+  token: string;
+  createdAt: string;
+};
+
+export type TeamResponse = {
+  members: TeamMember[];
+  invites: ProjectInvite[];
+  currentUserRole: TeamRole;
+};
+
+export type Membership = {
+  id: string;
+  role: TeamRole;
+  invitedAt: string;
+  project: {
+    id: string;
+    name: string;
+    slug: string;
+    ownerId: string;
+  };
+};

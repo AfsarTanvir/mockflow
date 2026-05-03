@@ -5,6 +5,8 @@ const AuthController = () => import('../app/controllers/auth_controller.js');
 const ProjectsController = () => import('../app/controllers/projects_controller.js');
 const EndpointsController = () => import('../app/controllers/endpoints_controller.js');
 const MockController = () => import('../app/controllers/mock_controller.js');
+const TeamController = () => import('../app/controllers/team_controller.js');
+const InviteController = () => import('../app/controllers/invite_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +65,37 @@ router
     router.patch('/api/endpoints/:id/toggle', [EndpointsController, 'toggle']);
   })
   .use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| Team Routes (Protected)
+|--------------------------------------------------------------------------
+*/
+router
+  .group(() => {
+    router.get('/:projectId/team', [TeamController, 'index']);
+    router.post('/:projectId/team/invite', [TeamController, 'invite']);
+    router.put('/:projectId/team/:memberId/role', [TeamController, 'updateRole']);
+    router.delete('/:projectId/team/:memberId', [TeamController, 'removeMember']);
+    router.delete('/:projectId/invites/:inviteId', [TeamController, 'revokeInvite']);
+  })
+  .prefix('/api/projects')
+  .use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| My Memberships - GET /api/team
+|--------------------------------------------------------------------------
+*/
+router.get('/api/team', [TeamController, 'myMemberships']).use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| Invite Routes
+|--------------------------------------------------------------------------
+*/
+router.get('/api/invites/:token', [InviteController, 'show']);
+router.post('/api/invites/:token/accept', [InviteController, 'accept']).use(middleware.auth());
 
 /*
 |--------------------------------------------------------------------------

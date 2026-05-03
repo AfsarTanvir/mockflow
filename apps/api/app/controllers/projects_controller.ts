@@ -1,5 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http';
+import { DateTime } from 'luxon';
 import Project from '../models/project.js';
+import TeamMember from '../models/team_member.js';
 import { createProjectValidator, updateProjectValidator } from '../validators/project_validator.js';
 
 function slugify(name: string): string {
@@ -43,6 +45,14 @@ export default class ProjectsController {
       ownerId: auth.user!.id,
       isPublic: data.isPublic ?? false,
       settings: data.settings ?? { cors: true, log_requests: false },
+    });
+
+    // Add creator as owner in team_members
+    await TeamMember.create({
+      projectId: project.id,
+      userId: auth.user!.id,
+      role: 'owner',
+      invitedAt: DateTime.now(),
     });
 
     return response.created(project);
