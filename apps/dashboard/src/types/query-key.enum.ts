@@ -14,4 +14,11 @@ export enum QueryKey {
   TEAM_MEMBERS = 'TEAM_MEMBERS',
   TEAM_INVITES = 'TEAM_INVITES',
   MY_MEMBERSHIPS = 'MY_MEMBERSHIPS',
+
+  // Versions
+  VERSIONS = 'VERSIONS',
+  VERSION = 'VERSION',
+
+  // Notifications
+  PENDING_INVITES = 'PENDING_INVITES',
 }

@@ -23,11 +23,33 @@ export default class ProjectsController {
   |--------------------------------------------------------------------------
   */
   async index({ auth, response }: HttpContext) {
-    const projects = await Project.query()
-      .where('owner_id', auth.user!.id)
+    const userId = auth.user!.id;
+
+    // Projects via team_members (covers invitees + owners added after project creation)
+    const memberships = await TeamMember.query()
+      .where('user_id', userId)
+      .preload('project')
       .orderBy('created_at', 'desc');
 
-    return response.ok(projects);
+    const seenIds = new Set(memberships.map((m) => m.projectId));
+
+    // Fallback: owned projects with no team_member row (created before team feature shipped)
+    let legacyOwned: Project[] = [];
+    if (seenIds.size > 0) {
+      legacyOwned = await Project.query()
+        .where('owner_id', userId)
+        .whereNotIn('id', [...seenIds])
+        .orderBy('created_at', 'desc');
+    } else {
+      legacyOwned = await Project.query()
+        .where('owner_id', userId)
+        .orderBy('created_at', 'desc');
+    }
+
+    return response.ok([
+      ...memberships.map((m) => ({ ...m.project.serialize(), userRole: m.role })),
+      ...legacyOwned.map((p) => ({ ...p.serialize(), userRole: 'owner' })),
+    ]);
   }
 
   /*
@@ -61,18 +83,22 @@ export default class ProjectsController {
   /*
   |--------------------------------------------------------------------------
   | Show - GET /api/projects/:id
+  | Any team member (viewer+) can fetch project details.
   |--------------------------------------------------------------------------
   */
   async show({ auth, params, response }: HttpContext) {
     const project = await Project.find(params.id);
+    if (!project) return response.notFound({ message: 'Project not found' });
 
-    if (!project) {
-      return response.notFound({ message: 'Project not found' });
-    }
+    const userId = auth.user!.id;
+    const isMember =
+      project.ownerId === userId ||
+      (await TeamMember.query()
+        .where('project_id', project.id)
+        .where('user_id', userId)
+        .first()) !== null;
 
-    if (project.ownerId !== auth.user!.id) {
-      return response.forbidden({ message: 'Access denied' });
-    }
+    if (!isMember) return response.forbidden({ message: 'Access denied' });
 
     return response.ok(project);
   }
@@ -80,17 +106,30 @@ export default class ProjectsController {
   /*
   |--------------------------------------------------------------------------
   | Update - PUT /api/projects/:id
+  | Admin and owner can update project settings.
   |--------------------------------------------------------------------------
   */
   async update({ auth, params, request, response }: HttpContext) {
     const project = await Project.find(params.id);
+    if (!project) return response.notFound({ message: 'Project not found' });
 
-    if (!project) {
-      return response.notFound({ message: 'Project not found' });
+    const userId = auth.user!.id;
+    const ROLE_RANK: Record<string, number> = { viewer: 0, member: 1, admin: 2, owner: 3 };
+    let role = 'viewer';
+
+    if (project.ownerId === userId) {
+      role = 'owner';
+    } else {
+      const tm = await TeamMember.query()
+        .where('project_id', project.id)
+        .where('user_id', userId)
+        .first();
+      if (!tm) return response.forbidden({ message: 'Access denied' });
+      role = tm.role;
     }
 
-    if (project.ownerId !== auth.user!.id) {
-      return response.forbidden({ message: 'Access denied' });
+    if (ROLE_RANK[role] < ROLE_RANK['admin']) {
+      return response.forbidden({ message: 'Only admins and owners can update project settings' });
     }
 
     const data = await request.validateUsing(updateProjectValidator);
@@ -110,17 +149,15 @@ export default class ProjectsController {
   /*
   |--------------------------------------------------------------------------
   | Destroy - DELETE /api/projects/:id
+  | Owner only.
   |--------------------------------------------------------------------------
   */
   async destroy({ auth, params, response }: HttpContext) {
     const project = await Project.find(params.id);
-
-    if (!project) {
-      return response.notFound({ message: 'Project not found' });
-    }
+    if (!project) return response.notFound({ message: 'Project not found' });
 
     if (project.ownerId !== auth.user!.id) {
-      return response.forbidden({ message: 'Access denied' });
+      return response.forbidden({ message: 'Only the owner can delete this project' });
     }
 
     await project.delete();

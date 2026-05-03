@@ -1,5 +1,5 @@
 import httpClient from '@/http-client';
-import type { TeamResponse, ProjectInvite, Membership } from '@/types';
+import type { TeamResponse, ProjectInvite, Membership, PendingInvite } from '@/types';
 import type { InviteMemberInput, UpdateRoleInput } from '@/schema/teams';
 
 export async function getTeam(projectId: string): Promise<TeamResponse> {
@@ -41,5 +41,10 @@ export async function getMyMemberships(): Promise<Membership[]> {
 
 export async function acceptInvite(token: string): Promise<{ projectId: string }> {
   const { data } = await httpClient.post<{ projectId: string }>(`/api/invites/${token}/accept`);
+  return data;
+}
+
+export async function getPendingInvites(): Promise<PendingInvite[]> {
+  const { data } = await httpClient.get<PendingInvite[]>('/api/invites/pending');
   return data;
 }

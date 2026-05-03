@@ -121,34 +121,44 @@ export default function ProjectsClient({ initialUser }: { initialUser: User }) {
         </div>
       ) : (
         <div className="grid gap-3">
-          {projects.map((project) => (
-            <div
-              key={project.id}
-              className="bg-white rounded-xl border p-5 flex items-center justify-between"
-            >
-              <Link href={`/dashboard/projects/${project.id}`} className="flex-1 min-w-0 group">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {project.name}
-                  </h3>
-                  {project.isPublic && (
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                      Public
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-gray-400 font-mono">/{project.slug}</p>
-              </Link>
-              <button
-                onClick={() => {
-                  if (confirm(`Delete "${project.name}"?`)) deleteProject(project.id);
-                }}
-                className="text-xs text-gray-400 hover:text-red-500 transition-colors ml-4 shrink-0"
+          {projects.map((project) => {
+            const isOwner = !project.userRole || project.userRole === 'owner';
+            return (
+              <div
+                key={project.id}
+                className="bg-white rounded-xl border p-5 flex items-center justify-between"
               >
-                Delete
-              </button>
-            </div>
-          ))}
+                <Link href={`/dashboard/projects/${project.id}`} className="flex-1 min-w-0 group">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {project.name}
+                    </h3>
+                    {project.isPublic && (
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                        Public
+                      </span>
+                    )}
+                    {project.userRole && project.userRole !== 'owner' && (
+                      <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full capitalize">
+                        {project.userRole}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 font-mono">/{project.slug}</p>
+                </Link>
+                {isOwner && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Delete "${project.name}"?`)) deleteProject(project.id);
+                    }}
+                    className="text-xs text-gray-400 hover:text-red-500 transition-colors ml-4 shrink-0"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </main>

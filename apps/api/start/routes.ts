@@ -7,6 +7,7 @@ const EndpointsController = () => import('../app/controllers/endpoints_controlle
 const MockController = () => import('../app/controllers/mock_controller.js');
 const TeamController = () => import('../app/controllers/team_controller.js');
 const InviteController = () => import('../app/controllers/invite_controller.js');
+const VersionController = () => import('../app/controllers/version_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -91,9 +92,25 @@ router.get('/api/team', [TeamController, 'myMemberships']).use(middleware.auth()
 
 /*
 |--------------------------------------------------------------------------
+| Version History Routes (Protected)
+|--------------------------------------------------------------------------
+*/
+router
+  .group(() => {
+    router.get('/:projectId/versions', [VersionController, 'index']);
+    router.post('/:projectId/versions', [VersionController, 'store']);
+    router.get('/:projectId/versions/:id', [VersionController, 'show']);
+    router.post('/:projectId/versions/:id/restore', [VersionController, 'restore']);
+  })
+  .prefix('/api/projects')
+  .use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
 | Invite Routes
 |--------------------------------------------------------------------------
 */
+router.get('/api/invites/pending', [InviteController, 'pending']).use(middleware.auth());
 router.get('/api/invites/:token', [InviteController, 'show']);
 router.post('/api/invites/:token/accept', [InviteController, 'accept']).use(middleware.auth());
 

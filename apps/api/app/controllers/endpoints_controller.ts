@@ -1,13 +1,33 @@
 import type { HttpContext } from '@adonisjs/core/http';
 import Endpoint from '../models/endpoint.js';
 import Project from '../models/project.js';
+import TeamMember from '../models/team_member.js';
 import { createEndpointValidator, updateEndpointValidator } from '../validators/endpoint_validator.js';
 
-async function resolveProject(projectId: string, userId: string) {
+type TeamRole = 'owner' | 'admin' | 'member' | 'viewer';
+const ROLE_RANK: Record<TeamRole, number> = { viewer: 0, member: 1, admin: 2, owner: 3 };
+
+async function resolveProject(projectId: string, userId: string, minRole: TeamRole = 'viewer') {
   const project = await Project.find(projectId);
-  if (!project) return { project: null, error: 'not_found' as const };
-  if (project.ownerId !== userId) return { project: null, error: 'forbidden' as const };
-  return { project, error: null };
+  if (!project) return { project: null, role: null, error: 'not_found' as const };
+
+  let role: TeamRole;
+  if (project.ownerId === userId) {
+    role = 'owner';
+  } else {
+    const tm = await TeamMember.query()
+      .where('project_id', projectId)
+      .where('user_id', userId)
+      .first();
+    if (!tm) return { project: null, role: null, error: 'forbidden' as const };
+    role = tm.role;
+  }
+
+  if (ROLE_RANK[role] < ROLE_RANK[minRole]) {
+    return { project: null, role: null, error: 'forbidden' as const };
+  }
+
+  return { project, role, error: null };
 }
 
 export default class EndpointsController {
@@ -17,7 +37,7 @@ export default class EndpointsController {
   |--------------------------------------------------------------------------
   */
   async index({ auth, params, response }: HttpContext) {
-    const { project, error } = await resolveProject(params.projectId, auth.user!.id);
+    const { project, error } = await resolveProject(params.projectId, auth.user!.id, 'viewer');
     if (error === 'not_found') return response.notFound({ message: 'Project not found' });
     if (error === 'forbidden') return response.forbidden({ message: 'Access denied' });
 
@@ -34,7 +54,7 @@ export default class EndpointsController {
   |--------------------------------------------------------------------------
   */
   async store({ auth, params, request, response }: HttpContext) {
-    const { project, error } = await resolveProject(params.projectId, auth.user!.id);
+    const { project, error } = await resolveProject(params.projectId, auth.user!.id, 'member');
     if (error === 'not_found') return response.notFound({ message: 'Project not found' });
     if (error === 'forbidden') return response.forbidden({ message: 'Access denied' });
 
@@ -74,7 +94,7 @@ export default class EndpointsController {
     const endpoint = await Endpoint.find(params.id);
     if (!endpoint) return response.notFound({ message: 'Endpoint not found' });
 
-    const { error } = await resolveProject(endpoint.projectId, auth.user!.id);
+    const { error } = await resolveProject(endpoint.projectId, auth.user!.id, 'viewer');
     if (error === 'forbidden') return response.forbidden({ message: 'Access denied' });
 
     return response.ok(endpoint);
@@ -89,7 +109,7 @@ export default class EndpointsController {
     const endpoint = await Endpoint.find(params.id);
     if (!endpoint) return response.notFound({ message: 'Endpoint not found' });
 
-    const { error } = await resolveProject(endpoint.projectId, auth.user!.id);
+    const { error } = await resolveProject(endpoint.projectId, auth.user!.id, 'member');
     if (error === 'forbidden') return response.forbidden({ message: 'Access denied' });
 
     const data = await request.validateUsing(updateEndpointValidator);
@@ -137,7 +157,7 @@ export default class EndpointsController {
     const endpoint = await Endpoint.find(params.id);
     if (!endpoint) return response.notFound({ message: 'Endpoint not found' });
 
-    const { error } = await resolveProject(endpoint.projectId, auth.user!.id);
+    const { error } = await resolveProject(endpoint.projectId, auth.user!.id, 'member');
     if (error === 'forbidden') return response.forbidden({ message: 'Access denied' });
 
     await endpoint.delete();
@@ -154,7 +174,7 @@ export default class EndpointsController {
     const endpoint = await Endpoint.find(params.id);
     if (!endpoint) return response.notFound({ message: 'Endpoint not found' });
 
-    const { error } = await resolveProject(endpoint.projectId, auth.user!.id);
+    const { error } = await resolveProject(endpoint.projectId, auth.user!.id, 'member');
     if (error === 'forbidden') return response.forbidden({ message: 'Access denied' });
 
     endpoint.isActive = !endpoint.isActive;

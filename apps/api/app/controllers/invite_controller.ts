@@ -11,6 +11,34 @@ export default class InviteController {
   | Returns invite metadata so the frontend can show project + role info.
   |--------------------------------------------------------------------------
   */
+  /*
+  |--------------------------------------------------------------------------
+  | Pending - GET /api/invites/pending   (auth required)
+  | Returns all unaccepted invites sent to the logged-in user's email.
+  |--------------------------------------------------------------------------
+  */
+  async pending({ auth, response }: HttpContext) {
+    const invites = await ProjectInvite.query()
+      .where('email', auth.user!.email)
+      .whereNull('accepted_at')
+      .preload('project')
+      .orderBy('created_at', 'desc');
+
+    return response.ok(
+      invites.map((i) => ({
+        token: i.token,
+        email: i.email,
+        role: i.role,
+        createdAt: i.createdAt,
+        project: {
+          id: i.project.id,
+          name: i.project.name,
+          slug: i.project.slug,
+        },
+      }))
+    );
+  }
+
   async show({ params, response }: HttpContext) {
     const invite = await ProjectInvite.query()
       .where('token', params.token)

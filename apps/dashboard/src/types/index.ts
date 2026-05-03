@@ -45,6 +45,7 @@ export type Project = {
   settings: ProjectSettings;
   createdAt: string;
   updatedAt: string;
+  userRole?: TeamRole;
 };
 
 export type TeamRole = 'owner' | 'admin' | 'member' | 'viewer';
@@ -86,4 +87,47 @@ export type Membership = {
     slug: string;
     ownerId: string;
   };
+};
+
+export type PendingInvite = {
+  token: string;
+  email: string;
+  role: Exclude<TeamRole, 'owner'>;
+  createdAt: string;
+  project: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+};
+
+export type VersionSnapshot = {
+  project: {
+    name: string;
+    slug: string;
+    basePath: string;
+    isPublic: boolean;
+    settings: { cors: boolean; log_requests: boolean };
+  };
+  endpoints: Array<{
+    method: string;
+    path: string;
+    statusCode: number;
+    responseBody: Record<string, unknown> | null;
+    responseHeaders: Record<string, string>;
+    delayMs: number;
+    isActive: boolean;
+  }>;
+};
+
+export type ProjectVersion = {
+  id: string;
+  message: string | null;
+  createdAt: string;
+  createdBy: { id: string; name: string } | null;
+  endpointCount: number;
+};
+
+export type ProjectVersionDetail = ProjectVersion & {
+  snapshot: VersionSnapshot;
 };

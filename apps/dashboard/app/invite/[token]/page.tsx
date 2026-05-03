@@ -23,7 +23,7 @@ async function getInviteInfo(token: string): Promise<InviteInfo | null> {
 async function getSessionUser(): Promise<{ id: string; email: string; name: string } | null> {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    const token = cookieStore.get('token')?.value;
     if (!token) return null;
     const res = await fetch(`${API_URL}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },

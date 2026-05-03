@@ -7,9 +7,10 @@ import {
   revokeInvite,
   getMyMemberships,
   acceptInvite,
+  getPendingInvites,
 } from '@/services/teams';
 import { QueryKey } from '@/types/query-key.enum';
-import type { TeamResponse, Membership } from '@/types';
+import type { TeamResponse, Membership, PendingInvite } from '@/types';
 import type { InviteMemberInput, UpdateRoleInput } from '@/schema/teams';
 
 export const useTeam = (projectId: string) => {
@@ -89,8 +90,22 @@ export const useAcceptInvite = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (token: string) => acceptInvite(token),
-    onSuccess: () => {
+    onSuccess: (_, token) => {
       queryClient.invalidateQueries({ queryKey: [QueryKey.MY_MEMBERSHIPS] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.PROJECTS] });
+      // Remove the accepted invite from the bell immediately
+      queryClient.setQueryData<PendingInvite[]>([QueryKey.PENDING_INVITES], (old) =>
+        old ? old.filter((i) => i.token !== token) : []
+      );
     },
+  });
+};
+
+export const usePendingInvites = () => {
+  return useQuery({
+    queryKey: [QueryKey.PENDING_INVITES],
+    queryFn: getPendingInvites,
+    staleTime: 60 * 1000,
+    refetchInterval: 2 * 60 * 1000,
   });
 };

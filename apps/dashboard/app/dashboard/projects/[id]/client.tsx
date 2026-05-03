@@ -12,6 +12,8 @@ import {
 } from '@/query/endpoints';
 import { EndpointForm, type EndpointFormPayload } from '@/components/dashboard/endpoint-form';
 import { TeamPanel } from '@/components/dashboard/team-panel';
+import { VersionPanel } from '@/components/dashboard/version-panel';
+import { useTeam } from '@/query/teams';
 import type { User, Project, HttpMethod } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3333';
@@ -24,7 +26,7 @@ const METHOD_COLORS: Record<HttpMethod, string> = {
   DELETE: 'bg-red-100 text-red-700',
 };
 
-type ActiveTab = 'endpoints' | 'team';
+type ActiveTab = 'endpoints' | 'team' | 'history';
 
 export default function ProjectDetailClient({
   initialUser,
@@ -50,11 +52,14 @@ export default function ProjectDetailClient({
   const { mutate: deleteEndpoint } = useDeleteEndpoint(initialProject.id);
   const { mutate: toggleEndpoint } = useToggleEndpoint(initialProject.id);
 
+  const { data: team } = useTeam(initialProject.id);
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('endpoints');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const currentProject = project ?? initialProject;
+  const currentUserRole = team?.currentUserRole ?? 'viewer';
 
   function handleCreate(data: EndpointFormPayload) {
     createEndpoint(data, { onSuccess: () => setShowCreateForm(false) });
@@ -105,7 +110,7 @@ export default function ProjectDetailClient({
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1 w-fit">
-        {(['endpoints', 'team'] as const).map((tab) => (
+        {(['endpoints', 'team', 'history'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => handleTabChange(tab)}
@@ -231,6 +236,11 @@ export default function ProjectDetailClient({
 
       {/* Team tab */}
       {activeTab === 'team' && <TeamPanel projectId={currentProject.id} currentUserId={user.id} />}
+
+      {/* History tab */}
+      {activeTab === 'history' && (
+        <VersionPanel projectId={currentProject.id} currentUserRole={currentUserRole} />
+      )}
     </main>
   );
 }

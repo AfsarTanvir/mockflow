@@ -1,6 +1,7 @@
 'use client';
 
 import { LogOut, User } from 'lucide-react';
+import { NotificationBell } from './notification-bell';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSignOut } from '@/query/auth';
@@ -42,7 +43,8 @@ export function DashboardHeader({ user }: { user: UserType }) {
         </Link>
       </div>
 
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-1">
+        <NotificationBell />
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
@@ -61,7 +63,7 @@ export function DashboardHeader({ user }: { user: UserType }) {
             </div>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuContent align="end" className="w-52" sideOffset={4}>
             <div className="flex items-center gap-3 px-2 py-2.5">
               <Avatar className="h-9 w-9 shrink-0">
                 <AvatarImage src={user.avatarUrl ?? undefined} />
