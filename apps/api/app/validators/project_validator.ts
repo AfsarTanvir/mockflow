@@ -1,4 +1,5 @@
-import vine from '@vinejs/vine';
+import vine, { SimpleMessagesProvider } from '@vinejs/vine';
+import { msg } from './messages.js';
 
 export const createProjectValidator = vine.compile(
   vine.object({
@@ -27,3 +28,14 @@ export const updateProjectValidator = vine.compile(
       .optional(),
   })
 );
+
+const projectMessages = new SimpleMessagesProvider({
+  'name.required': msg.required('Name'),
+  'name.minLength': msg.minLength('Name', 2),
+  'name.maxLength': msg.maxLength('Name', 100),
+  'basePath.startsWith': msg.startsWith('Base path', '/'),
+  'basePath.maxLength': msg.maxLength('Base path', 255),
+});
+
+createProjectValidator.messagesProvider = projectMessages;
+updateProjectValidator.messagesProvider = projectMessages;

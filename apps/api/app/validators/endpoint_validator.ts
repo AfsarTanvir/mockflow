@@ -1,4 +1,5 @@
-import vine from '@vinejs/vine';
+import vine, { SimpleMessagesProvider } from '@vinejs/vine';
+import { msg } from './messages.js';
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 
@@ -25,3 +26,18 @@ export const updateEndpointValidator = vine.compile(
     isActive: vine.boolean().optional(),
   })
 );
+
+const endpointMessages = new SimpleMessagesProvider({
+  'method.required': msg.required('Method'),
+  'method.enum': msg.enum('Method', HTTP_METHODS),
+  'path.required': msg.required('Path'),
+  'path.startsWith': msg.startsWith('Path', '/'),
+  'path.maxLength': msg.maxLength('Path', 500),
+  'statusCode.min': msg.min('Status code', 100),
+  'statusCode.max': msg.max('Status code', 599),
+  'delayMs.min': msg.min('Delay', 0),
+  'delayMs.max': msg.max('Delay', 5000),
+});
+
+createEndpointValidator.messagesProvider = endpointMessages;
+updateEndpointValidator.messagesProvider = endpointMessages;

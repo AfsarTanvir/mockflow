@@ -17,7 +17,8 @@ export default class MockController {
   async execute({ request, response, params }: HttpContext) {
     const start = Date.now()
     const projectSlug = params.projectSlug as string
-    const incomingPath = '/' + (params['*'] ?? '')
+    const wildcard = params['*']
+    const incomingPath = '/' + (Array.isArray(wildcard) ? wildcard.join('/') : (wildcard ?? ''))
     const incomingMethod = request.method().toUpperCase()
 
     const project = await Project.findBy('slug', projectSlug)
