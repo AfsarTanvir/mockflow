@@ -23,6 +23,7 @@ export const updateProjectSchema = z.object({
     .max(255)
     .optional(),
   isPublic: z.boolean().optional(),
+  settings: z.object({ cors: z.boolean(), log_requests: z.boolean() }).optional(),
 });
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;

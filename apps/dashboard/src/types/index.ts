@@ -131,3 +131,14 @@ export type ProjectVersion = {
 export type ProjectVersionDetail = ProjectVersion & {
   snapshot: VersionSnapshot;
 };
+
+export type RequestLog = {
+  id: string;
+  projectId: string;
+  endpointId: string | null;
+  method: HttpMethod;
+  path: string;
+  statusCode: number;
+  duration: number;
+  createdAt: string;
+};

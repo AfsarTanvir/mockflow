@@ -151,6 +151,36 @@ export class ProjectSchema extends BaseModel {
   declare updatedAt: DateTime;
 }
 
+export class RequestLogSchema extends BaseModel {
+  static $columns = [
+    'createdAt',
+    'duration',
+    'endpointId',
+    'id',
+    'method',
+    'path',
+    'projectId',
+    'statusCode',
+  ] as const;
+  $columns = RequestLogSchema.$columns;
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime;
+  @column()
+  declare duration: number;
+  @column()
+  declare endpointId: string | null;
+  @column({ isPrimary: true })
+  declare id: string;
+  @column()
+  declare method: string;
+  @column()
+  declare path: string;
+  @column()
+  declare projectId: string;
+  @column()
+  declare statusCode: number;
+}
+
 export class TeamMemberSchema extends BaseModel {
   static $columns = [
     'createdAt',

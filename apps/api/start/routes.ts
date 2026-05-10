@@ -7,7 +7,8 @@ const EndpointsController = () => import('../app/controllers/endpoints_controlle
 const MockController = () => import('../app/controllers/mock_controller.js');
 const TeamController = () => import('../app/controllers/team_controller.js');
 const InviteController = () => import('../app/controllers/invite_controller.js');
-const VersionController = () => import('../app/controllers/version_controller.js');
+const VersionController = () => import('../app/controllers/version_controller.js')
+const RequestLogsController = () => import('../app/controllers/request_logs_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -102,6 +103,7 @@ router
     router.post('/:projectId/versions', [VersionController, 'store']);
     router.get('/:projectId/versions/:id', [VersionController, 'show']);
     router.post('/:projectId/versions/:id/restore', [VersionController, 'restore']);
+    router.get('/:projectId/request-logs', [RequestLogsController, 'index']);
   })
   .prefix('/api/projects')
   .use(middleware.auth());

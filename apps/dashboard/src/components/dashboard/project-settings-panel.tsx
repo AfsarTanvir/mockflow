@@ -15,12 +15,16 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
   const [name, setName] = useState(project.name);
   const [basePath, setBasePath] = useState(project.basePath);
   const [isPublic, setIsPublic] = useState(project.isPublic);
+  const [cors, setCors] = useState(project.settings.cors);
+  const [logRequests, setLogRequests] = useState(project.settings.log_requests);
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     setName(project.name);
     setBasePath(project.basePath);
     setIsPublic(project.isPublic);
+    setCors(project.settings.cors);
+    setLogRequests(project.settings.log_requests);
     setDirty(false);
   }, [project.id]);
 
@@ -29,7 +33,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     updateProject(
-      { name: name.trim(), basePath: basePath.trim(), isPublic },
+      { name: name.trim(), basePath: basePath.trim(), isPublic, settings: { cors, log_requests: logRequests } },
       { onSuccess: () => setDirty(false) }
     );
   }
@@ -104,6 +108,55 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
                 isPublic ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        <hr className="border-gray-100" />
+        <h2 className="text-sm font-semibold text-gray-900">Advanced</h2>
+
+        {/* CORS toggle */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-gray-700">CORS</p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Add <code className="font-mono">Access-Control-Allow-Origin: *</code> to every mock response.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setCors((v) => !v); setDirty(true); }}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
+              cors ? 'bg-blue-600' : 'bg-gray-200'
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                cors ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Log requests toggle */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-gray-700">Log requests</p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Record every mock hit — view them in the Logs tab.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setLogRequests((v) => !v); setDirty(true); }}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
+              logRequests ? 'bg-blue-600' : 'bg-gray-200'
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                logRequests ? 'translate-x-6' : 'translate-x-1'
               }`}
             />
           </button>

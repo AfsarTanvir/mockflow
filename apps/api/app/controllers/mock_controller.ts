@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http';
 import { match } from 'path-to-regexp';
 import Project from '../models/project.js';
 import Endpoint from '../models/endpoint.js';
+import RequestLog from '../models/request_log.js';
 import { evaluateBody } from '../services/faker_evaluator.js';
 
 function delay(ms: number): Promise<void> {
@@ -61,6 +62,12 @@ export default class MockController {
       response.header(key, value)
     }
 
+    if (project.settings.cors) {
+      response.header('Access-Control-Allow-Origin', '*')
+      response.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
+      response.header('Access-Control-Allow-Headers', '*')
+    }
+
     // MockFlow diagnostic headers
     response.header('X-MockFlow-Project', project.slug)
     response.header('X-MockFlow-Endpoint', `${matched.method} ${matched.path}`)
@@ -68,6 +75,17 @@ export default class MockController {
     response.header('X-MockFlow-Elapsed', `${elapsed}ms`)
 
     const body = evaluateBody(matched.responseBody, pathParams)
+
+    if (project.settings.log_requests) {
+      RequestLog.create({
+        projectId: project.id,
+        endpointId: matched.id,
+        method: incomingMethod,
+        path: incomingPath,
+        statusCode: matched.statusCode,
+        duration: elapsed,
+      }).catch(() => {})
+    }
 
     return response.status(matched.statusCode).json(body ?? {})
   }
