@@ -102,7 +102,7 @@ export default class AuthController {
       if (sameAsOld) {
         return response.unprocessableEntity({ message: 'New password must be different from your current password' })
       }
-      user.password = await hash.make(data.newPassword)
+      user.password = data.newPassword
     }
 
     if (data.name) user.name = data.name
