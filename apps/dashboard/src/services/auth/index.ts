@@ -25,3 +25,13 @@ export async function updateProfile(body: { name?: string; currentPassword?: str
   const { data } = await httpClient.patch<User>('/api/auth/profile', body);
   return data;
 }
+
+export async function verifyEmail(token: string): Promise<{ message: string }> {
+  const { data } = await httpClient.post(`/api/auth/verify/${token}`);
+  return data;
+}
+
+export async function resendVerification(): Promise<{ message: string }> {
+  const { data } = await httpClient.post('/api/auth/resend-verification');
+  return data;
+}

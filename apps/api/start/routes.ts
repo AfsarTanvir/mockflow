@@ -20,6 +20,7 @@ router
     router.post('/register', [AuthController, 'register']);
     router.post('/login', [AuthController, 'login']);
     router.post('/refresh', [AuthController, 'refresh']);
+    router.post('/verify/:token', [AuthController, 'verifyEmail']);
   })
   .prefix('/api/auth');
 
@@ -32,6 +33,7 @@ router
   .group(() => {
     router.get('/me', [AuthController, 'me']);
     router.patch('/profile', [AuthController, 'updateProfile']);
+    router.post('/resend-verification', [AuthController, 'resendVerification']);
     router.post('/logout', [AuthController, 'logout']);
   })
   .prefix('/api/auth')

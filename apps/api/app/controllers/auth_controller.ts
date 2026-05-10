@@ -1,6 +1,10 @@
+import { randomBytes } from 'node:crypto'
 import type { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import User from '../models/user.js'
+import EmailVerificationToken from '../models/email_verification_token.js'
+import { sendVerificationEmail } from '../services/email_service.js'
 import { registerValidator, loginValidator, updateProfileValidator } from '../validators/auth_validator.js'
 
 export default class AuthController {
@@ -24,10 +28,25 @@ export default class AuthController {
       emailVerified: false,
     })
 
+    const verificationToken = randomBytes(32).toString('hex')
+    await EmailVerificationToken.create({
+      userId: user.id,
+      token: verificationToken,
+      expiresAt: DateTime.now().plus({ minutes: 10 }),
+    })
+
+    sendVerificationEmail({
+      toEmail: user.email,
+      userName: user.name,
+      verificationToken,
+    }).catch((err) => {
+      console.error('[MockFlow] Failed to send verification email on register:', err)
+    })
+
     const token = await User.accessTokens.create(user)
 
     return response.created({
-      message: 'Account created successfully',
+      message: 'Account created. Check your email to verify your address.',
       user: {
         id: user.id,
         name: user.name,
@@ -37,6 +56,67 @@ export default class AuthController {
       },
       token: token.value!.release(),
     })
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Verify Email - POST /api/auth/verify/:token (Public)
+  |--------------------------------------------------------------------------
+  */
+  async verifyEmail({ params, response }: HttpContext) {
+    const record = await EmailVerificationToken.findBy('token', params.token)
+    if (!record) return response.notFound({ message: 'Invalid verification link' })
+
+    if (record.expiresAt < DateTime.now()) {
+      await record.delete()
+      return response.unprocessableEntity({ message: 'Verification link has expired' })
+    }
+
+    const user = await User.find(record.userId)
+    if (!user) return response.notFound({ message: 'User not found' })
+
+    user.emailVerified = true
+    await user.save()
+    await record.delete()
+
+    return response.ok({ message: 'Email verified successfully' })
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Resend Verification - POST /api/auth/resend-verification (Protected)
+  |--------------------------------------------------------------------------
+  */
+  async resendVerification({ auth, response }: HttpContext) {
+    const user = auth.user!
+
+    if (user.emailVerified) {
+      return response.unprocessableEntity({ message: 'Email is already verified' })
+    }
+
+    await EmailVerificationToken.query().where('user_id', user.id).delete()
+
+    const verificationToken = randomBytes(32).toString('hex')
+    await EmailVerificationToken.create({
+      userId: user.id,
+      token: verificationToken,
+      expiresAt: DateTime.now().plus({ minutes: 10 }),
+    })
+
+    try {
+      await sendVerificationEmail({
+        toEmail: user.email,
+        userName: user.name,
+        verificationToken,
+      })
+    } catch (err: any) {
+      console.error('[MockFlow] Failed to resend verification email:', err)
+      return response.internalServerError({
+        message: err?.message ?? 'Failed to send verification email. Check server logs.',
+      })
+    }
+
+    return response.ok({ message: 'Verification email sent' })
   }
 
   /*

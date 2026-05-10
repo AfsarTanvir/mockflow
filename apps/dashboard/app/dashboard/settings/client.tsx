@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser, useUpdateProfile } from '@/query/auth';
+import { useUser, useUpdateProfile, useResendVerification } from '@/query/auth';
 import type { User } from '@/types';
 
 export default function ProfileSettingsClient({ initialUser }: { initialUser: User }) {
@@ -17,6 +17,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
   const [pwSuccess, setPwSuccess] = useState(false);
 
   const { mutate: updateProfile, isPending } = useUpdateProfile();
+  const { mutate: resendVerify, isPending: resendingVerify, isSuccess: verifySent, error: verifyError } = useResendVerification();
 
   const nameError = name.trim().length < 2 ? 'Name must be at least 2 characters' : null;
   const confirmError = confirmPassword && newPassword !== confirmPassword ? 'Passwords do not match' : null;
@@ -83,6 +84,44 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
           </div>
         </div>
       </form>
+
+      {/* Email verification */}
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-900">Email verification</h2>
+          {user?.emailVerified ? (
+            <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium">Verified</span>
+          ) : (
+            <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-medium">Not verified</span>
+          )}
+        </div>
+
+        {user?.emailVerified ? (
+          <p className="text-xs text-gray-500">Your email <span className="font-medium text-gray-700">{user.email}</span> is verified.</p>
+        ) : (
+          <>
+            <p className="text-xs text-gray-500">
+              Verify your email to confirm <span className="font-medium text-gray-700">{user?.email}</span>. Verification is optional — you can keep using MockFlow either way.
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              {verifySent && <span className="text-xs text-green-600">Verification email sent. Check your inbox.</span>}
+              {verifyError && (
+                <span className="text-xs text-red-500">
+                  {(verifyError as any)?.response?.data?.message ?? 'Failed to send'}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => resendVerify()}
+                disabled={resendingVerify}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {resendingVerify ? 'Sending…' : 'Send verification email'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Password */}
       <form onSubmit={handlePasswordSubmit} className="bg-white rounded-xl border p-6 space-y-4">
