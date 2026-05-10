@@ -13,6 +13,7 @@ import {
 import { EndpointForm, type EndpointFormPayload } from '@/components/dashboard/endpoint-form';
 import { TeamPanel } from '@/components/dashboard/team-panel';
 import { VersionPanel } from '@/components/dashboard/version-panel';
+import { ProjectSettingsPanel } from '@/components/dashboard/project-settings-panel';
 import { useTeam } from '@/query/teams';
 import type { User, Project, HttpMethod } from '@/types';
 
@@ -26,7 +27,7 @@ const METHOD_COLORS: Record<HttpMethod, string> = {
   DELETE: 'bg-red-100 text-red-700',
 };
 
-type ActiveTab = 'endpoints' | 'team' | 'history';
+type ActiveTab = 'endpoints' | 'team' | 'history' | 'settings';
 
 export default function ProjectDetailClient({
   initialUser,
@@ -118,7 +119,7 @@ export default function ProjectDetailClient({
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1 w-fit">
-        {(['endpoints', 'team', 'history'] as const).map((tab) => (
+        {(['endpoints', 'team', 'history', 'settings'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => handleTabChange(tab)}
@@ -266,6 +267,11 @@ export default function ProjectDetailClient({
       {/* History tab */}
       {activeTab === 'history' && (
         <VersionPanel projectId={currentProject.id} currentUserRole={currentUserRole} />
+      )}
+
+      {/* Settings tab */}
+      {activeTab === 'settings' && (
+        <ProjectSettingsPanel project={currentProject} currentUserRole={currentUserRole} />
       )}
     </main>
   );
