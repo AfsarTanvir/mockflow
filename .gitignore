@@ -51,6 +51,7 @@ docker-compose.override.yml
 # AdonisJS specific
 ace
 tmp/
+.adonisjs/
 
 # Next.js specific
 .next/
