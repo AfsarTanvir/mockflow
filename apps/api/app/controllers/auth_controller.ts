@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import hash from '@adonisjs/core/services/hash'
 import User from '../models/user.js'
-import { registerValidator, loginValidator } from '../validators/auth_validator.js'
+import { registerValidator, loginValidator, updateProfileValidator } from '../validators/auth_validator.js'
 
 export default class AuthController {
   /*
@@ -69,6 +70,44 @@ export default class AuthController {
   */
   async me({ auth, response }: HttpContext) {
     const user = auth.user!
+
+    return response.ok({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+      emailVerified: user.emailVerified,
+      createdAt: user.createdAt,
+    })
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Update Profile - PATCH /api/auth/profile (Protected)
+  |--------------------------------------------------------------------------
+  */
+  async updateProfile({ auth, request, response }: HttpContext) {
+    const user = auth.user!
+    const data = await request.validateUsing(updateProfileValidator)
+
+    if (data.newPassword) {
+      if (!data.currentPassword) {
+        return response.unprocessableEntity({ message: 'Current password is required to set a new password' })
+      }
+      const valid = await hash.verify(user.password ?? '', data.currentPassword)
+      if (!valid) {
+        return response.unprocessableEntity({ message: 'Current password is incorrect' })
+      }
+      const sameAsOld = await hash.verify(user.password ?? '', data.newPassword)
+      if (sameAsOld) {
+        return response.unprocessableEntity({ message: 'New password must be different from your current password' })
+      }
+      user.password = await hash.make(data.newPassword)
+    }
+
+    if (data.name) user.name = data.name
+
+    await user.save()
 
     return response.ok({
       id: user.id,

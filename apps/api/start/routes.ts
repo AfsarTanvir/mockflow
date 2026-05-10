@@ -30,6 +30,7 @@ router
 router
   .group(() => {
     router.get('/me', [AuthController, 'me']);
+    router.patch('/profile', [AuthController, 'updateProfile']);
     router.post('/logout', [AuthController, 'logout']);
   })
   .prefix('/api/auth')

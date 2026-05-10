@@ -20,3 +20,8 @@ export async function signUp(body: Omit<RegisterInput, 'confirmPassword'>): Prom
 export async function signOut(): Promise<void> {
   await httpClient.post('/api/auth/logout', {});
 }
+
+export async function updateProfile(body: { name?: string; currentPassword?: string; newPassword?: string }): Promise<User> {
+  const { data } = await httpClient.patch<User>('/api/auth/profile', body);
+  return data;
+}

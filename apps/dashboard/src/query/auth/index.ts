@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { getAuthUser, signIn, signOut, signUp } from '@/services/auth';
+import { getAuthUser, signIn, signOut, signUp, updateProfile } from '@/services/auth';
 import { QueryKey } from '@/types/query-key.enum';
 import type { User } from '@/types';
 
@@ -51,6 +51,17 @@ export const useSignUp = (redirectTo = '/dashboard') => {
       setToken(data.token);
       queryClient.setQueryData([QueryKey.AUTH_USER], data.user);
       router.push(redirectTo);
+    },
+  });
+};
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateProfile,
+    onSuccess: (updated) => {
+      queryClient.setQueryData([QueryKey.AUTH_USER], updated);
     },
   });
 };

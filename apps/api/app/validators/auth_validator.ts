@@ -14,12 +14,27 @@ export const registerValidator = vine.compile(
   })
 );
 
+export const updateProfileValidator = vine.compile(
+  vine.object({
+    name: vine.string().trim().minLength(2).maxLength(100).optional(),
+    currentPassword: vine.string().minLength(6).maxLength(64).optional(),
+    newPassword: vine.string().minLength(8).maxLength(64).optional(),
+  })
+);
+
 export const loginValidator = vine.compile(
   vine.object({
     email: vine.string().trim().email().normalizeEmail(),
     password: vine.string().minLength(6).maxLength(64),
   })
 );
+
+updateProfileValidator.messagesProvider = new SimpleMessagesProvider({
+  'name.minLength': msg.minLength('Name', 2),
+  'name.maxLength': msg.maxLength('Name', 100),
+  'newPassword.minLength': msg.minLength('New password', 8),
+  'newPassword.maxLength': msg.maxLength('New password', 64),
+});
 
 registerValidator.messagesProvider = new SimpleMessagesProvider({
   'name.required': msg.required('Name'),
