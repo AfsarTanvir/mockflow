@@ -59,7 +59,8 @@ export default function ProjectDetailClient({
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const currentProject = project ?? initialProject;
-  const currentUserRole = team?.currentUserRole ?? 'viewer';
+  const currentUserRole = team?.currentUserRole ?? (initialProject.userRole ?? 'viewer');
+  const canWrite = currentUserRole !== 'viewer';
 
   function handleCreate(data: EndpointFormPayload) {
     createEndpoint(data, { onSuccess: () => setShowCreateForm(false) });
@@ -95,17 +96,24 @@ export default function ProjectDetailClient({
             </code>
           </div>
         </div>
-        {activeTab === 'endpoints' && (
-          <button
-            onClick={() => {
-              setEditingId(null);
-              setShowCreateForm((v) => !v);
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shrink-0"
-          >
-            {showCreateForm ? 'Cancel' : '+ New Endpoint'}
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {currentUserRole === 'viewer' && (
+            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+              Read-only
+            </span>
+          )}
+          {activeTab === 'endpoints' && canWrite && (
+            <button
+              onClick={() => {
+                setEditingId(null);
+                setShowCreateForm((v) => !v);
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shrink-0"
+            >
+              {showCreateForm ? 'Cancel' : '+ New Endpoint'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
@@ -128,7 +136,7 @@ export default function ProjectDetailClient({
       {/* Endpoints tab */}
       {activeTab === 'endpoints' && (
         <>
-          {showCreateForm && (
+          {showCreateForm && canWrite && (
             <div className="bg-white rounded-xl border p-6 mb-6">
               <h3 className="text-sm font-semibold text-gray-900 mb-5">New Endpoint</h3>
               <EndpointForm
@@ -151,12 +159,14 @@ export default function ProjectDetailClient({
             ) : endpoints.length === 0 ? (
               <div className="bg-white rounded-xl border p-12 text-center">
                 <p className="text-gray-400 text-sm mb-3">No endpoints yet</p>
-                <button
-                  onClick={() => setShowCreateForm(true)}
-                  className="text-blue-600 hover:underline text-sm font-medium"
-                >
-                  Add your first endpoint
-                </button>
+                {canWrite && (
+                  <button
+                    onClick={() => setShowCreateForm(true)}
+                    className="text-blue-600 hover:underline text-sm font-medium"
+                  >
+                    Add your first endpoint
+                  </button>
+                )}
               </div>
             ) : (
               endpoints.map((ep) => (
@@ -185,37 +195,53 @@ export default function ProjectDetailClient({
                       <span className="text-xs text-gray-400 shrink-0">{ep.delayMs}ms</span>
                     )}
 
-                    <button
-                      onClick={() => toggleEndpoint(ep.id)}
-                      className={`text-xs px-2 py-1 rounded-full shrink-0 transition-colors ${
-                        ep.isActive
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                      }`}
-                    >
-                      {ep.isActive ? 'Active' : 'Inactive'}
-                    </button>
+                    {canWrite ? (
+                      <button
+                        onClick={() => toggleEndpoint(ep.id)}
+                        className={`text-xs px-2 py-1 rounded-full shrink-0 transition-colors ${
+                          ep.isActive
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        }`}
+                      >
+                        {ep.isActive ? 'Active' : 'Inactive'}
+                      </button>
+                    ) : (
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full shrink-0 ${
+                          ep.isActive
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {ep.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    )}
 
-                    <button
-                      onClick={() => handleEditClick(ep.id)}
-                      className={`text-xs font-medium shrink-0 transition-colors ${
-                        editingId === ep.id ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
-                      }`}
-                    >
-                      {editingId === ep.id ? 'Close' : 'Edit'}
-                    </button>
+                    {canWrite && (
+                      <button
+                        onClick={() => handleEditClick(ep.id)}
+                        className={`text-xs font-medium shrink-0 transition-colors ${
+                          editingId === ep.id ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
+                        }`}
+                      >
+                        {editingId === ep.id ? 'Close' : 'Edit'}
+                      </button>
+                    )}
 
-                    <button
-                      onClick={() => {
-                        if (confirm(`Delete ${ep.method} ${ep.path}?`)) deleteEndpoint(ep.id);
-                      }}
-                      className="text-xs text-gray-400 hover:text-red-500 transition-colors shrink-0"
-                    >
-                      Delete
-                    </button>
+                    {canWrite && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete ${ep.method} ${ep.path}?`)) deleteEndpoint(ep.id);
+                        }}
+                        className="text-xs text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </div>
 
-                  {editingId === ep.id && (
+                  {editingId === ep.id && canWrite && (
                     <div className="bg-white border border-t-0 rounded-b-xl px-6 py-5">
                       <EndpointForm
                         mode="edit"
