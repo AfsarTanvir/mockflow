@@ -3,14 +3,19 @@ import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm';
 import type { BelongsTo } from '@adonisjs/lucid/types/relations';
 import User from './user.js';
 
-export default class EmailVerificationToken extends BaseModel {
-  static table = 'email_verification_tokens';
+export type UserTokenType = 'verify_email' | 'reset_password';
+
+export default class UserToken extends BaseModel {
+  static table = 'user_tokens';
 
   @column({ isPrimary: true })
   declare id: string;
 
   @column()
   declare userId: string;
+
+  @column()
+  declare type: UserTokenType;
 
   @column()
   declare token: string;

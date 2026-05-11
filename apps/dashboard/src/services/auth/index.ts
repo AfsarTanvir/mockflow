@@ -35,3 +35,13 @@ export async function resendVerification(): Promise<{ message: string }> {
   const { data } = await httpClient.post('/api/auth/resend-verification');
   return data;
 }
+
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  const { data } = await httpClient.post('/api/auth/forgot-password', { email });
+  return data;
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+  const { data } = await httpClient.post(`/api/auth/reset-password/${token}`, { newPassword });
+  return data;
+}

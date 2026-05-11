@@ -32,21 +32,6 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
-export class EmailVerificationTokenSchema extends BaseModel {
-  static $columns = ['createdAt', 'expiresAt', 'id', 'token', 'userId'] as const
-  $columns = EmailVerificationTokenSchema.$columns
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-  @column.dateTime()
-  declare expiresAt: DateTime
-  @column({ isPrimary: true })
-  declare id: string
-  @column()
-  declare token: string
-  @column()
-  declare userId: string
-}
-
 export class EndpointSchema extends BaseModel {
   static $columns = ['createdAt', 'createdBy', 'delayMs', 'id', 'isActive', 'method', 'path', 'projectId', 'responseBody', 'responseHeaders', 'statusCode', 'updatedAt'] as const
   $columns = EndpointSchema.$columns
@@ -158,6 +143,23 @@ export class TeamMemberSchema extends BaseModel {
   declare role: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+  @column()
+  declare userId: string
+}
+
+export class UserTokenSchema extends BaseModel {
+  static $columns = ['createdAt', 'expiresAt', 'id', 'token', 'type', 'userId'] as const
+  $columns = UserTokenSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare token: string
+  @column()
+  declare type: string
   @column()
   declare userId: string
 }

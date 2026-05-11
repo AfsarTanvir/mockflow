@@ -21,6 +21,8 @@ router
     router.post('/login', [AuthController, 'login']);
     router.post('/refresh', [AuthController, 'refresh']);
     router.post('/verify/:token', [AuthController, 'verifyEmail']);
+    router.post('/forgot-password', [AuthController, 'forgotPassword']);
+    router.post('/reset-password/:token', [AuthController, 'resetPassword']);
   })
   .prefix('/api/auth');
 

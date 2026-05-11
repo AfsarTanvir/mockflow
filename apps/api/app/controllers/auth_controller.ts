@@ -3,9 +3,9 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import User from '../models/user.js'
-import EmailVerificationToken from '../models/email_verification_token.js'
-import { sendVerificationEmail } from '../services/email_service.js'
-import { registerValidator, loginValidator, updateProfileValidator } from '../validators/auth_validator.js'
+import UserToken from '../models/user_token.js'
+import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email_service.js'
+import { registerValidator, loginValidator, updateProfileValidator, forgotPasswordValidator, resetPasswordValidator } from '../validators/auth_validator.js'
 
 export default class AuthController {
   /*
@@ -29,8 +29,9 @@ export default class AuthController {
     })
 
     const verificationToken = randomBytes(32).toString('hex')
-    await EmailVerificationToken.create({
+    await UserToken.create({
       userId: user.id,
+      type: 'verify_email',
       token: verificationToken,
       expiresAt: DateTime.now().plus({ minutes: 10 }),
     })
@@ -64,7 +65,10 @@ export default class AuthController {
   |--------------------------------------------------------------------------
   */
   async verifyEmail({ params, response }: HttpContext) {
-    const record = await EmailVerificationToken.findBy('token', params.token)
+    const record = await UserToken.query()
+      .where('token', params.token)
+      .where('type', 'verify_email')
+      .first()
     if (!record) return response.notFound({ message: 'Invalid verification link' })
 
     if (record.expiresAt < DateTime.now()) {
@@ -94,11 +98,15 @@ export default class AuthController {
       return response.unprocessableEntity({ message: 'Email is already verified' })
     }
 
-    await EmailVerificationToken.query().where('user_id', user.id).delete()
+    await UserToken.query()
+      .where('user_id', user.id)
+      .where('type', 'verify_email')
+      .delete()
 
     const verificationToken = randomBytes(32).toString('hex')
-    await EmailVerificationToken.create({
+    await UserToken.create({
       userId: user.id,
+      type: 'verify_email',
       token: verificationToken,
       expiresAt: DateTime.now().plus({ minutes: 10 }),
     })
@@ -117,6 +125,81 @@ export default class AuthController {
     }
 
     return response.ok({ message: 'Verification email sent' })
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Forgot Password - POST /api/auth/forgot-password (Public)
+  |--------------------------------------------------------------------------
+  */
+  async forgotPassword({ request, response }: HttpContext) {
+    const { email } = await request.validateUsing(forgotPasswordValidator)
+
+    const user = await User.findBy('email', email)
+    if (!user) {
+      return response.notFound({
+        message: "No account exists with that email. Please sign up first.",
+      })
+    }
+
+    await UserToken.query()
+      .where('user_id', user.id)
+      .where('type', 'reset_password')
+      .delete()
+
+    const resetToken = randomBytes(32).toString('hex')
+    await UserToken.create({
+      userId: user.id,
+      type: 'reset_password',
+      token: resetToken,
+      expiresAt: DateTime.now().plus({ hours: 1 }),
+    })
+
+    sendPasswordResetEmail({
+      toEmail: user.email,
+      userName: user.name,
+      resetToken,
+    }).catch((err) => {
+      console.error('[MockFlow] Failed to send password reset email:', err)
+    })
+
+    return response.ok({ message: 'Check your email for a reset link.' })
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Reset Password - POST /api/auth/reset-password/:token (Public)
+  |--------------------------------------------------------------------------
+  */
+  async resetPassword({ params, request, response }: HttpContext) {
+    const { newPassword } = await request.validateUsing(resetPasswordValidator)
+
+    const record = await UserToken.query()
+      .where('token', params.token)
+      .where('type', 'reset_password')
+      .first()
+    if (!record) {
+      return response.notFound({ message: 'This reset link is invalid or has already been used. Request a new one.' })
+    }
+
+    if (record.expiresAt < DateTime.now()) {
+      await record.delete()
+      return response.unprocessableEntity({ message: 'This reset link has expired. Request a new one.' })
+    }
+
+    const user = await User.find(record.userId)
+    if (!user) return response.notFound({ message: 'Account not found.' })
+
+    user.password = newPassword
+    await user.save()
+    await record.delete()
+
+    // Invalidate all existing access tokens for this user — force re-login everywhere
+    await User.accessTokens.all(user).then((tokens) =>
+      Promise.all(tokens.map((t) => User.accessTokens.delete(user, t.identifier)))
+    )
+
+    return response.ok({ message: 'Your password has been updated. You can now sign in with your new password.' })
   }
 
   /*

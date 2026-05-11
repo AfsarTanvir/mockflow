@@ -131,6 +131,90 @@ export async function sendVerificationEmail({
   });
 }
 
+export async function sendPasswordResetEmail({
+  toEmail,
+  userName,
+  resetToken,
+}: {
+  toEmail: string;
+  userName: string;
+  resetToken: string;
+}): Promise<void> {
+  const appUrl = process.env.APP_URL ?? 'http://localhost:3001';
+  const resetUrl = `${appUrl}/auth/reset-password?token=${resetToken}`;
+
+  if (!hasEmailTransport()) {
+    console.log(`[MockFlow] Password reset URL for ${toEmail}: ${resetUrl}`);
+    return;
+  }
+
+  const transport = createTransport();
+  const from = getFromAddress();
+
+  console.log(`[MockFlow] Sending password reset email to ${toEmail}`);
+
+  await transport.sendMail({
+    from,
+    to: toEmail,
+    subject: 'Reset your MockFlow password',
+    html: `
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+      <tr>
+        <td align="center">
+          <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;border:1px solid #e4e4e7;overflow:hidden;">
+            <tr>
+              <td style="background:#2563eb;padding:24px 32px;">
+                <p style="margin:0;font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">MockFlow</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px;">
+                <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Reset your password</p>
+                <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+                  Hi <strong style="color:#111827;">${userName}</strong>, click the button below to set a new password.
+                  This link expires in <strong style="color:#111827;">1 hour</strong>.
+                </p>
+
+                <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+                  <tr>
+                    <td style="background:#2563eb;border-radius:8px;padding:12px 28px;">
+                      <a href="${resetUrl}" style="color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;display:block;">
+                        Reset Password
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0 0 8px;font-size:13px;color:#9ca3af;">Or copy and paste this link:</p>
+                <p style="margin:0 0 24px;font-size:13px;color:#2563eb;word-break:break-all;">${resetUrl}</p>
+
+                <p style="margin:0;font-size:13px;color:#9ca3af;">
+                  If you didn't request a password reset, you can safely ignore this email — your password won't change.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 32px;border-top:1px solid #f4f4f5;">
+                <p style="margin:0;font-size:12px;color:#9ca3af;">MockFlow · Mock API platform</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`,
+    text: `Hi ${userName},\n\nReset your MockFlow password: ${resetUrl}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.`,
+  });
+}
+
 export async function sendInviteEmail({
   toEmail,
   inviterName,
