@@ -21,4 +21,7 @@ export enum QueryKey {
 
   // Notifications
   PENDING_INVITES = 'PENDING_INVITES',
+
+  // Request logs
+  REQUEST_LOGS = 'REQUEST_LOGS',
 }

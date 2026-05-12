@@ -4,223 +4,200 @@
  * Run "node ace migration:run" command to re-generate this file
  */
 
-import { BaseModel, column } from '@adonisjs/lucid/orm';
-import { DateTime } from 'luxon';
+import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { DateTime } from 'luxon'
 
 export class AuthAccessTokenSchema extends BaseModel {
-  static $columns = [
-    'abilities',
-    'createdAt',
-    'expiresAt',
-    'hash',
-    'id',
-    'lastUsedAt',
-    'name',
-    'tokenableId',
-    'type',
-    'updatedAt',
-  ] as const;
-  $columns = AuthAccessTokenSchema.$columns;
+  static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
+  $columns = AuthAccessTokenSchema.$columns
   @column()
-  declare abilities: string;
+  declare abilities: string
   @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime;
+  declare createdAt: DateTime
   @column.dateTime()
-  declare expiresAt: DateTime | null;
+  declare expiresAt: DateTime | null
   @column()
-  declare hash: string;
+  declare hash: string
   @column({ isPrimary: true })
-  declare id: number;
+  declare id: number
   @column.dateTime()
-  declare lastUsedAt: DateTime | null;
+  declare lastUsedAt: DateTime | null
   @column()
-  declare name: string | null;
+  declare name: string | null
   @column()
-  declare tokenableId: string;
+  declare tokenableId: string
   @column()
-  declare type: string;
+  declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime;
+  declare updatedAt: DateTime
 }
 
 export class EndpointSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'createdBy',
-    'delayMs',
-    'id',
-    'isActive',
-    'method',
-    'path',
-    'projectId',
-    'responseBody',
-    'responseHeaders',
-    'statusCode',
-    'updatedAt',
-  ] as const;
-  $columns = EndpointSchema.$columns;
+  static $columns = ['createdAt', 'createdBy', 'delayMs', 'id', 'isActive', 'method', 'path', 'projectId', 'responseBody', 'responseHeaders', 'statusCode', 'updatedAt'] as const
+  $columns = EndpointSchema.$columns
   @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime;
+  declare createdAt: DateTime
   @column()
-  declare createdBy: string | null;
+  declare createdBy: string | null
   @column()
-  declare delayMs: number | null;
+  declare delayMs: number | null
   @column({ isPrimary: true })
-  declare id: string;
+  declare id: string
   @column()
-  declare isActive: boolean | null;
+  declare isActive: boolean | null
   @column()
-  declare method: string;
+  declare method: string
   @column()
-  declare path: string;
+  declare path: string
   @column()
-  declare projectId: string;
+  declare projectId: string
   @column()
-  declare responseBody: any | null;
+  declare responseBody: any | null
   @column()
-  declare responseHeaders: any | null;
+  declare responseHeaders: any | null
   @column()
-  declare statusCode: number | null;
+  declare statusCode: number | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime;
+  declare updatedAt: DateTime
 }
 
 export class ProjectInviteSchema extends BaseModel {
-  static $columns = [
-    'acceptedAt',
-    'createdAt',
-    'email',
-    'id',
-    'invitedBy',
-    'projectId',
-    'role',
-    'token',
-    'updatedAt',
-  ] as const;
-  $columns = ProjectInviteSchema.$columns;
+  static $columns = ['acceptedAt', 'createdAt', 'email', 'id', 'invitedBy', 'projectId', 'role', 'token', 'updatedAt'] as const
+  $columns = ProjectInviteSchema.$columns
   @column.dateTime()
-  declare acceptedAt: DateTime | null;
+  declare acceptedAt: DateTime | null
   @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime;
+  declare createdAt: DateTime
   @column()
-  declare email: string;
+  declare email: string
   @column({ isPrimary: true })
-  declare id: string;
+  declare id: string
   @column()
-  declare invitedBy: string | null;
+  declare invitedBy: string | null
   @column()
-  declare projectId: string;
+  declare projectId: string
   @column()
-  declare role: string;
+  declare role: string
   @column()
-  declare token: string;
+  declare token: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime;
+  declare updatedAt: DateTime
 }
 
 export class ProjectSchema extends BaseModel {
-  static $columns = [
-    'basePath',
-    'createdAt',
-    'id',
-    'isPublic',
-    'name',
-    'ownerId',
-    'settings',
-    'slug',
-    'updatedAt',
-  ] as const;
-  $columns = ProjectSchema.$columns;
+  static $columns = ['basePath', 'createdAt', 'id', 'isPublic', 'name', 'ownerId', 'settings', 'slug', 'updatedAt'] as const
+  $columns = ProjectSchema.$columns
   @column()
-  declare basePath: string | null;
+  declare basePath: string | null
   @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime;
+  declare createdAt: DateTime
   @column({ isPrimary: true })
-  declare id: string;
+  declare id: string
   @column()
-  declare isPublic: boolean | null;
+  declare isPublic: boolean | null
   @column()
-  declare name: string;
+  declare name: string
   @column()
-  declare ownerId: string;
+  declare ownerId: string
   @column()
-  declare settings: any | null;
+  declare settings: any | null
   @column()
-  declare slug: string;
+  declare slug: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime;
+  declare updatedAt: DateTime
+}
+
+export class RequestLogSchema extends BaseModel {
+  static $columns = ['createdAt', 'duration', 'endpointId', 'id', 'method', 'path', 'projectId', 'statusCode'] as const
+  $columns = RequestLogSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare duration: number
+  @column()
+  declare endpointId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare method: string
+  @column()
+  declare path: string
+  @column()
+  declare projectId: string
+  @column()
+  declare statusCode: number
 }
 
 export class TeamMemberSchema extends BaseModel {
-  static $columns = [
-    'createdAt',
-    'id',
-    'invitedAt',
-    'projectId',
-    'role',
-    'updatedAt',
-    'userId',
-  ] as const;
-  $columns = TeamMemberSchema.$columns;
+  static $columns = ['createdAt', 'id', 'invitedAt', 'projectId', 'role', 'updatedAt', 'userId'] as const
+  $columns = TeamMemberSchema.$columns
   @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime;
+  declare createdAt: DateTime
   @column({ isPrimary: true })
-  declare id: string;
+  declare id: string
   @column.dateTime()
-  declare invitedAt: DateTime;
+  declare invitedAt: DateTime
   @column()
-  declare projectId: string;
+  declare projectId: string
   @column()
-  declare role: string | null;
+  declare role: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime;
+  declare updatedAt: DateTime
   @column()
-  declare userId: string;
+  declare userId: string
+}
+
+export class UserTokenSchema extends BaseModel {
+  static $columns = ['createdAt', 'expiresAt', 'id', 'token', 'type', 'userId'] as const
+  $columns = UserTokenSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare token: string
+  @column()
+  declare type: string
+  @column()
+  declare userId: string
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = [
-    'avatarUrl',
-    'createdAt',
-    'email',
-    'emailVerified',
-    'id',
-    'name',
-    'password',
-    'updatedAt',
-  ] as const;
-  $columns = UserSchema.$columns;
+  static $columns = ['avatarUrl', 'createdAt', 'email', 'emailVerified', 'id', 'name', 'password', 'updatedAt'] as const
+  $columns = UserSchema.$columns
   @column()
-  declare avatarUrl: string | null;
+  declare avatarUrl: string | null
   @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime;
+  declare createdAt: DateTime
   @column()
-  declare email: string;
+  declare email: string
   @column()
-  declare emailVerified: boolean | null;
+  declare emailVerified: boolean | null
   @column({ isPrimary: true })
-  declare id: string;
+  declare id: string
   @column()
-  declare name: string;
+  declare name: string
   @column({ serializeAs: null })
-  declare password: string | null;
+  declare password: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime;
+  declare updatedAt: DateTime
 }
 
 export class VersionHistorySchema extends BaseModel {
-  static $columns = ['createdAt', 'createdBy', 'id', 'message', 'projectId', 'snapshot'] as const;
-  $columns = VersionHistorySchema.$columns;
+  static $columns = ['createdAt', 'createdBy', 'id', 'message', 'projectId', 'snapshot'] as const
+  $columns = VersionHistorySchema.$columns
   @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime;
+  declare createdAt: DateTime
   @column()
-  declare createdBy: string | null;
+  declare createdBy: string | null
   @column({ isPrimary: true })
-  declare id: string;
+  declare id: string
   @column()
-  declare message: string | null;
+  declare message: string | null
   @column()
-  declare projectId: string;
+  declare projectId: string
   @column()
-  declare snapshot: any;
+  declare snapshot: any
 }

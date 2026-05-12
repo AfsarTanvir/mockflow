@@ -5,7 +5,7 @@ const INVITE_ROLES = ['admin', 'member', 'viewer'] as const;
 
 export const inviteValidator = vine.compile(
   vine.object({
-    email: vine.string().trim().email().normalizeEmail(),
+    email: vine.string().trim().email(),
     role: vine.enum(INVITE_ROLES),
   })
 );

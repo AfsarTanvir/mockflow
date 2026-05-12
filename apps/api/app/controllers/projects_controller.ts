@@ -91,16 +91,20 @@ export default class ProjectsController {
     if (!project) return response.notFound({ message: 'Project not found' });
 
     const userId = auth.user!.id;
-    const isMember =
-      project.ownerId === userId ||
-      (await TeamMember.query()
+    let userRole: string;
+
+    if (project.ownerId === userId) {
+      userRole = 'owner';
+    } else {
+      const tm = await TeamMember.query()
         .where('project_id', project.id)
         .where('user_id', userId)
-        .first()) !== null;
+        .first();
+      if (!tm) return response.forbidden({ message: 'Access denied' });
+      userRole = tm.role;
+    }
 
-    if (!isMember) return response.forbidden({ message: 'Access denied' });
-
-    return response.ok(project);
+    return response.ok({ ...project.serialize(), userRole });
   }
 
   /*

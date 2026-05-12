@@ -51,6 +51,7 @@ docker-compose.override.yml
 # AdonisJS specific
 ace
 tmp/
+.adonisjs/
 
 # Next.js specific
 .next/
@@ -58,3 +59,6 @@ tmp/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# TypeScript incremental build cache
+*.tsbuildinfo

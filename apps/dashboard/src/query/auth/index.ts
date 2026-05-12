@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { getAuthUser, signIn, signOut, signUp } from '@/services/auth';
+import { getAuthUser, signIn, signOut, signUp, updateProfile, verifyEmail, resendVerification, forgotPassword, resetPassword } from '@/services/auth';
 import { QueryKey } from '@/types/query-key.enum';
 import type { User } from '@/types';
 
@@ -51,6 +51,42 @@ export const useSignUp = (redirectTo = '/dashboard') => {
       setToken(data.token);
       queryClient.setQueryData([QueryKey.AUTH_USER], data.user);
       router.push(redirectTo);
+    },
+  });
+};
+
+export const useVerifyEmail = () => {
+  return useMutation({
+    mutationFn: verifyEmail,
+  });
+};
+
+export const useResendVerification = () => {
+  return useMutation({
+    mutationFn: resendVerification,
+  });
+};
+
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: forgotPassword,
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
+      resetPassword(token, newPassword),
+  });
+};
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateProfile,
+    onSuccess: (updated) => {
+      queryClient.setQueryData([QueryKey.AUTH_USER], updated);
     },
   });
 };

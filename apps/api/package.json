@@ -46,6 +46,7 @@
     "@vinejs/vine": "^2.1.0",
     "bullmq": "^5.1.0",
     "luxon": "^3.4.4",
+    "mailtrap": "^4.5.1",
     "nodemailer": "^8.0.7",
     "path-to-regexp": "^6.2.1",
     "pg": "^8.11.3",
