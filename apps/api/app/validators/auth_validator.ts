@@ -8,7 +8,6 @@ export const registerValidator = vine.compile(
       .string()
       .trim()
       .email()
-      .normalizeEmail()
       .unique({ table: 'users', column: 'email' }),
     password: vine.string().minLength(8).maxLength(64),
   })
@@ -24,14 +23,14 @@ export const updateProfileValidator = vine.compile(
 
 export const loginValidator = vine.compile(
   vine.object({
-    email: vine.string().trim().email().normalizeEmail(),
+    email: vine.string().trim().email(),
     password: vine.string().minLength(6).maxLength(64),
   })
 );
 
 export const forgotPasswordValidator = vine.compile(
   vine.object({
-    email: vine.string().trim().email().normalizeEmail(),
+    email: vine.string().trim().email(),
   })
 );
 
