@@ -9,6 +9,7 @@ const TeamController = () => import('../app/controllers/team_controller.js');
 const InviteController = () => import('../app/controllers/invite_controller.js');
 const VersionController = () => import('../app/controllers/version_controller.js')
 const RequestLogsController = () => import('../app/controllers/request_logs_controller.js');
+const ExportController = () => import('../app/controllers/export_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -108,6 +109,10 @@ router
     router.get('/:projectId/versions/:id', [VersionController, 'show']);
     router.post('/:projectId/versions/:id/restore', [VersionController, 'restore']);
     router.get('/:projectId/request-logs', [RequestLogsController, 'index']);
+
+    // Export
+    router.get('/:id/export/openapi', [ExportController, 'openapi']);
+    router.get('/:id/export/postman', [ExportController, 'postman']);
   })
   .prefix('/api/projects')
   .use(middleware.auth());
