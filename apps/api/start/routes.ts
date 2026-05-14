@@ -118,6 +118,8 @@ router
     // Import
     router.post('/:id/import/openapi/preview', [ImportController, 'openapiPreview']);
     router.post('/:id/import/openapi/apply', [ImportController, 'openapiApply']);
+    router.post('/:id/import/postman/preview', [ImportController, 'postmanPreview']);
+    router.post('/:id/import/postman/apply', [ImportController, 'postmanApply']);
   })
   .prefix('/api/projects')
   .use(middleware.auth());

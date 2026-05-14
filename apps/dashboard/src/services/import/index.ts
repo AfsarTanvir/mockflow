@@ -30,24 +30,43 @@ export interface ApplyResult {
   errors: string[];
 }
 
-export async function previewOpenApi(projectId: string, file: File): Promise<PreviewResult> {
+async function previewFile(projectId: string, format: 'openapi' | 'postman', file: File): Promise<PreviewResult> {
   const form = new FormData();
   form.append('file', file);
   const { data } = await httpClient.post<PreviewResult>(
-    `/api/projects/${projectId}/import/openapi/preview`,
+    `/api/projects/${projectId}/import/${format}/preview`,
     form
   );
   return data;
 }
 
-export async function applyOpenApi(
+async function applyFile(
   projectId: string,
+  format: 'openapi' | 'postman',
   endpoints: ParsedEndpoint[],
   resolutions: Record<string, 'skip' | 'overwrite'>
 ): Promise<ApplyResult> {
   const { data } = await httpClient.post<ApplyResult>(
-    `/api/projects/${projectId}/import/openapi/apply`,
+    `/api/projects/${projectId}/import/${format}/apply`,
     { endpoints, resolutions }
   );
   return data;
 }
+
+export const previewOpenApi = (projectId: string, file: File) =>
+  previewFile(projectId, 'openapi', file);
+
+export const applyOpenApi = (
+  projectId: string,
+  endpoints: ParsedEndpoint[],
+  resolutions: Record<string, 'skip' | 'overwrite'>
+) => applyFile(projectId, 'openapi', endpoints, resolutions);
+
+export const previewPostman = (projectId: string, file: File) =>
+  previewFile(projectId, 'postman', file);
+
+export const applyPostman = (
+  projectId: string,
+  endpoints: ParsedEndpoint[],
+  resolutions: Record<string, 'skip' | 'overwrite'>
+) => applyFile(projectId, 'postman', endpoints, resolutions);

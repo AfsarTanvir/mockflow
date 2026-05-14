@@ -2,9 +2,11 @@
 
 import { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { previewOpenApi, applyOpenApi } from '@/services/import';
-import type { ParsedEndpoint, ImportConflict, PreviewResult } from '@/services/import';
+import { previewOpenApi, applyOpenApi, previewPostman, applyPostman } from '@/services/import';
+import type { PreviewResult } from '@/services/import';
 import { QueryKey } from '@/types/query-key.enum';
+
+type ImportFormat = 'openapi' | 'postman';
 
 interface Props {
   projectId: string;
@@ -18,10 +20,16 @@ const METHOD_COLORS: Record<string, string> = {
   DELETE: 'bg-red-100 text-red-700',
 };
 
+const FORMATS: { value: ImportFormat; label: string }[] = [
+  { value: 'openapi', label: 'OpenAPI 3.0' },
+  { value: 'postman', label: 'Postman v2.1' },
+];
+
 export function ImportPanel({ projectId }: Props) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [format, setFormat] = useState<ImportFormat>('openapi');
   const [file, setFile] = useState<File | null>(null);
   const [previewing, setPreviewing] = useState(false);
   const [applying, setApplying] = useState(false);
@@ -39,6 +47,11 @@ export function ImportPanel({ projectId }: Props) {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
+  function handleFormatChange(f: ImportFormat) {
+    setFormat(f);
+    reset();
+  }
+
   async function handlePreview() {
     if (!file) return;
     setPreviewing(true);
@@ -46,9 +59,10 @@ export function ImportPanel({ projectId }: Props) {
     setPreview(null);
     setSuccess(null);
     try {
-      const result = await previewOpenApi(projectId, file);
+      const result = format === 'openapi'
+        ? await previewOpenApi(projectId, file)
+        : await previewPostman(projectId, file);
       setPreview(result);
-      // default all conflicts to skip
       const defaultResolutions: Record<string, 'skip' | 'overwrite'> = {};
       for (const c of result.conflicts) {
         defaultResolutions[`${c.method} ${c.path}`] = 'skip';
@@ -66,7 +80,9 @@ export function ImportPanel({ projectId }: Props) {
     setApplying(true);
     setError(null);
     try {
-      const result = await applyOpenApi(projectId, preview.endpoints, resolutions);
+      const result = format === 'openapi'
+        ? await applyOpenApi(projectId, preview.endpoints, resolutions)
+        : await applyPostman(projectId, preview.endpoints, resolutions);
       setSuccess(
         `Imported successfully — created ${result.created}, overwrote ${result.overwritten}, skipped ${result.skipped}.`
       );
@@ -87,13 +103,30 @@ export function ImportPanel({ projectId }: Props) {
     <div className="bg-white rounded-xl border p-6 space-y-4">
       <h2 className="text-sm font-semibold text-gray-900">Import</h2>
       <p className="text-xs text-gray-400">
-        Import endpoints from an OpenAPI 3.0 JSON file. Existing endpoints with the same method +
-        path will be flagged as conflicts.
+        Import endpoints from an OpenAPI 3.0 or Postman v2.1 JSON file. Existing endpoints with
+        the same method + path will be flagged as conflicts.
       </p>
+
+      {/* Format selector */}
+      <div className="flex gap-2">
+        {FORMATS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            onClick={() => handleFormatChange(f.value)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+              format === f.value
+                ? 'bg-gray-900 text-white border-gray-900'
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
 
       {/* File picker row */}
       <div className="flex items-center gap-3">
-        <label className="text-xs font-medium text-gray-700 shrink-0">OpenAPI 3.0</label>
         <input
           ref={fileInputRef}
           type="file"
