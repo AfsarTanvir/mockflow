@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useUpdateProject } from '@/query/projects';
 import type { Project } from '@/types';
 import { ExportPanel } from './export-panel';
+import { ImportPanel } from './import-panel';
 
 interface Props {
   project: Project;
@@ -168,6 +169,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
       </div>
 
       <ExportPanel projectId={project.id} />
+      <ImportPanel projectId={project.id} />
 
       {/* Footer */}
       <div className="flex items-center justify-between">
