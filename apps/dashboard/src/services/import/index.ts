@@ -35,7 +35,8 @@ async function previewFile(projectId: string, format: 'openapi' | 'postman', fil
   form.append('file', file);
   const { data } = await httpClient.post<PreviewResult>(
     `/api/projects/${projectId}/import/${format}/preview`,
-    form
+    form,
+    { headers: { 'Content-Type': undefined } }
   );
   return data;
 }
