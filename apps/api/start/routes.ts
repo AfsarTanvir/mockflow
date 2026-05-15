@@ -9,6 +9,8 @@ const TeamController = () => import('../app/controllers/team_controller.js');
 const InviteController = () => import('../app/controllers/invite_controller.js');
 const VersionController = () => import('../app/controllers/version_controller.js')
 const RequestLogsController = () => import('../app/controllers/request_logs_controller.js');
+const ExportController = () => import('../app/controllers/export_controller.js');
+const ImportController = () => import('../app/controllers/import_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -108,6 +110,16 @@ router
     router.get('/:projectId/versions/:id', [VersionController, 'show']);
     router.post('/:projectId/versions/:id/restore', [VersionController, 'restore']);
     router.get('/:projectId/request-logs', [RequestLogsController, 'index']);
+
+    // Export
+    router.get('/:id/export/openapi', [ExportController, 'openapi']);
+    router.get('/:id/export/postman', [ExportController, 'postman']);
+
+    // Import
+    router.post('/:id/import/openapi/preview', [ImportController, 'openapiPreview']);
+    router.post('/:id/import/openapi/apply', [ImportController, 'openapiApply']);
+    router.post('/:id/import/postman/preview', [ImportController, 'postmanPreview']);
+    router.post('/:id/import/postman/apply', [ImportController, 'postmanApply']);
   })
   .prefix('/api/projects')
   .use(middleware.auth());

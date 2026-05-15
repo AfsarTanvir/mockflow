@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useUpdateProject } from '@/query/projects';
 import type { Project } from '@/types';
+import { ExportPanel } from './export-panel';
+import { ImportPanel } from './import-panel';
 
 interface Props {
   project: Project;
@@ -43,10 +45,13 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
 
   if (!canEdit) {
     return (
-      <div className="bg-white rounded-xl border p-6">
-        <p className="text-sm text-gray-400 text-center">
-          Only admins and owners can edit project settings.
-        </p>
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl border p-6">
+          <p className="text-sm text-gray-400 text-center">
+            Only admins and owners can edit project settings.
+          </p>
+        </div>
+        <ExportPanel projectId={project.id} />
       </div>
     );
   }
@@ -162,6 +167,9 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
           </button>
         </div>
       </div>
+
+      <ExportPanel projectId={project.id} />
+      <ImportPanel projectId={project.id} />
 
       {/* Footer */}
       <div className="flex items-center justify-between">
