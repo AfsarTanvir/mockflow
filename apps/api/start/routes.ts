@@ -11,6 +11,7 @@ const VersionController = () => import('../app/controllers/version_controller.js
 const RequestLogsController = () => import('../app/controllers/request_logs_controller.js');
 const ExportController = () => import('../app/controllers/export_controller.js');
 const ImportController = () => import('../app/controllers/import_controller.js');
+const ScenariosController = () => import('../app/controllers/scenarios_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -72,6 +73,13 @@ router
     router.put('/api/endpoints/:id', [EndpointsController, 'update']);
     router.delete('/api/endpoints/:id', [EndpointsController, 'destroy']);
     router.patch('/api/endpoints/:id/toggle', [EndpointsController, 'toggle']);
+
+    // Scenarios
+    router.get('/api/endpoints/:endpointId/scenarios', [ScenariosController, 'index']);
+    router.post('/api/endpoints/:endpointId/scenarios', [ScenariosController, 'store']);
+    router.get('/api/scenarios/:id', [ScenariosController, 'show']);
+    router.put('/api/scenarios/:id', [ScenariosController, 'update']);
+    router.delete('/api/scenarios/:id', [ScenariosController, 'destroy']);
   })
   .use(middleware.auth());
 

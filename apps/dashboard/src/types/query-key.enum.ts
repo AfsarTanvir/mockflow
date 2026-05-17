@@ -24,4 +24,8 @@ export enum QueryKey {
 
   // Request logs
   REQUEST_LOGS = 'REQUEST_LOGS',
+
+  // Scenarios
+  SCENARIOS = 'SCENARIOS',
+  SCENARIO = 'SCENARIO',
 }

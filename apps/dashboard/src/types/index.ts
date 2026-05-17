@@ -142,3 +142,30 @@ export type RequestLog = {
   duration: number;
   createdAt: string;
 };
+
+export type Scenario = {
+  id: string;
+  endpointId: string;
+  name: string;
+  description: string | null;
+  statusCode: number | null;
+  responseBody: Record<string, unknown> | null;
+  responseHeaders: Record<string, string> | null;
+  delayMs: number | null;
+  delayMaxMs: number | null;
+  isActive: boolean;
+  priority: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ScenarioInput = {
+  name: string;
+  description?: string | null;
+  statusCode?: number | null;
+  responseBody?: Record<string, unknown> | null;
+  responseHeaders?: Record<string, string> | null;
+  delayMs?: number | null;
+  delayMaxMs?: number | null;
+  priority?: number;
+};
