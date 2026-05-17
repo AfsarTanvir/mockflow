@@ -34,6 +34,7 @@ export type Endpoint = {
 export type ProjectSettings = {
   cors: boolean;
   log_requests: boolean;
+  global_headers?: Record<string, string>;
 };
 
 export type Project = {

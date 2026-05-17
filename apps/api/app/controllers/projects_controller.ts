@@ -66,7 +66,7 @@ export default class ProjectsController {
       basePath: data.basePath ?? '/',
       ownerId: auth.user!.id,
       isPublic: data.isPublic ?? false,
-      settings: data.settings ?? { cors: true, log_requests: false },
+      settings: data.settings ?? { cors: true, log_requests: false, global_headers: {} },
     });
 
     // Add creator as owner in team_members

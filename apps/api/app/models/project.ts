@@ -26,7 +26,11 @@ export default class Project extends BaseModel {
     prepare: (value) => JSON.stringify(value),
     consume: (value) => (typeof value === 'string' ? JSON.parse(value) : value),
   })
-  declare settings: { cors: boolean; log_requests: boolean };
+  declare settings: {
+    cors: boolean;
+    log_requests: boolean;
+    global_headers?: Record<string, string>;
+  };
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime;

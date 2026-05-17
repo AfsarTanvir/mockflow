@@ -72,8 +72,10 @@ export default class MockController {
 
     const elapsed = Date.now() - start
 
-    // Apply resolved response headers
-    for (const [key, value] of Object.entries(responseHeaders ?? {})) {
+    // Merge headers: project global first, endpoint/scenario overrides win on key collision
+    const globalHeaders = project.settings.global_headers ?? {}
+    const mergedHeaders = { ...globalHeaders, ...(responseHeaders ?? {}) }
+    for (const [key, value] of Object.entries(mergedHeaders)) {
       response.header(key, value)
     }
 
