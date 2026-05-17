@@ -8,6 +8,7 @@ export const createEndpointSchema = z.object({
   path: z.string().min(1, 'Path is required').startsWith('/', 'Path must start with /').max(500),
   statusCode: z.coerce.number().min(100).max(599).optional().default(200),
   delayMs: z.coerce.number().min(0).max(5000).optional().default(0),
+  delayMaxMs: z.coerce.number().min(0).max(5000).nullable().optional(),
   isActive: z.boolean().optional().default(true),
 });
 

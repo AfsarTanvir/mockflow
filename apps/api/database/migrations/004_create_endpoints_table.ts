@@ -18,6 +18,7 @@ export default class extends BaseSchema {
       table.jsonb('response_body').nullable();
       table.jsonb('response_headers').defaultTo('{}');
       table.integer('delay_ms').defaultTo(0);
+      table.integer('delay_max_ms').nullable();
       table.boolean('is_active').defaultTo(true);
       table.uuid('created_by').nullable().references('id').inTable('users').onDelete('SET NULL');
       table.timestamp('created_at', { useTz: true }).notNullable();

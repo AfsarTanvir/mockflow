@@ -11,6 +11,7 @@ export const createEndpointValidator = vine.compile(
     responseBody: vine.any().optional(),
     responseHeaders: vine.record(vine.string()).optional(),
     delayMs: vine.number().min(0).max(5000).optional(),
+    delayMaxMs: vine.number().min(0).max(5000).nullable().optional(),
     isActive: vine.boolean().optional(),
   })
 );
@@ -23,9 +24,20 @@ export const updateEndpointValidator = vine.compile(
     responseBody: vine.any().optional(),
     responseHeaders: vine.record(vine.string()).optional(),
     delayMs: vine.number().min(0).max(5000).optional(),
+    delayMaxMs: vine.number().min(0).max(5000).nullable().optional(),
     isActive: vine.boolean().optional(),
   })
 );
+
+export function validateEndpointDelayRange(
+  delayMs: number | null | undefined,
+  delayMaxMs: number | null | undefined
+): string | null {
+  if (delayMs != null && delayMaxMs != null && delayMaxMs < delayMs) {
+    return 'delayMaxMs must be greater than or equal to delayMs';
+  }
+  return null;
+}
 
 const endpointMessages = new SimpleMessagesProvider({
   'method.required': msg.required('Method'),

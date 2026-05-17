@@ -204,7 +204,9 @@ export default function ProjectDetailClient({
 
                     <span className="text-xs text-gray-500 shrink-0">{ep.statusCode}</span>
                     {ep.delayMs > 0 && (
-                      <span className="text-xs text-gray-400 shrink-0">{ep.delayMs}ms</span>
+                      <span className="text-xs text-gray-400 shrink-0">
+                        {ep.delayMaxMs != null ? `${ep.delayMs}-${ep.delayMaxMs}ms` : `${ep.delayMs}ms`}
+                      </span>
                     )}
 
                     {canWrite ? (

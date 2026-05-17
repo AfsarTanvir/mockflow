@@ -65,7 +65,7 @@ export default class MockController {
     const responseBody = scenario?.responseBody ?? matched.responseBody
     const responseHeaders = scenario?.responseHeaders ?? matched.responseHeaders
     const delayMin = scenario?.delayMs ?? matched.delayMs
-    const delayMax = scenario?.delayMaxMs ?? null  // endpoint.delayMaxMs added Day 50
+    const delayMax = scenario?.delayMaxMs ?? matched.delayMaxMs
 
     const finalDelay = pickDelay(delayMin, delayMax)
     if (finalDelay > 0) await delay(finalDelay)

@@ -24,6 +24,7 @@ export type Endpoint = {
   responseBody: Record<string, unknown> | null;
   responseHeaders: Record<string, string>;
   delayMs: number;
+  delayMaxMs: number | null;
   isActive: boolean;
   createdBy: string | null;
   createdAt: string;

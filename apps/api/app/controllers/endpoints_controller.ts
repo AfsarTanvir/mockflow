@@ -2,7 +2,11 @@ import type { HttpContext } from '@adonisjs/core/http';
 import Endpoint from '../models/endpoint.js';
 import Project from '../models/project.js';
 import TeamMember from '../models/team_member.js';
-import { createEndpointValidator, updateEndpointValidator } from '../validators/endpoint_validator.js';
+import {
+  createEndpointValidator,
+  updateEndpointValidator,
+  validateEndpointDelayRange,
+} from '../validators/endpoint_validator.js';
 
 type TeamRole = 'owner' | 'admin' | 'member' | 'viewer';
 const ROLE_RANK: Record<TeamRole, number> = { viewer: 0, member: 1, admin: 2, owner: 3 };
@@ -60,6 +64,9 @@ export default class EndpointsController {
 
     const data = await request.validateUsing(createEndpointValidator);
 
+    const delayError = validateEndpointDelayRange(data.delayMs, data.delayMaxMs);
+    if (delayError) return response.unprocessableEntity({ message: delayError });
+
     const existing = await Endpoint.query()
       .where('project_id', project!.id)
       .where('method', data.method)
@@ -78,6 +85,7 @@ export default class EndpointsController {
       responseBody: data.responseBody ?? null,
       responseHeaders: data.responseHeaders ?? {},
       delayMs: data.delayMs ?? 0,
+      delayMaxMs: data.delayMaxMs ?? null,
       isActive: data.isActive ?? true,
       createdBy: auth.user!.id,
     });
@@ -114,6 +122,11 @@ export default class EndpointsController {
 
     const data = await request.validateUsing(updateEndpointValidator);
 
+    const finalDelayMs = data.delayMs !== undefined ? data.delayMs : endpoint.delayMs;
+    const finalDelayMaxMs = data.delayMaxMs !== undefined ? data.delayMaxMs : endpoint.delayMaxMs;
+    const delayError = validateEndpointDelayRange(finalDelayMs, finalDelayMaxMs);
+    if (delayError) return response.unprocessableEntity({ message: delayError });
+
     const newMethod = data.method ?? endpoint.method;
     const newPath = data.path ?? endpoint.path;
 
@@ -140,6 +153,7 @@ export default class EndpointsController {
       ...(data.responseBody !== undefined && { responseBody: data.responseBody }),
       ...(data.responseHeaders !== undefined && { responseHeaders: data.responseHeaders }),
       ...(data.delayMs !== undefined && { delayMs: data.delayMs }),
+      ...(data.delayMaxMs !== undefined && { delayMaxMs: data.delayMaxMs }),
       ...(data.isActive !== undefined && { isActive: data.isActive }),
     });
 
