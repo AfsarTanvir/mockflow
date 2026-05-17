@@ -15,6 +15,7 @@ import { TeamPanel } from '@/components/dashboard/team-panel';
 import { VersionPanel } from '@/components/dashboard/version-panel';
 import { ProjectSettingsPanel } from '@/components/dashboard/project-settings-panel';
 import { LogsPanel } from '@/components/dashboard/logs-panel';
+import { ScenariosManager } from '@/components/dashboard/scenarios-manager';
 import { useTeam } from '@/query/teams';
 import type { User, Project, HttpMethod } from '@/types';
 
@@ -59,6 +60,7 @@ export default function ProjectDetailClient({
   const [activeTab, setActiveTab] = useState<ActiveTab>('endpoints');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [scenariosOpenId, setScenariosOpenId] = useState<string | null>(null);
 
   const currentProject = project ?? initialProject;
   const currentUserRole = team?.currentUserRole ?? (initialProject.userRole ?? 'viewer');
@@ -74,13 +76,21 @@ export default function ProjectDetailClient({
 
   function handleEditClick(id: string) {
     setShowCreateForm(false);
+    setScenariosOpenId(null);
     setEditingId((prev) => (prev === id ? null : id));
+  }
+
+  function handleScenariosClick(id: string) {
+    setShowCreateForm(false);
+    setEditingId(null);
+    setScenariosOpenId((prev) => (prev === id ? null : id));
   }
 
   function handleTabChange(tab: ActiveTab) {
     setActiveTab(tab);
     setShowCreateForm(false);
     setEditingId(null);
+    setScenariosOpenId(null);
   }
 
   if (!user) return null;
@@ -176,7 +186,7 @@ export default function ProjectDetailClient({
                   <div
                     className={`bg-white rounded-xl border p-4 flex items-center gap-4 transition-opacity ${
                       !ep.isActive ? 'opacity-50' : ''
-                    } ${editingId === ep.id ? 'rounded-b-none border-b-0' : ''}`}
+                    } ${editingId === ep.id || scenariosOpenId === ep.id ? 'rounded-b-none border-b-0' : ''}`}
                   >
                     <span
                       className={`text-xs font-bold px-2 py-1 rounded font-mono shrink-0 ${METHOD_COLORS[ep.method]}`}
@@ -220,6 +230,15 @@ export default function ProjectDetailClient({
                       </span>
                     )}
 
+                    <button
+                      onClick={() => handleScenariosClick(ep.id)}
+                      className={`text-xs font-medium shrink-0 transition-colors ${
+                        scenariosOpenId === ep.id ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
+                      }`}
+                    >
+                      {scenariosOpenId === ep.id ? 'Close' : 'Scenarios'}
+                    </button>
+
                     {canWrite && (
                       <button
                         onClick={() => handleEditClick(ep.id)}
@@ -253,6 +272,12 @@ export default function ProjectDetailClient({
                         isPending={updating}
                         error={updateError}
                       />
+                    </div>
+                  )}
+
+                  {scenariosOpenId === ep.id && (
+                    <div className="bg-white border border-t-0 rounded-b-xl px-6 py-5">
+                      <ScenariosManager endpointId={ep.id} canWrite={canWrite} />
                     </div>
                   )}
                 </div>
