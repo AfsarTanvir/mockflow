@@ -169,3 +169,23 @@ export type ScenarioInput = {
   delayMaxMs?: number | null;
   priority?: number;
 };
+
+export type RuleSource = 'header' | 'query' | 'body';
+export type RuleOperator = 'equals' | 'exists';
+
+export type ScenarioRule = {
+  id: string;
+  scenarioId: string;
+  source: RuleSource;
+  field: string;
+  operator: RuleOperator;
+  value: string | null;
+  createdAt: string;
+};
+
+export type ScenarioRuleInput = {
+  source: RuleSource;
+  field: string;
+  operator: RuleOperator;
+  value?: string | null;
+};

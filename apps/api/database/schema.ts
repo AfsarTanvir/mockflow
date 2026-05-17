@@ -159,6 +159,25 @@ export class RequestLogSchema extends BaseModel {
   declare statusCode: number
 }
 
+export class ScenarioRuleSchema extends BaseModel {
+  static $columns = ['createdAt', 'field', 'id', 'operator', 'scenarioId', 'source', 'value'] as const
+  $columns = ScenarioRuleSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare field: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare operator: string
+  @column()
+  declare scenarioId: string
+  @column()
+  declare source: string
+  @column()
+  declare value: string | null
+}
+
 export class TeamMemberSchema extends BaseModel {
   static $columns = ['createdAt', 'id', 'invitedAt', 'projectId', 'role', 'updatedAt', 'userId'] as const
   $columns = TeamMemberSchema.$columns

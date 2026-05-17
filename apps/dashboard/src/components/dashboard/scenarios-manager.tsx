@@ -10,6 +10,7 @@ import {
   useDeactivateAllScenarios,
 } from '@/query/scenarios';
 import { ScenarioForm } from './scenario-form';
+import { RulesEditor } from './rules-editor';
 import type { Scenario, ScenarioInput } from '@/types';
 
 type Props = {
@@ -50,6 +51,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [rulesOpenId, setRulesOpenId] = useState<string | null>(null);
 
   const activeScenario = scenarios.find((s) => s.isActive) ?? null;
 
@@ -95,7 +97,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
             <div key={s.id}>
               <div
                 className={`bg-white border rounded-lg px-3 py-2.5 flex items-center gap-3 ${
-                  editingId === s.id ? 'rounded-b-none border-b-0' : ''
+                  editingId === s.id || rulesOpenId === s.id ? 'rounded-b-none border-b-0' : ''
                 } ${s.isActive ? 'border-blue-300' : ''}`}
               >
                 <div className="flex-1 min-w-0">
@@ -116,6 +118,19 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                   <OverrideChips s={s} />
                 </div>
 
+                <button
+                  onClick={() => {
+                    setShowCreate(false);
+                    setEditingId(null);
+                    setRulesOpenId((prev) => (prev === s.id ? null : s.id));
+                  }}
+                  className={`text-xs font-medium shrink-0 transition-colors ${
+                    rulesOpenId === s.id ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
+                  }`}
+                >
+                  {rulesOpenId === s.id ? 'Close rules' : 'Rules'}
+                </button>
+
                 {canWrite && (
                   <>
                     {!s.isActive && (
@@ -130,6 +145,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                     <button
                       onClick={() => {
                         setShowCreate(false);
+                        setRulesOpenId(null);
                         setEditingId((prev) => (prev === s.id ? null : s.id));
                       }}
                       className={`text-xs font-medium shrink-0 transition-colors ${
@@ -156,6 +172,12 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                   endpointId={endpointId}
                   onClose={() => setEditingId(null)}
                 />
+              )}
+
+              {rulesOpenId === s.id && (
+                <div className="bg-white border border-t-0 rounded-b-lg px-4 py-3">
+                  <RulesEditor scenarioId={s.id} canWrite={canWrite} />
+                </div>
               )}
             </div>
           ))}

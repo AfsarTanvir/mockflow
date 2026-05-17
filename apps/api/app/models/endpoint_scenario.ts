@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon';
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm';
-import type { BelongsTo } from '@adonisjs/lucid/types/relations';
+import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm';
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations';
 import Endpoint from './endpoint.js';
+import ScenarioRule from './scenario_rule.js';
 
 export default class EndpointScenario extends BaseModel {
   public static table = 'endpoint_scenarios';
@@ -53,4 +54,7 @@ export default class EndpointScenario extends BaseModel {
 
   @belongsTo(() => Endpoint, { foreignKey: 'endpointId' })
   declare endpoint: BelongsTo<typeof Endpoint>;
+
+  @hasMany(() => ScenarioRule, { foreignKey: 'scenarioId' })
+  declare rules: HasMany<typeof ScenarioRule>;
 }

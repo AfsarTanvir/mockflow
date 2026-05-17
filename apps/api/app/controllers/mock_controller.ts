@@ -57,8 +57,8 @@ export default class MockController {
       })
     }
 
-    // Resolve scenario (manually activated for now; rules added Day 49)
-    const scenario = await resolveScenario(matched.id)
+    // Resolve scenario — rule-based first, then manually activated fallback
+    const scenario = await resolveScenario(matched.id, request)
 
     // Merge fields — scenario overrides endpoint defaults when set
     const statusCode = scenario?.statusCode ?? matched.statusCode

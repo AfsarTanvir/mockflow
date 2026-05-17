@@ -12,6 +12,7 @@ const RequestLogsController = () => import('../app/controllers/request_logs_cont
 const ExportController = () => import('../app/controllers/export_controller.js');
 const ImportController = () => import('../app/controllers/import_controller.js');
 const ScenariosController = () => import('../app/controllers/scenarios_controller.js');
+const RulesController = () => import('../app/controllers/rules_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -82,6 +83,12 @@ router
     router.put('/api/scenarios/:id', [ScenariosController, 'update']);
     router.delete('/api/scenarios/:id', [ScenariosController, 'destroy']);
     router.post('/api/scenarios/:id/activate', [ScenariosController, 'activate']);
+
+    // Scenario rules
+    router.get('/api/scenarios/:scenarioId/rules', [RulesController, 'index']);
+    router.post('/api/scenarios/:scenarioId/rules', [RulesController, 'store']);
+    router.put('/api/rules/:id', [RulesController, 'update']);
+    router.delete('/api/rules/:id', [RulesController, 'destroy']);
   })
   .use(middleware.auth());
 
