@@ -5,6 +5,8 @@ import {
   createScenario,
   updateScenario,
   deleteScenario,
+  activateScenario,
+  deactivateAllScenarios,
 } from '@/services/scenarios';
 import { QueryKey } from '@/types/query-key.enum';
 import type { ScenarioInput } from '@/types';
@@ -54,6 +56,28 @@ export const useDeleteScenario = (endpointId: string) => {
 
   return useMutation({
     mutationFn: (id: string) => deleteScenario(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QueryKey.SCENARIOS, endpointId] });
+    },
+  });
+};
+
+export const useActivateScenario = (endpointId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => activateScenario(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QueryKey.SCENARIOS, endpointId] });
+    },
+  });
+};
+
+export const useDeactivateAllScenarios = (endpointId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deactivateAllScenarios(endpointId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QueryKey.SCENARIOS, endpointId] });
     },

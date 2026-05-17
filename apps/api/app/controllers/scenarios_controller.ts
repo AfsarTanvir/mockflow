@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http';
+import db from '@adonisjs/lucid/services/db';
 import Endpoint from '../models/endpoint.js';
 import EndpointScenario from '../models/endpoint_scenario.js';
 import Project from '../models/project.js';
@@ -187,5 +188,52 @@ export default class ScenariosController {
     await scenario!.delete();
 
     return response.ok({ message: 'Scenario deleted' });
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Activate - POST /api/scenarios/:id/activate
+  | In a transaction: deactivate all sibling scenarios, then activate this one.
+  | Idempotent.
+  |--------------------------------------------------------------------------
+  */
+  async activate({ auth, params, response }: HttpContext) {
+    const { scenario, error } = await resolveScenarioAccess(params.id, auth.user!.id, 'member');
+    if (error === 'not_found') return response.notFound({ message: 'Scenario not found' });
+    if (error === 'forbidden') return response.forbidden({ message: 'Access denied' });
+
+    await db.transaction(async (trx) => {
+      await EndpointScenario.query({ client: trx })
+        .where('endpoint_id', scenario!.endpointId)
+        .whereNot('id', scenario!.id)
+        .update({ is_active: false });
+
+      scenario!.useTransaction(trx);
+      scenario!.isActive = true;
+      await scenario!.save();
+    });
+
+    return response.ok(scenario);
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Deactivate All - POST /api/endpoints/:endpointId/scenarios/deactivate-all
+  | Clears the active flag from every scenario on the endpoint.
+  |--------------------------------------------------------------------------
+  */
+  async deactivateAll({ auth, params, response }: HttpContext) {
+    const endpoint = await Endpoint.find(params.endpointId);
+    if (!endpoint) return response.notFound({ message: 'Endpoint not found' });
+
+    const { error } = await resolveProjectAccess(endpoint.projectId, auth.user!.id, 'member');
+    if (error === 'forbidden') return response.forbidden({ message: 'Access denied' });
+
+    const affected = await EndpointScenario.query()
+      .where('endpoint_id', endpoint.id)
+      .where('is_active', true)
+      .update({ is_active: false });
+
+    return response.ok({ deactivated: Array.isArray(affected) ? affected.length : affected });
   }
 }

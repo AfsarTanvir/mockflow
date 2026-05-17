@@ -77,9 +77,11 @@ router
     // Scenarios
     router.get('/api/endpoints/:endpointId/scenarios', [ScenariosController, 'index']);
     router.post('/api/endpoints/:endpointId/scenarios', [ScenariosController, 'store']);
+    router.post('/api/endpoints/:endpointId/scenarios/deactivate-all', [ScenariosController, 'deactivateAll']);
     router.get('/api/scenarios/:id', [ScenariosController, 'show']);
     router.put('/api/scenarios/:id', [ScenariosController, 'update']);
     router.delete('/api/scenarios/:id', [ScenariosController, 'destroy']);
+    router.post('/api/scenarios/:id/activate', [ScenariosController, 'activate']);
   })
   .use(middleware.auth());
 

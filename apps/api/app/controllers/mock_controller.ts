@@ -4,9 +4,15 @@ import Project from '../models/project.js';
 import Endpoint from '../models/endpoint.js';
 import RequestLog from '../models/request_log.js';
 import { evaluateBody } from '../services/faker_evaluator.js';
+import { resolveScenario } from '../services/scenario_resolver.js';
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function pickDelay(min: number, max: number | null): number {
+  if (max == null || max <= min) return min;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 export default class MockController {
@@ -51,14 +57,23 @@ export default class MockController {
       })
     }
 
-    if (matched.delayMs > 0) {
-      await delay(matched.delayMs)
-    }
+    // Resolve scenario (manually activated for now; rules added Day 49)
+    const scenario = await resolveScenario(matched.id)
+
+    // Merge fields — scenario overrides endpoint defaults when set
+    const statusCode = scenario?.statusCode ?? matched.statusCode
+    const responseBody = scenario?.responseBody ?? matched.responseBody
+    const responseHeaders = scenario?.responseHeaders ?? matched.responseHeaders
+    const delayMin = scenario?.delayMs ?? matched.delayMs
+    const delayMax = scenario?.delayMaxMs ?? null  // endpoint.delayMaxMs added Day 50
+
+    const finalDelay = pickDelay(delayMin, delayMax)
+    if (finalDelay > 0) await delay(finalDelay)
 
     const elapsed = Date.now() - start
 
-    // Apply custom response headers
-    for (const [key, value] of Object.entries(matched.responseHeaders ?? {})) {
+    // Apply resolved response headers
+    for (const [key, value] of Object.entries(responseHeaders ?? {})) {
       response.header(key, value)
     }
 
@@ -71,10 +86,13 @@ export default class MockController {
     // MockFlow diagnostic headers
     response.header('X-MockFlow-Project', project.slug)
     response.header('X-MockFlow-Endpoint', `${matched.method} ${matched.path}`)
-    response.header('X-MockFlow-Delay', `${matched.delayMs}ms`)
+    response.header('X-MockFlow-Delay', `${finalDelay}ms`)
     response.header('X-MockFlow-Elapsed', `${elapsed}ms`)
+    if (scenario) {
+      response.header('X-MockFlow-Scenario', scenario.name)
+    }
 
-    const body = evaluateBody(matched.responseBody, pathParams)
+    const body = evaluateBody(responseBody, pathParams)
 
     if (project.settings.log_requests) {
       RequestLog.create({
@@ -82,11 +100,11 @@ export default class MockController {
         endpointId: matched.id,
         method: incomingMethod,
         path: incomingPath,
-        statusCode: matched.statusCode,
+        statusCode,
         duration: elapsed,
       }).catch(() => {})
     }
 
-    return response.status(matched.statusCode).json(body ?? {})
+    return response.status(statusCode).json(body ?? {})
   }
 }

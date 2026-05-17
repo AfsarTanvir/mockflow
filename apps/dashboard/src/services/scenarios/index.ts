@@ -27,3 +27,16 @@ export async function updateScenario(id: string, body: Partial<ScenarioInput>): 
 export async function deleteScenario(id: string): Promise<void> {
   await httpClient.delete(`/api/scenarios/${id}`);
 }
+
+export async function activateScenario(id: string): Promise<Scenario> {
+  const { data } = await httpClient.post<Scenario>(`/api/scenarios/${id}/activate`, {});
+  return data;
+}
+
+export async function deactivateAllScenarios(endpointId: string): Promise<{ deactivated: number }> {
+  const { data } = await httpClient.post<{ deactivated: number }>(
+    `/api/endpoints/${endpointId}/scenarios/deactivate-all`,
+    {}
+  );
+  return data;
+}
