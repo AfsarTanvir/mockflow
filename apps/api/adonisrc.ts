@@ -30,4 +30,25 @@ export default defineConfig({
     () => import('#start/kernel'),
     () => import('#start/routes'),
   ],
+
+  /*
+  |--------------------------------------------------------------------------
+  | Tests
+  |--------------------------------------------------------------------------
+  */
+  tests: {
+    suites: [
+      {
+        name: 'unit',
+        files: ['tests/unit/**/*.spec.ts', 'tests/unit/**/*.spec.js'],
+        timeout: 2000,
+      },
+      {
+        name: 'integration',
+        files: ['tests/integration/**/*.spec.ts', 'tests/integration/**/*.spec.js'],
+        timeout: 30000,
+      },
+    ],
+    forceExit: false,
+  },
 });
