@@ -10,6 +10,7 @@ export const createProjectValidator = vine.compile(
       .object({
         cors: vine.boolean(),
         log_requests: vine.boolean(),
+        global_headers: vine.record(vine.string()).optional(),
       })
       .optional(),
   })
@@ -24,6 +25,7 @@ export const updateProjectValidator = vine.compile(
       .object({
         cors: vine.boolean(),
         log_requests: vine.boolean(),
+        global_headers: vine.record(vine.string()).optional(),
       })
       .optional(),
   })

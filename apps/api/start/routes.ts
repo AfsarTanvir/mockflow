@@ -11,6 +11,8 @@ const VersionController = () => import('../app/controllers/version_controller.js
 const RequestLogsController = () => import('../app/controllers/request_logs_controller.js');
 const ExportController = () => import('../app/controllers/export_controller.js');
 const ImportController = () => import('../app/controllers/import_controller.js');
+const ScenariosController = () => import('../app/controllers/scenarios_controller.js');
+const RulesController = () => import('../app/controllers/rules_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -72,6 +74,21 @@ router
     router.put('/api/endpoints/:id', [EndpointsController, 'update']);
     router.delete('/api/endpoints/:id', [EndpointsController, 'destroy']);
     router.patch('/api/endpoints/:id/toggle', [EndpointsController, 'toggle']);
+
+    // Scenarios
+    router.get('/api/endpoints/:endpointId/scenarios', [ScenariosController, 'index']);
+    router.post('/api/endpoints/:endpointId/scenarios', [ScenariosController, 'store']);
+    router.post('/api/endpoints/:endpointId/scenarios/deactivate-all', [ScenariosController, 'deactivateAll']);
+    router.get('/api/scenarios/:id', [ScenariosController, 'show']);
+    router.put('/api/scenarios/:id', [ScenariosController, 'update']);
+    router.delete('/api/scenarios/:id', [ScenariosController, 'destroy']);
+    router.post('/api/scenarios/:id/activate', [ScenariosController, 'activate']);
+
+    // Scenario rules
+    router.get('/api/scenarios/:scenarioId/rules', [RulesController, 'index']);
+    router.post('/api/scenarios/:scenarioId/rules', [RulesController, 'store']);
+    router.put('/api/rules/:id', [RulesController, 'update']);
+    router.delete('/api/rules/:id', [RulesController, 'destroy']);
   })
   .use(middleware.auth());
 

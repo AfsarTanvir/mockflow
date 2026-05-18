@@ -62,6 +62,11 @@ export function EndpointForm({
   const [showHeaders, setShowHeaders] = useState(
     Object.keys(initialValues?.responseHeaders ?? {}).length > 0
   );
+  const [randomize, setRandomize] = useState(initialValues?.delayMaxMs != null);
+  const [delayMaxMs, setDelayMaxMs] = useState<number>(
+    initialValues?.delayMaxMs ?? (initialValues?.delayMs ?? 0) + 200
+  );
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const {
     register,
@@ -80,8 +85,15 @@ export function EndpointForm({
   });
 
   function handleFormSubmit(data: CreateEndpointInput) {
+    setLocalError(null);
+    const finalDelayMaxMs = randomize ? delayMaxMs : null;
+    if (finalDelayMaxMs != null && finalDelayMaxMs < (data.delayMs ?? 0)) {
+      setLocalError('Max delay must be >= min delay');
+      return;
+    }
     onSubmit({
       ...data,
+      delayMaxMs: finalDelayMaxMs,
       responseBody: parseJson(responseBodyText),
       responseHeaders,
     });
@@ -89,8 +101,10 @@ export function EndpointForm({
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} noValidate className="space-y-5">
-      {error && (
-        <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error.message}</div>
+      {(error || localError) && (
+        <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+          {localError ?? error?.message}
+        </div>
       )}
 
       {/* Row 1: Method + Path + Status */}
@@ -140,12 +154,31 @@ export function EndpointForm({
 
       {/* Row 2: Delay Slider */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-2">Delay</label>
+        <label className="block text-xs font-medium text-gray-600 mb-2">
+          {randomize ? 'Min delay' : 'Delay'}
+        </label>
         <Controller
           control={control}
           name="delayMs"
           render={({ field }) => <DelaySlider value={field.value ?? 0} onChange={field.onChange} />}
         />
+
+        <label className="flex items-center gap-2 mt-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={randomize}
+            onChange={(e) => setRandomize(e.target.checked)}
+            className="w-4 h-4 text-blue-600 rounded"
+          />
+          <span className="text-xs text-gray-700">Randomize between min and max</span>
+        </label>
+
+        {randomize && (
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-gray-600 mb-2">Max delay</label>
+            <DelaySlider value={delayMaxMs} onChange={setDelayMaxMs} />
+          </div>
+        )}
       </div>
 
       {/* Row 3: Response Body */}

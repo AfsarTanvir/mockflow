@@ -24,6 +24,7 @@ export type Endpoint = {
   responseBody: Record<string, unknown> | null;
   responseHeaders: Record<string, string>;
   delayMs: number;
+  delayMaxMs: number | null;
   isActive: boolean;
   createdBy: string | null;
   createdAt: string;
@@ -33,6 +34,7 @@ export type Endpoint = {
 export type ProjectSettings = {
   cors: boolean;
   log_requests: boolean;
+  global_headers?: Record<string, string>;
 };
 
 export type Project = {
@@ -141,4 +143,51 @@ export type RequestLog = {
   statusCode: number;
   duration: number;
   createdAt: string;
+};
+
+export type Scenario = {
+  id: string;
+  endpointId: string;
+  name: string;
+  description: string | null;
+  statusCode: number | null;
+  responseBody: Record<string, unknown> | null;
+  responseHeaders: Record<string, string> | null;
+  delayMs: number | null;
+  delayMaxMs: number | null;
+  isActive: boolean;
+  priority: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ScenarioInput = {
+  name: string;
+  description?: string | null;
+  statusCode?: number | null;
+  responseBody?: Record<string, unknown> | null;
+  responseHeaders?: Record<string, string> | null;
+  delayMs?: number | null;
+  delayMaxMs?: number | null;
+  priority?: number;
+};
+
+export type RuleSource = 'header' | 'query' | 'body';
+export type RuleOperator = 'equals' | 'exists';
+
+export type ScenarioRule = {
+  id: string;
+  scenarioId: string;
+  source: RuleSource;
+  field: string;
+  operator: RuleOperator;
+  value: string | null;
+  createdAt: string;
+};
+
+export type ScenarioRuleInput = {
+  source: RuleSource;
+  field: string;
+  operator: RuleOperator;
+  value?: string | null;
 };

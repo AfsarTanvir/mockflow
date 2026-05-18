@@ -35,6 +35,9 @@ export default class Endpoint extends BaseModel {
   declare delayMs: number;
 
   @column()
+  declare delayMaxMs: number | null;
+
+  @column()
   declare isActive: boolean;
 
   @column()

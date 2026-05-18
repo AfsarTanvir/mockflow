@@ -32,6 +32,37 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class EndpointScenarioSchema extends BaseModel {
+  static $columns = ['createdAt', 'delayMaxMs', 'delayMs', 'description', 'endpointId', 'id', 'isActive', 'name', 'priority', 'responseBody', 'responseHeaders', 'statusCode', 'updatedAt'] as const
+  $columns = EndpointScenarioSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare delayMaxMs: number | null
+  @column()
+  declare delayMs: number | null
+  @column()
+  declare description: string | null
+  @column()
+  declare endpointId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isActive: boolean
+  @column()
+  declare name: string
+  @column()
+  declare priority: number
+  @column()
+  declare responseBody: any | null
+  @column()
+  declare responseHeaders: any | null
+  @column()
+  declare statusCode: number | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class EndpointSchema extends BaseModel {
   static $columns = ['createdAt', 'createdBy', 'delayMs', 'id', 'isActive', 'method', 'path', 'projectId', 'responseBody', 'responseHeaders', 'statusCode', 'updatedAt'] as const
   $columns = EndpointSchema.$columns
@@ -126,6 +157,25 @@ export class RequestLogSchema extends BaseModel {
   declare projectId: string
   @column()
   declare statusCode: number
+}
+
+export class ScenarioRuleSchema extends BaseModel {
+  static $columns = ['createdAt', 'field', 'id', 'operator', 'scenarioId', 'source', 'value'] as const
+  $columns = ScenarioRuleSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare field: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare operator: string
+  @column()
+  declare scenarioId: string
+  @column()
+  declare source: string
+  @column()
+  declare value: string | null
 }
 
 export class TeamMemberSchema extends BaseModel {

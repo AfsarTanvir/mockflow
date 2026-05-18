@@ -5,6 +5,7 @@ import { useUpdateProject } from '@/query/projects';
 import type { Project } from '@/types';
 import { ExportPanel } from './export-panel';
 import { ImportPanel } from './import-panel';
+import { HeadersEditor } from './headers-editor';
 
 interface Props {
   project: Project;
@@ -19,6 +20,9 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
   const [isPublic, setIsPublic] = useState(project.isPublic);
   const [cors, setCors] = useState(project.settings.cors);
   const [logRequests, setLogRequests] = useState(project.settings.log_requests);
+  const [globalHeaders, setGlobalHeaders] = useState<Record<string, string>>(
+    project.settings.global_headers ?? {}
+  );
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
@@ -27,6 +31,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
     setIsPublic(project.isPublic);
     setCors(project.settings.cors);
     setLogRequests(project.settings.log_requests);
+    setGlobalHeaders(project.settings.global_headers ?? {});
     setDirty(false);
   }, [project.id]);
 
@@ -35,7 +40,12 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     updateProject(
-      { name: name.trim(), basePath: basePath.trim(), isPublic, settings: { cors, log_requests: logRequests } },
+      {
+        name: name.trim(),
+        basePath: basePath.trim(),
+        isPublic,
+        settings: { cors, log_requests: logRequests, global_headers: globalHeaders },
+      },
       { onSuccess: () => setDirty(false) }
     );
   }
@@ -166,6 +176,23 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
             />
           </button>
         </div>
+      </div>
+
+      <div className="bg-white rounded-xl border p-6 space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-gray-900">Global response headers</h2>
+          <p className="text-xs text-gray-400 mt-1">
+            Added to every mock response in this project. Endpoint-level headers override these
+            when keys match.
+          </p>
+        </div>
+        <HeadersEditor
+          value={globalHeaders}
+          onChange={(v) => {
+            setGlobalHeaders(v);
+            setDirty(true);
+          }}
+        />
       </div>
 
       <ExportPanel projectId={project.id} />
