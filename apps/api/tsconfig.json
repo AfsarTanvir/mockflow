@@ -10,6 +10,7 @@
     "config/**/*",
     "database/**/*",
     "start/**/*",
+    "tests/**/*",
     "adonisrc.ts"
   ],
   "exclude": [

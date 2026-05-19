@@ -123,11 +123,12 @@ export async function sendVerificationEmail({
     text: `Hi ${userName},\n\nVerify your MockFlow email: ${verifyUrl}\n\nThis link expires in 10 minutes.\n\nIf you didn't create a MockFlow account, ignore this email.`,
   });
 
+  const transportInfo = info as Record<string, unknown>;
   console.log(`[MockFlow] Verification email sent to ${toEmail}`, {
-    messageId: info.messageId,
-    response: info.response,
-    accepted: info.accepted,
-    rejected: info.rejected,
+    messageId: transportInfo.messageId,
+    response: transportInfo.response,
+    accepted: transportInfo.accepted,
+    rejected: transportInfo.rejected,
   });
 }
 
