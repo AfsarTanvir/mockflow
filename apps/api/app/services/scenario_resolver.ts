@@ -6,7 +6,7 @@ import ScenarioRule from '../models/scenario_rule.js';
  * Walk a body object using dot-notation path (e.g. "user.email" → body.user.email).
  * Returns undefined when any segment is missing.
  */
-function getByPath(obj: unknown, path: string): unknown {
+export function getByPath(obj: unknown, path: string): unknown {
   if (obj === null || obj === undefined) return undefined;
   const segments = path.split('.');
   let current: unknown = obj;
@@ -17,7 +17,7 @@ function getByPath(obj: unknown, path: string): unknown {
   return current;
 }
 
-function evalRule(rule: ScenarioRule, request: HttpContext['request']): boolean {
+export function evalRule(rule: ScenarioRule, request: HttpContext['request']): boolean {
   let value: unknown;
 
   switch (rule.source) {
