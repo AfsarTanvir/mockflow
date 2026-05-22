@@ -19,11 +19,11 @@ function createTransport() {
   });
 }
 
-function hasEmailTransport(): boolean {
+export function hasEmailTransport(): boolean {
   return !!process.env.MAILTRAP_TOKEN || !!(process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
-function getFromAddress(): { address: string; name: string } {
+export function getFromAddress(): { address: string; name: string } {
   const raw = process.env.SMTP_FROM ?? '';
   const match = raw.match(/^\s*"?([^"<]*)"?\s*<([^>]+)>\s*$/);
   if (match) {
