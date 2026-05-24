@@ -32,6 +32,58 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class CompanySchema extends BaseModel {
+  static $columns = ['avatarUrl', 'createdAt', 'id', 'logoUrl', 'name', 'ownerUserId', 'slug', 'updatedAt', 'visibility'] as const
+  $columns = CompanySchema.$columns
+  @column()
+  declare avatarUrl: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare logoUrl: string | null
+  @column()
+  declare name: string
+  @column()
+  declare ownerUserId: string
+  @column()
+  declare slug: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare visibility: string
+}
+
+export class CompanyMetadatumSchema extends BaseModel {
+  static $columns = ['billingAddress', 'billingEmail', 'companyId', 'createdAt', 'description', 'industry', 'settings', 'sizeBucket', 'totalMember', 'totalTeam', 'updatedAt', 'website'] as const
+  $columns = CompanyMetadatumSchema.$columns
+  @column()
+  declare billingAddress: any | null
+  @column()
+  declare billingEmail: string | null
+  @column({ isPrimary: true })
+  declare companyId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string | null
+  @column()
+  declare industry: string | null
+  @column()
+  declare settings: any
+  @column()
+  declare sizeBucket: string | null
+  @column()
+  declare totalMember: number
+  @column()
+  declare totalTeam: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare website: string | null
+}
+
 export class EndpointScenarioSchema extends BaseModel {
   static $columns = ['createdAt', 'delayMaxMs', 'delayMs', 'description', 'endpointId', 'id', 'isActive', 'name', 'priority', 'responseBody', 'responseHeaders', 'statusCode', 'updatedAt'] as const
   $columns = EndpointScenarioSchema.$columns
@@ -64,12 +116,14 @@ export class EndpointScenarioSchema extends BaseModel {
 }
 
 export class EndpointSchema extends BaseModel {
-  static $columns = ['createdAt', 'createdBy', 'delayMs', 'id', 'isActive', 'method', 'path', 'projectId', 'responseBody', 'responseHeaders', 'statusCode', 'updatedAt'] as const
+  static $columns = ['createdAt', 'createdBy', 'delayMaxMs', 'delayMs', 'id', 'isActive', 'method', 'path', 'projectId', 'responseBody', 'responseHeaders', 'statusCode', 'updatedAt'] as const
   $columns = EndpointSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
   declare createdBy: string | null
+  @column()
+  declare delayMaxMs: number | null
   @column()
   declare delayMs: number | null
   @column({ isPrimary: true })
@@ -90,6 +144,60 @@ export class EndpointSchema extends BaseModel {
   declare statusCode: number | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+}
+
+export class ProfileMetadatumSchema extends BaseModel {
+  static $columns = ['bio', 'createdAt', 'department', 'jobTitle', 'lastActiveAt', 'links', 'phone', 'preferences', 'profileId', 'updatedAt'] as const
+  $columns = ProfileMetadatumSchema.$columns
+  @column()
+  declare bio: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare department: string | null
+  @column()
+  declare jobTitle: string | null
+  @column.dateTime()
+  declare lastActiveAt: DateTime | null
+  @column()
+  declare links: any
+  @column()
+  declare phone: string | null
+  @column()
+  declare preferences: any
+  @column({ isPrimary: true })
+  declare profileId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class ProfileSchema extends BaseModel {
+  static $columns = ['avatarUrl', 'companyId', 'createdAt', 'displayName', 'id', 'joinedAt', 'leftAt', 'role', 'status', 'updatedAt', 'userId', 'visibility'] as const
+  $columns = ProfileSchema.$columns
+  @column()
+  declare avatarUrl: string | null
+  @column()
+  declare companyId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare displayName: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column.dateTime()
+  declare joinedAt: DateTime | null
+  @column.dateTime()
+  declare leftAt: DateTime | null
+  @column()
+  declare role: string
+  @column()
+  declare status: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: string
+  @column()
+  declare visibility: string
 }
 
 export class ProjectInviteSchema extends BaseModel {
@@ -195,6 +303,69 @@ export class TeamMemberSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare userId: string
+}
+
+export class TeamMembershipSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'joinedAt', 'profileId', 'role', 'teamId', 'updatedAt'] as const
+  $columns = TeamMembershipSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column.dateTime()
+  declare joinedAt: DateTime
+  @column()
+  declare profileId: string
+  @column()
+  declare role: string
+  @column()
+  declare teamId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class TeamMetadatumSchema extends BaseModel {
+  static $columns = ['avatarUrl', 'color', 'createdAt', 'externalLinks', 'settings', 'teamId', 'totalMember', 'updatedAt'] as const
+  $columns = TeamMetadatumSchema.$columns
+  @column()
+  declare avatarUrl: string | null
+  @column()
+  declare color: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare externalLinks: any
+  @column()
+  declare settings: any
+  @column({ isPrimary: true })
+  declare teamId: string
+  @column()
+  declare totalMember: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class TeamSchema extends BaseModel {
+  static $columns = ['companyId', 'createdAt', 'createdByProfileId', 'description', 'id', 'name', 'slug', 'updatedAt', 'visibility'] as const
+  $columns = TeamSchema.$columns
+  @column()
+  declare companyId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdByProfileId: string | null
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column()
+  declare slug: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare visibility: string
 }
 
 export class UserTokenSchema extends BaseModel {
