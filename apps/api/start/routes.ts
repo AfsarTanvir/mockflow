@@ -15,6 +15,9 @@ const ScenariosController = () => import('../app/controllers/scenarios_controlle
 const RulesController = () => import('../app/controllers/rules_controller.js');
 const CompaniesController = () => import('../app/controllers/companies_controller.js');
 const ProfilesController = () => import('../app/controllers/profiles_controller.js');
+const TeamsController = () => import('../app/controllers/teams_controller.js');
+const TeamMembershipsController = () =>
+  import('../app/controllers/team_memberships_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -162,8 +165,35 @@ router
 
     // Profiles nested under a company
     router.get('/:companyId/profiles', [ProfilesController, 'index']);
+
+    // Teams nested under a company
+    router.get('/:companyId/teams', [TeamsController, 'index']);
+    router.post('/:companyId/teams', [TeamsController, 'store']);
   })
   .prefix('/api/companies')
+  .use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| Team Routes (workspace)
+|--------------------------------------------------------------------------
+*/
+// Public — visibility-gated inside the controller
+router.get('/api/teams/:id', [TeamsController, 'show']);
+
+// Auth-required
+router
+  .group(() => {
+    router.put('/:id', [TeamsController, 'update']);
+    router.delete('/:id', [TeamsController, 'destroy']);
+
+    // Team memberships nested under a team
+    router.get('/:teamId/members', [TeamMembershipsController, 'index']);
+    router.post('/:teamId/members', [TeamMembershipsController, 'store']);
+    router.patch('/:teamId/members/:profileId', [TeamMembershipsController, 'updateRole']);
+    router.delete('/:teamId/members/:profileId', [TeamMembershipsController, 'destroy']);
+  })
+  .prefix('/api/teams')
   .use(middleware.auth());
 
 /*

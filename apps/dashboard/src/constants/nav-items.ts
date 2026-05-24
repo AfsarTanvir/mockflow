@@ -1,4 +1,12 @@
-import { LayoutDashboard, FolderOpen, Zap, Users, Settings, type LucideIcon } from 'lucide-react';
+import {
+  LayoutDashboard,
+  FolderOpen,
+  Zap,
+  Users,
+  UsersRound,
+  Settings,
+  type LucideIcon,
+} from 'lucide-react';
 
 export type NavItem = {
   label: string;
@@ -38,6 +46,11 @@ export const dashboardNavGroups: NavGroup[] = [
         label: 'Team',
         icon: Users,
         href: '/dashboard/team',
+      },
+      {
+        label: 'Teams',
+        icon: UsersRound,
+        href: '/dashboard/teams',
       },
       {
         label: 'Settings',

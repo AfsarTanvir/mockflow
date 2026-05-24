@@ -1,9 +1,10 @@
 import { DateTime } from 'luxon';
-import { BaseModel, belongsTo, column, hasOne } from '@adonisjs/lucid/orm';
-import type { BelongsTo, HasOne } from '@adonisjs/lucid/types/relations';
+import { BaseModel, belongsTo, column, hasMany, hasOne } from '@adonisjs/lucid/orm';
+import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations';
 import User from './user.js';
 import Company from './company.js';
 import ProfileMetadata from './profile_metadata.js';
+import TeamMembership from './team_membership.js';
 
 export type ProfileRole = 'owner' | 'admin' | 'member' | 'viewer';
 export type ProfileStatus = 'active' | 'suspended' | 'inactive';
@@ -56,4 +57,7 @@ export default class Profile extends BaseModel {
 
   @hasOne(() => ProfileMetadata, { foreignKey: 'profileId' })
   declare metadata: HasOne<typeof ProfileMetadata>;
+
+  @hasMany(() => TeamMembership, { foreignKey: 'profileId' })
+  declare teamMemberships: HasMany<typeof TeamMembership>;
 }

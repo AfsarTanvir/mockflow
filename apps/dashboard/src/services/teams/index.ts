@@ -1,6 +1,21 @@
 import httpClient from '@/http-client';
-import type { TeamResponse, ProjectInvite, Membership, PendingInvite } from '@/types';
-import type { InviteMemberInput, UpdateRoleInput } from '@/schema/teams';
+import type {
+  TeamResponse,
+  ProjectInvite,
+  Membership,
+  PendingInvite,
+  Team as WorkspaceTeam,
+} from '@/types';
+import type {
+  InviteMemberInput,
+  UpdateRoleInput,
+  CreateTeamInput,
+  UpdateTeamInput,
+} from '@/schema/teams';
+
+/* ----------------------------------------------------------------- */
+/* Legacy per-project team (will be removed in Week 7)                */
+/* ----------------------------------------------------------------- */
 
 export async function getTeam(projectId: string): Promise<TeamResponse> {
   const { data } = await httpClient.get<TeamResponse>(`/api/projects/${projectId}/team`);
@@ -47,4 +62,41 @@ export async function acceptInvite(token: string): Promise<{ projectId: string }
 export async function getPendingInvites(): Promise<PendingInvite[]> {
   const { data } = await httpClient.get<PendingInvite[]>('/api/invites/pending');
   return data;
+}
+
+/* ----------------------------------------------------------------- */
+/* Workspace teams (Week 6+)                                          */
+/* ----------------------------------------------------------------- */
+
+export async function getWorkspaceTeamsInCompany(companyId: string): Promise<WorkspaceTeam[]> {
+  const { data } = await httpClient.get<WorkspaceTeam[]>(`/api/companies/${companyId}/teams`);
+  return data;
+}
+
+export async function getWorkspaceTeam(id: string): Promise<WorkspaceTeam> {
+  const { data } = await httpClient.get<WorkspaceTeam>(`/api/teams/${id}`);
+  return data;
+}
+
+export async function createWorkspaceTeam(
+  companyId: string,
+  body: CreateTeamInput
+): Promise<WorkspaceTeam> {
+  const { data } = await httpClient.post<WorkspaceTeam>(
+    `/api/companies/${companyId}/teams`,
+    body
+  );
+  return data;
+}
+
+export async function updateWorkspaceTeam(
+  id: string,
+  body: UpdateTeamInput
+): Promise<WorkspaceTeam> {
+  const { data } = await httpClient.put<WorkspaceTeam>(`/api/teams/${id}`, body);
+  return data;
+}
+
+export async function deleteWorkspaceTeam(id: string): Promise<void> {
+  await httpClient.delete(`/api/teams/${id}`);
 }

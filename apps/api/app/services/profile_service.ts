@@ -5,6 +5,7 @@ import Profile from '../models/profile.js';
 import ProfileMetadata from '../models/profile_metadata.js';
 import type { ProfileRole, ProfileVisibility } from '../models/profile.js';
 import type { ProfileLink, ProfilePreferences } from '../models/profile_metadata.js';
+import { cleanupForInactiveProfile } from './team_membership_service.js';
 
 export interface UpdateProfileInput {
   displayName?: string;
@@ -194,8 +195,8 @@ export async function setInactive(
     target.leftAt = DateTime.now();
     await target.save();
 
-    // TODO (Week 6): delete all team_memberships for this profile inside this tx.
-    // Schema doesn't exist yet — leaving the call site marked.
+    // Cascade: drop every team_membership and decrement each affected team's counter
+    await cleanupForInactiveProfile(target.id, trx);
   });
 
   return target;

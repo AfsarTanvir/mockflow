@@ -117,6 +117,53 @@ export type ProfilePublicCard = {
   links: ProfileLink[];
 };
 
+/* ------------------------------------------------------------------ */
+/* Teams                                                               */
+/* ------------------------------------------------------------------ */
+
+export type TeamVisibility = 'private' | 'company_member_only' | 'public';
+/** Role within a workspace team. Note: distinct from the legacy per-project `TeamRole`. */
+export type WorkspaceTeamRole = 'admin' | 'member';
+
+export type TeamExternalLink = { label: string; url: string };
+
+export type TeamSettings = {
+  notify_on_member_add?: boolean;
+  notify_on_member_remove?: boolean;
+};
+
+export type Team = {
+  id: string;
+  companyId: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  visibility: TeamVisibility;
+  avatarUrl: string | null;
+  color: string | null;
+  externalLinks: TeamExternalLink[];
+  settings: TeamSettings;
+  totalMember: number;
+  createdByProfileId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TeamMembership = {
+  id: string;
+  teamId: string;
+  profileId: string;
+  role: WorkspaceTeamRole;
+  joinedAt: string;
+  profile?: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    companyRole: ProfileRole;
+    status: ProfileStatus;
+  };
+};
+
 export type AuthResponse = {
   message: string;
   user: User;
