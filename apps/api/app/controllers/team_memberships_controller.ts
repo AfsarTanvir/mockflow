@@ -8,6 +8,8 @@ import {
   changeTeamMemberRoleValidator,
 } from '../validators/team_validator.js';
 import * as TeamMembershipService from '../services/team_membership_service.js';
+import { canSeeTeam } from '../services/permission_resolver.js';
+import Company from '../models/company.js';
 
 async function findActorProfile(userId: string | null, companyId: string): Promise<Profile | null> {
   if (!userId) return null;
@@ -51,13 +53,15 @@ export default class TeamMembershipsController {
     const actor = await findActorProfile(auth.user!.id, team.companyId);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
-    // Allowed: company admin+, or team member, or (visibility != 'private')
+    const company = await Company.find(team.companyId);
+    if (!company) return response.notFound({ message: 'Team not found' });
+
     const tm = await TeamMembership.query()
       .where('team_id', team.id)
       .where('profile_id', actor.id)
       .first();
-    const isPrivilegedCompany = actor.role === 'owner' || actor.role === 'admin';
-    if (!isPrivilegedCompany && !tm && team.visibility === 'private') {
+
+    if (!canSeeTeam(actor, team, company, tm)) {
       return response.notFound({ message: 'Team not found' });
     }
 

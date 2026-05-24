@@ -8,6 +8,7 @@ import TeamMembership from '../models/team_membership.js';
 import TeamMetadata from '../models/team_metadata.js';
 import { createTeamValidator, updateTeamValidator } from '../validators/team_validator.js';
 import * as TeamService from '../services/team_service.js';
+import { canSeeTeam } from '../services/permission_resolver.js';
 
 type CompanyRole = 'owner' | 'admin' | 'member' | 'viewer';
 const COMPANY_ROLE_RANK: Record<CompanyRole, number> = {
@@ -46,23 +47,16 @@ async function canManageTeam(actor: Profile, team: Team): Promise<boolean> {
 }
 
 /**
- * Visibility check: can this (possibly anonymous) viewer see this team's existence?
- * Full implementation lives in `permission_resolver.ts` (Day 4); duplicated inline here
- * so Day 2 doesn't depend on Day 4. Refactor in Day 4.
+ * Async wrapper: loads the viewer's team membership (if any) then delegates
+ * to the pure resolver in `permission_resolver.ts`.
  */
-async function canSeeTeam(
+async function canSeeTeamWithLoad(
   viewer: Profile | null,
   team: Team,
   company: Company
 ): Promise<boolean> {
-  if (viewer) {
-    const tm = await getTeamMembership(viewer.id, team.id);
-    if (tm) return true;
-    if (viewer.companyId === company.id && viewer.status === 'active') {
-      return team.visibility !== 'private';
-    }
-  }
-  return company.visibility === 'public' && team.visibility === 'public';
+  const viewerMembership = viewer ? await getTeamMembership(viewer.id, team.id) : null;
+  return canSeeTeam(viewer, team, company, viewerMembership);
 }
 
 function teamView(team: Team, metadata: TeamMetadata | null) {
@@ -173,7 +167,7 @@ export default class TeamsController {
     }
 
     const viewer = await findActorProfile(userId, company.id);
-    const allowed = await canSeeTeam(viewer, team, company);
+    const allowed = await canSeeTeamWithLoad(viewer, team, company);
     if (!allowed) return response.notFound({ message: 'Team not found' });
 
     const metadata = await TeamMetadata.find(team.id);
