@@ -2,6 +2,7 @@
 
 import { LogOut, User } from 'lucide-react';
 import { NotificationBell } from './notification-bell';
+import { CompanySwitcher } from './company-switcher';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSignOut } from '@/query/auth';
@@ -41,6 +42,8 @@ export function DashboardHeader({ user }: { user: UserType }) {
           </div>
           <span className="text-sm font-bold text-gray-900">MockFlow</span>
         </Link>
+        <Separator orientation="vertical" className="h-5 ml-2" />
+        <CompanySwitcher />
       </div>
 
       <div className="ml-auto flex items-center gap-1">

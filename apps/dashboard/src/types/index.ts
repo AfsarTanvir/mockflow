@@ -7,6 +7,116 @@ export type User = {
   createdAt: string;
 };
 
+/* ------------------------------------------------------------------ */
+/* Workspace model (companies + profiles)                              */
+/* ------------------------------------------------------------------ */
+
+export type CompanyVisibility = 'private' | 'protected' | 'public';
+export type ProfileRole = 'owner' | 'admin' | 'member' | 'viewer';
+export type ProfileStatus = 'active' | 'suspended' | 'inactive';
+export type ProfileVisibility = 'public' | 'company_member_only';
+export type CompanySizeBucket = '1-10' | '11-50' | '51-200' | '201-1000' | '1000+';
+
+export type CompanySettings = {
+  locale?: string;
+  timezone?: string;
+  members_can_create_teams?: boolean;
+  members_can_create_projects?: boolean;
+};
+
+export type BillingAddress = {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  region?: string;
+  postal?: string;
+  country?: string;
+};
+
+/** Landing view — what unauthenticated visitors see for protected/public companies. */
+export type CompanyLanding = {
+  id: string;
+  name: string;
+  slug: string;
+  visibility: CompanyVisibility;
+  logoUrl: string | null;
+  avatarUrl: string | null;
+  description: string | null;
+  website: string | null;
+  industry: string | null;
+  sizeBucket: CompanySizeBucket | null;
+  totalMember: number;
+  totalTeam: number;
+  createdAt: string;
+};
+
+/** Full member view — returned to active members of the company. */
+export type Company = CompanyLanding & {
+  billingEmail: string | null;
+  billingAddress: BillingAddress | null;
+  settings: CompanySettings;
+  ownerUserId: string;
+  updatedAt: string;
+  currentUserRole: ProfileRole;
+  currentProfileId: string;
+};
+
+/** Each entry returned by GET /api/companies — company + the requester's profile in it. */
+export type MyCompanyMembership = {
+  company: Pick<CompanyLanding, 'id' | 'name' | 'slug' | 'visibility' | 'logoUrl' | 'avatarUrl'>;
+  profile: {
+    id: string;
+    role: ProfileRole;
+    displayName: string;
+    avatarUrl: string | null;
+    status: ProfileStatus;
+  };
+};
+
+export type ProfileLink = { label: string; url: string };
+
+export type ProfilePreferences = {
+  notifications?: { email?: boolean; in_app?: boolean };
+  locale?: string;
+  timezone?: string;
+};
+
+/** Full profile view — returned to self + members of the same company. */
+export type Profile = {
+  id: string;
+  userId: string;
+  companyId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  role: ProfileRole;
+  status: ProfileStatus;
+  visibility: ProfileVisibility;
+  joinedAt: string | null;
+  leftAt: string | null;
+  jobTitle: string | null;
+  department: string | null;
+  phone: string | null;
+  bio: string | null;
+  links: ProfileLink[];
+  preferences: ProfilePreferences;
+  lastActiveAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** Safe card view — what anonymous visitors see for `visibility='public'` profiles. */
+export type ProfilePublicCard = {
+  id: string;
+  companyId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  visibility: ProfileVisibility;
+  jobTitle: string | null;
+  department: string | null;
+  bio: string | null;
+  links: ProfileLink[];
+};
+
 export type AuthResponse = {
   message: string;
   user: User;

@@ -13,6 +13,8 @@ const ExportController = () => import('../app/controllers/export_controller.js')
 const ImportController = () => import('../app/controllers/import_controller.js');
 const ScenariosController = () => import('../app/controllers/scenarios_controller.js');
 const RulesController = () => import('../app/controllers/rules_controller.js');
+const CompaniesController = () => import('../app/controllers/companies_controller.js');
+const ProfilesController = () => import('../app/controllers/profiles_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -139,6 +141,51 @@ router
     router.post('/:id/import/postman/apply', [ImportController, 'postmanApply']);
   })
   .prefix('/api/projects')
+  .use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| Company Routes
+|--------------------------------------------------------------------------
+*/
+// Public — visibility-gated inside the controller
+router.get('/api/companies/:slug', [CompaniesController, 'show']);
+
+// Auth-required
+router
+  .group(() => {
+    router.get('/', [CompaniesController, 'index']);
+    router.post('/', [CompaniesController, 'store']);
+    router.put('/:id', [CompaniesController, 'update']);
+    router.delete('/:id', [CompaniesController, 'destroy']);
+    router.post('/:id/transfer-ownership', [CompaniesController, 'transferOwnership']);
+
+    // Profiles nested under a company
+    router.get('/:companyId/profiles', [ProfilesController, 'index']);
+  })
+  .prefix('/api/companies')
+  .use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| Profile Routes
+|--------------------------------------------------------------------------
+*/
+// Public — visibility-gated inside the controller
+router.get('/api/profiles/:id', [ProfilesController, 'show']);
+
+// Auth-required
+router
+  .group(() => {
+    router.get('/me', [ProfilesController, 'me']);
+    router.patch('/:id', [ProfilesController, 'update']);
+    router.patch('/:id/role', [ProfilesController, 'updateRole']);
+    router.post('/:id/suspend', [ProfilesController, 'suspend']);
+    router.post('/:id/reactivate', [ProfilesController, 'reactivate']);
+    router.post('/:id/leave', [ProfilesController, 'leave']);
+    router.delete('/:id', [ProfilesController, 'destroy']);
+  })
+  .prefix('/api/profiles')
   .use(middleware.auth());
 
 /*
