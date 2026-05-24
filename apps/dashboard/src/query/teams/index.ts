@@ -8,10 +8,20 @@ import {
   getMyMemberships,
   acceptInvite,
   getPendingInvites,
+  getWorkspaceTeamsInCompany,
+  getWorkspaceTeam,
+  createWorkspaceTeam,
+  updateWorkspaceTeam,
+  deleteWorkspaceTeam,
 } from '@/services/teams';
 import { QueryKey } from '@/types/query-key.enum';
-import type { TeamResponse, Membership, PendingInvite } from '@/types';
-import type { InviteMemberInput, UpdateRoleInput } from '@/schema/teams';
+import type { TeamResponse, PendingInvite } from '@/types';
+import type {
+  InviteMemberInput,
+  UpdateRoleInput,
+  CreateTeamInput,
+  UpdateTeamInput,
+} from '@/schema/teams';
 
 export const useTeam = (projectId: string) => {
   return useQuery({
@@ -107,5 +117,63 @@ export const usePendingInvites = () => {
     queryFn: getPendingInvites,
     staleTime: 60 * 1000,
     refetchInterval: 2 * 60 * 1000,
+  });
+};
+
+/* ----------------------------------------------------------------- */
+/* Workspace teams (Week 6+)                                          */
+/* ----------------------------------------------------------------- */
+
+export const useWorkspaceTeams = (companyId: string) => {
+  return useQuery({
+    queryKey: [QueryKey.TEAMS_IN_COMPANY, companyId],
+    queryFn: () => getWorkspaceTeamsInCompany(companyId),
+    enabled: !!companyId,
+    staleTime: 30 * 1000,
+  });
+};
+
+export const useWorkspaceTeam = (id: string) => {
+  return useQuery({
+    queryKey: [QueryKey.WORKSPACE_TEAM, id],
+    queryFn: () => getWorkspaceTeam(id),
+    enabled: !!id,
+    staleTime: 30 * 1000,
+  });
+};
+
+export const useCreateWorkspaceTeam = (companyId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: CreateTeamInput) => createWorkspaceTeam(companyId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QueryKey.TEAMS_IN_COMPANY, companyId] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.MY_COMPANIES] });
+    },
+  });
+};
+
+export const useUpdateWorkspaceTeam = (id: string, companyId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: UpdateTeamInput) => updateWorkspaceTeam(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QueryKey.WORKSPACE_TEAM, id] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.TEAMS_IN_COMPANY, companyId] });
+    },
+  });
+};
+
+export const useDeleteWorkspaceTeam = (companyId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteWorkspaceTeam(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QueryKey.TEAMS_IN_COMPANY, companyId] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.MY_COMPANIES] });
+    },
   });
 };
