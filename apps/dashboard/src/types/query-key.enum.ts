@@ -31,4 +31,11 @@ export enum QueryKey {
 
   // Scenario rules
   RULES = 'RULES',
+
+  // Workspace
+  MY_COMPANIES = 'MY_COMPANIES',
+  COMPANY = 'COMPANY',
+  PROFILE = 'PROFILE',
+  MY_PROFILE = 'MY_PROFILE',
+  PROFILES_IN_COMPANY = 'PROFILES_IN_COMPANY',
 }
