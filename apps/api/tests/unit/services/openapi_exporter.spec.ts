@@ -52,7 +52,12 @@ test.group('openapi_exporter — top-level shape', () => {
   });
 
   test('appends basePath to server URL when basePath is not /', ({ assert }) => {
-    const doc = buildOpenApiDoc({ ...PROJECT, basePath: '/v1' }, [], 'http://localhost:3000', false);
+    const doc = buildOpenApiDoc(
+      { ...PROJECT, basePath: '/v1' },
+      [],
+      'http://localhost:3000',
+      false
+    );
     const servers = doc.servers as Array<{ url: string }>;
     assert.equal(servers[0].url, 'http://localhost:3000/mock/test-project/v1');
   });
@@ -120,7 +125,10 @@ test.group('openapi_exporter — path & operation building', () => {
 test.group('openapi_exporter — response body & null handling', () => {
   test('omits content block entirely when responseBody is null', ({ assert }) => {
     const doc = buildOpenApiDoc(PROJECT, [endpoint({ responseBody: null })], 'http://x', false);
-    const paths = doc.paths as Record<string, Record<string, Record<string, Record<string, Record<string, unknown>>>>>;
+    const paths = doc.paths as Record<
+      string,
+      Record<string, Record<string, Record<string, Record<string, unknown>>>>
+    >;
     const response = paths['/users'].get.responses['200'];
     assert.notProperty(response, 'content');
   });
@@ -128,13 +136,17 @@ test.group('openapi_exporter — response body & null handling', () => {
   test('embeds responseBody under content.application/json.example', ({ assert }) => {
     const body = { id: 1, name: 'alice' };
     const doc = buildOpenApiDoc(PROJECT, [endpoint({ responseBody: body })], 'http://x', false);
-    const example = (doc.paths as any)['/users'].get.responses['200'].content['application/json'].example;
+    const example = (doc.paths as any)['/users'].get.responses['200'].content['application/json']
+      .example;
     assert.deepEqual(example, body);
   });
 
   test('omits headers block when responseHeaders is empty', ({ assert }) => {
     const doc = buildOpenApiDoc(PROJECT, [endpoint({ responseHeaders: {} })], 'http://x', false);
-    const paths = doc.paths as Record<string, Record<string, Record<string, Record<string, Record<string, unknown>>>>>;
+    const paths = doc.paths as Record<
+      string,
+      Record<string, Record<string, Record<string, Record<string, unknown>>>>
+    >;
     assert.notProperty(paths['/users'].get.responses['200'], 'headers');
   });
 
@@ -145,7 +157,10 @@ test.group('openapi_exporter — response body & null handling', () => {
       'http://x',
       false
     );
-    const paths = doc.paths as Record<string, Record<string, Record<string, Record<string, Record<string, Record<string, unknown>>>>>>;
+    const paths = doc.paths as Record<
+      string,
+      Record<string, Record<string, Record<string, Record<string, Record<string, unknown>>>>>
+    >;
     const headers = paths['/users'].get.responses['200'].headers as Record<
       string,
       { schema: { type: string }; example: string }
@@ -155,7 +170,10 @@ test.group('openapi_exporter — response body & null handling', () => {
 
   test('status code becomes string key in responses', ({ assert }) => {
     const doc = buildOpenApiDoc(PROJECT, [endpoint({ statusCode: 404 })], 'http://x', false);
-    const paths = doc.paths as Record<string, Record<string, Record<string, Record<string, unknown>>>>;
+    const paths = doc.paths as Record<
+      string,
+      Record<string, Record<string, Record<string, unknown>>>
+    >;
     assert.property(paths['/users'].get.responses, '404');
   });
 });
@@ -180,7 +198,8 @@ test.group('openapi_exporter — active filter & evaluation', () => {
       'http://x',
       false
     );
-    const example = (doc.paths as any)['/users'].get.responses['200'].content['application/json'].example;
+    const example = (doc.paths as any)['/users'].get.responses['200'].content['application/json']
+      .example;
     assert.equal(example.name, '{{faker.person.fullName()}}');
   });
 
@@ -191,7 +210,8 @@ test.group('openapi_exporter — active filter & evaluation', () => {
       'http://x',
       true
     );
-    const example = (doc.paths as any)['/users'].get.responses['200'].content['application/json'].example;
+    const example = (doc.paths as any)['/users'].get.responses['200'].content['application/json']
+      .example;
     assert.notMatch(example.name, /\{\{faker/);
     assert.isTrue(example.name.length > 0);
   });

@@ -43,9 +43,7 @@ export function NotificationBell() {
       <DropdownMenuContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <p className="text-sm font-semibold text-gray-900">Invitations</p>
-          {count > 0 && (
-            <span className="text-xs text-gray-400">{count} pending</span>
-          )}
+          {count > 0 && <span className="text-xs text-gray-400">{count} pending</span>}
         </div>
 
         {count === 0 ? (
@@ -83,9 +81,7 @@ export function NotificationBell() {
                       disabled={isPending}
                       className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
                     >
-                      {isAccepting ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : null}
+                      {isAccepting ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
                       Accept
                     </button>
                     <button

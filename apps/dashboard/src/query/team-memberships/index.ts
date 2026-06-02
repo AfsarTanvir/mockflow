@@ -24,7 +24,8 @@ function invalidate(
 ) {
   queryClient.invalidateQueries({ queryKey: [QueryKey.WORKSPACE_TEAM_MEMBERS, teamId] });
   queryClient.invalidateQueries({ queryKey: [QueryKey.WORKSPACE_TEAM, teamId] });
-  if (companyId) queryClient.invalidateQueries({ queryKey: [QueryKey.TEAMS_IN_COMPANY, companyId] });
+  if (companyId)
+    queryClient.invalidateQueries({ queryKey: [QueryKey.TEAMS_IN_COMPANY, companyId] });
 }
 
 export const useAddTeamMember = (teamId: string, companyId?: string) => {

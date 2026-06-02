@@ -3,9 +3,7 @@ import { MailtrapTransport } from 'mailtrap';
 
 function createTransport() {
   if (process.env.MAILTRAP_TOKEN) {
-    return nodemailer.createTransport(
-      MailtrapTransport({ token: process.env.MAILTRAP_TOKEN })
-    );
+    return nodemailer.createTransport(MailtrapTransport({ token: process.env.MAILTRAP_TOKEN }));
   }
 
   return nodemailer.createTransport({
@@ -123,7 +121,7 @@ export async function sendVerificationEmail({
     text: `Hi ${userName},\n\nVerify your MockFlow email: ${verifyUrl}\n\nThis link expires in 10 minutes.\n\nIf you didn't create a MockFlow account, ignore this email.`,
   });
 
-  const transportInfo = info as Record<string, unknown>;
+  const transportInfo = info as unknown as Record<string, unknown>;
   console.log(`[MockFlow] Verification email sent to ${toEmail}`, {
     messageId: transportInfo.messageId,
     response: transportInfo.response,

@@ -63,7 +63,7 @@ export default function ProjectDetailClient({
   const [scenariosOpenId, setScenariosOpenId] = useState<string | null>(null);
 
   const currentProject = project ?? initialProject;
-  const currentUserRole = team?.currentUserRole ?? (initialProject.userRole ?? 'viewer');
+  const currentUserRole = team?.currentUserRole ?? initialProject.userRole ?? 'viewer';
   const canWrite = currentUserRole !== 'viewer';
 
   function handleCreate(data: EndpointFormPayload) {
@@ -205,7 +205,9 @@ export default function ProjectDetailClient({
                     <span className="text-xs text-gray-500 shrink-0">{ep.statusCode}</span>
                     {ep.delayMs > 0 && (
                       <span className="text-xs text-gray-400 shrink-0">
-                        {ep.delayMaxMs != null ? `${ep.delayMs}-${ep.delayMaxMs}ms` : `${ep.delayMs}ms`}
+                        {ep.delayMaxMs != null
+                          ? `${ep.delayMs}-${ep.delayMaxMs}ms`
+                          : `${ep.delayMs}ms`}
                       </span>
                     )}
 
@@ -223,9 +225,7 @@ export default function ProjectDetailClient({
                     ) : (
                       <span
                         className={`text-xs px-2 py-1 rounded-full shrink-0 ${
-                          ep.isActive
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-500'
+                          ep.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                         }`}
                       >
                         {ep.isActive ? 'Active' : 'Inactive'}
@@ -235,7 +235,9 @@ export default function ProjectDetailClient({
                     <button
                       onClick={() => handleScenariosClick(ep.id)}
                       className={`text-xs font-medium shrink-0 transition-colors ${
-                        scenariosOpenId === ep.id ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
+                        scenariosOpenId === ep.id
+                          ? 'text-blue-600'
+                          : 'text-gray-400 hover:text-blue-600'
                       }`}
                     >
                       {scenariosOpenId === ep.id ? 'Close' : 'Scenarios'}
@@ -245,7 +247,9 @@ export default function ProjectDetailClient({
                       <button
                         onClick={() => handleEditClick(ep.id)}
                         className={`text-xs font-medium shrink-0 transition-colors ${
-                          editingId === ep.id ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
+                          editingId === ep.id
+                            ? 'text-blue-600'
+                            : 'text-gray-400 hover:text-blue-600'
                         }`}
                       >
                         {editingId === ep.id ? 'Close' : 'Edit'}

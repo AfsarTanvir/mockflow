@@ -40,7 +40,8 @@ export function LogsPanel({ project }: Props) {
       <div className="bg-white rounded-xl border p-12 text-center">
         <p className="text-sm text-gray-400 mb-2">Request logging is disabled for this project.</p>
         <p className="text-xs text-gray-400">
-          Enable <span className="font-medium text-gray-600">Log requests</span> in the Settings tab to start recording mock hits.
+          Enable <span className="font-medium text-gray-600">Log requests</span> in the Settings tab
+          to start recording mock hits.
         </p>
       </div>
     );
@@ -81,9 +82,7 @@ export function LogsPanel({ project }: Props) {
               {log.statusCode}
             </span>
 
-            <span className="text-xs text-gray-400 shrink-0 w-14 text-right">
-              {log.duration}ms
-            </span>
+            <span className="text-xs text-gray-400 shrink-0 w-14 text-right">{log.duration}ms</span>
 
             <span className="text-xs text-gray-400 shrink-0 w-16 text-right">
               {timeAgo(log.createdAt)}

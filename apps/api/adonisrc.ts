@@ -26,10 +26,7 @@ export default defineConfig({
     () => import('@adonisjs/cors/cors_provider'),
   ],
 
-  preloads: [
-    () => import('#start/kernel'),
-    () => import('#start/routes'),
-  ],
+  preloads: [() => import('#start/kernel'), () => import('#start/routes')],
 
   /*
   |--------------------------------------------------------------------------

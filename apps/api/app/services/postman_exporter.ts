@@ -1,29 +1,29 @@
-import { evaluateBody } from './faker_evaluator.js'
+import { evaluateBody } from './faker_evaluator.js';
 
 interface ProjectData {
-  name: string
-  slug: string
-  basePath: string
+  name: string;
+  slug: string;
+  basePath: string;
 }
 
 interface EndpointData {
-  method: string
-  path: string
-  statusCode: number
-  responseBody: Record<string, unknown> | null
-  responseHeaders: Record<string, string>
-  delayMs: number
-  isActive: boolean
+  method: string;
+  path: string;
+  statusCode: number;
+  responseBody: Record<string, unknown> | null;
+  responseHeaders: Record<string, string>;
+  delayMs: number;
+  isActive: boolean;
 }
 
-const METHOD_ORDER = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+const METHOD_ORDER = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
 function colonToDoublebraces(path: string): string {
-  return path.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, ':$1')
+  return path.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, ':$1');
 }
 
 function headersToPostman(headers: Record<string, string>) {
-  return Object.entries(headers).map(([key, value]) => ({ key, value }))
+  return Object.entries(headers).map(([key, value]) => ({ key, value }));
 }
 
 export function buildPostmanCollection(
@@ -32,24 +32,24 @@ export function buildPostmanCollection(
   apiUrl: string,
   evaluate: boolean
 ): Record<string, unknown> {
-  const active = endpoints.filter((e) => e.isActive)
+  const active = endpoints.filter((e) => e.isActive);
 
   const sorted = [...active].sort((a, b) => {
-    const pathCmp = a.path.localeCompare(b.path)
-    if (pathCmp !== 0) return pathCmp
-    return METHOD_ORDER.indexOf(a.method) - METHOD_ORDER.indexOf(b.method)
-  })
+    const pathCmp = a.path.localeCompare(b.path);
+    if (pathCmp !== 0) return pathCmp;
+    return METHOD_ORDER.indexOf(a.method) - METHOD_ORDER.indexOf(b.method);
+  });
 
-  const baseUrl = `${apiUrl}/mock/${project.slug}${project.basePath === '/' ? '' : project.basePath}`
+  const baseUrl = `${apiUrl}/mock/${project.slug}${project.basePath === '/' ? '' : project.basePath}`;
 
   const items = sorted.map((ep) => {
     const responseBody = evaluate
       ? (evaluateBody(ep.responseBody, {}) as Record<string, unknown> | null)
-      : ep.responseBody
+      : ep.responseBody;
 
-    const pathSegment = colonToDoublebraces(ep.path)
-    const rawUrl = `{{baseUrl}}${pathSegment}`
-    const urlParts = pathSegment.replace(/^\//, '').split('/')
+    const pathSegment = colonToDoublebraces(ep.path);
+    const rawUrl = `{{baseUrl}}${pathSegment}`;
+    const urlParts = pathSegment.replace(/^\//, '').split('/');
 
     const response =
       ep.statusCode || responseBody !== null
@@ -62,7 +62,7 @@ export function buildPostmanCollection(
               header: headersToPostman(ep.responseHeaders),
             },
           ]
-        : []
+        : [];
 
     return {
       name: `${ep.method} ${ep.path}`,
@@ -76,8 +76,8 @@ export function buildPostmanCollection(
         },
       },
       response,
-    }
-  })
+    };
+  });
 
   return {
     info: {
@@ -86,5 +86,5 @@ export function buildPostmanCollection(
     },
     variable: [{ key: 'baseUrl', value: baseUrl, type: 'string' }],
     item: items,
-  }
+  };
 }

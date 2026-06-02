@@ -87,10 +87,7 @@ test.group('faker_evaluator', () => {
   });
 
   test('walks arrays and substitutes templates in each element', ({ assert }) => {
-    const result = evaluateBody(
-      { items: ['{{param.id}}', 'static', '{{param.id}}'] },
-      { id: 'x' }
-    );
+    const result = evaluateBody({ items: ['{{param.id}}', 'static', '{{param.id}}'] }, { id: 'x' });
     assert.deepEqual(result, { items: ['x', 'static', 'x'] });
   });
 

@@ -77,13 +77,14 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
           <input
             type="text"
             value={name}
-            onChange={(e) => { setName(e.target.value); setDirty(true); }}
+            onChange={(e) => {
+              setName(e.target.value);
+              setDirty(true);
+            }}
             maxLength={100}
             className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {nameError && dirty && (
-            <p className="text-xs text-red-500 mt-1">{nameError}</p>
-          )}
+          {nameError && dirty && <p className="text-xs text-red-500 mt-1">{nameError}</p>}
         </div>
 
         {/* Base path */}
@@ -92,17 +93,16 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
           <input
             type="text"
             value={basePath}
-            onChange={(e) => { setBasePath(e.target.value); setDirty(true); }}
+            onChange={(e) => {
+              setBasePath(e.target.value);
+              setDirty(true);
+            }}
             maxLength={255}
             className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="/"
           />
-          {basePathError && dirty && (
-            <p className="text-xs text-red-500 mt-1">{basePathError}</p>
-          )}
-          <p className="text-xs text-gray-400 mt-1">
-            Prepended to all mock endpoint paths.
-          </p>
+          {basePathError && dirty && <p className="text-xs text-red-500 mt-1">{basePathError}</p>}
+          <p className="text-xs text-gray-400 mt-1">Prepended to all mock endpoint paths.</p>
         </div>
 
         {/* Public toggle */}
@@ -115,7 +115,10 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
           </div>
           <button
             type="button"
-            onClick={() => { setIsPublic((v) => !v); setDirty(true); }}
+            onClick={() => {
+              setIsPublic((v) => !v);
+              setDirty(true);
+            }}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
               isPublic ? 'bg-blue-600' : 'bg-gray-200'
             }`}
@@ -136,12 +139,16 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
           <div>
             <p className="text-xs font-medium text-gray-700">CORS</p>
             <p className="text-xs text-gray-400 mt-0.5">
-              Add <code className="font-mono">Access-Control-Allow-Origin: *</code> to every mock response.
+              Add <code className="font-mono">Access-Control-Allow-Origin: *</code> to every mock
+              response.
             </p>
           </div>
           <button
             type="button"
-            onClick={() => { setCors((v) => !v); setDirty(true); }}
+            onClick={() => {
+              setCors((v) => !v);
+              setDirty(true);
+            }}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
               cors ? 'bg-blue-600' : 'bg-gray-200'
             }`}
@@ -164,7 +171,10 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
           </div>
           <button
             type="button"
-            onClick={() => { setLogRequests((v) => !v); setDirty(true); }}
+            onClick={() => {
+              setLogRequests((v) => !v);
+              setDirty(true);
+            }}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
               logRequests ? 'bg-blue-600' : 'bg-gray-200'
             }`}
@@ -182,8 +192,8 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
         <div>
           <h2 className="text-sm font-semibold text-gray-900">Global response headers</h2>
           <p className="text-xs text-gray-400 mt-1">
-            Added to every mock response in this project. Endpoint-level headers override these
-            when keys match.
+            Added to every mock response in this project. Endpoint-level headers override these when
+            keys match.
           </p>
         </div>
         <HeadersEditor
@@ -206,9 +216,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               {(error as any)?.response?.data?.message ?? 'Failed to save settings'}
             </p>
           )}
-          {isSuccess && !dirty && (
-            <p className="text-xs text-green-600">Settings saved.</p>
-          )}
+          {isSuccess && !dirty && <p className="text-xs text-green-600">Settings saved.</p>}
         </div>
         <button
           type="submit"

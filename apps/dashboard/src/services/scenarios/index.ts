@@ -12,10 +12,7 @@ export async function getScenario(id: string): Promise<Scenario> {
 }
 
 export async function createScenario(endpointId: string, body: ScenarioInput): Promise<Scenario> {
-  const { data } = await httpClient.post<Scenario>(
-    `/api/endpoints/${endpointId}/scenarios`,
-    body
-  );
+  const { data } = await httpClient.post<Scenario>(`/api/endpoints/${endpointId}/scenarios`, body);
   return data;
 }
 

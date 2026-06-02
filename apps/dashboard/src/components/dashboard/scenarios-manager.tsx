@@ -24,7 +24,9 @@ function OverrideChips({ s }: { s: Scenario }) {
   if (s.responseBody != null) chips.push('body');
   if (s.responseHeaders != null) chips.push('headers');
   if (s.delayMs != null) {
-    chips.push(s.delayMaxMs != null ? `delay ${s.delayMs}-${s.delayMaxMs}ms` : `delay ${s.delayMs}ms`);
+    chips.push(
+      s.delayMaxMs != null ? `delay ${s.delayMs}-${s.delayMaxMs}ms` : `delay ${s.delayMs}ms`
+    );
   }
   if (chips.length === 0) return null;
   return (
@@ -44,7 +46,11 @@ function OverrideChips({ s }: { s: Scenario }) {
 export function ScenariosManager({ endpointId, canWrite }: Props) {
   const { data: scenarios = [], isLoading } = useScenarios(endpointId);
 
-  const { mutate: createScenario, isPending: creating, error: createError } = useCreateScenario(endpointId);
+  const {
+    mutate: createScenario,
+    isPending: creating,
+    error: createError,
+  } = useCreateScenario(endpointId);
   const { mutate: deleteScenario } = useDeleteScenario(endpointId);
   const { mutate: activateScenario, isPending: activating } = useActivateScenario(endpointId);
   const { mutate: deactivateAll, isPending: deactivating } = useDeactivateAllScenarios(endpointId);

@@ -26,9 +26,8 @@ export const useCreateVersion = (projectId: string) => {
   return useMutation({
     mutationFn: (message: string | null) => createVersion(projectId, message),
     onSuccess: (newVersion) => {
-      queryClient.setQueryData<ProjectVersion[]>(
-        [QueryKey.VERSIONS, projectId],
-        (old) => (old ? [newVersion, ...old] : [newVersion])
+      queryClient.setQueryData<ProjectVersion[]>([QueryKey.VERSIONS, projectId], (old) =>
+        old ? [newVersion, ...old] : [newVersion]
       );
     },
   });

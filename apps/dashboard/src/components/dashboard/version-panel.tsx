@@ -24,13 +24,7 @@ function timeAgo(iso: string): string {
   return `${days}d ago`;
 }
 
-function SnapshotPreview({
-  projectId,
-  versionId,
-}: {
-  projectId: string;
-  versionId: string;
-}) {
+function SnapshotPreview({ projectId, versionId }: { projectId: string; versionId: string }) {
   const { data, isLoading } = useVersion(projectId, versionId);
 
   if (isLoading) {
@@ -70,9 +64,7 @@ function SnapshotPreview({
               </span>
               <span className="text-xs font-mono text-gray-600 truncate">{ep.path}</span>
               <span className="text-xs text-gray-400 shrink-0">{ep.statusCode}</span>
-              {!ep.isActive && (
-                <span className="text-[10px] text-gray-400 shrink-0">inactive</span>
-              )}
+              {!ep.isActive && <span className="text-[10px] text-gray-400 shrink-0">inactive</span>}
             </div>
           ))}
         </div>
@@ -133,11 +125,7 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
               disabled={saving}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors shrink-0"
             >
-              {saving ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save snapshot
             </button>
           </div>
@@ -174,11 +162,11 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
                     <p className="text-sm font-medium text-gray-900 truncate">{label}</p>
                     <p className="text-xs text-gray-400 mt-0.5">
                       {timeAgo(v.createdAt)}
-                      {v.createdBy && (
-                        <span className="ml-1">by {v.createdBy.name}</span>
-                      )}
+                      {v.createdBy && <span className="ml-1">by {v.createdBy.name}</span>}
                       <span className="ml-2 text-gray-300">·</span>
-                      <span className="ml-2">{v.endpointCount} endpoint{v.endpointCount !== 1 ? 's' : ''}</span>
+                      <span className="ml-2">
+                        {v.endpointCount} endpoint{v.endpointCount !== 1 ? 's' : ''}
+                      </span>
                     </p>
                   </div>
 

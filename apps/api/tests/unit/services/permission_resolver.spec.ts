@@ -51,12 +51,7 @@ function membership(overrides: Partial<TeamMembershipLike>): TeamMembershipLike 
 
 test.group('permission_resolver / canActOnProject — sanity', () => {
   test('rejects when profile is in a different company', ({ assert }) => {
-    const result = canActOnProject(
-      profile({ companyId: OTHER }),
-      project({}),
-      null,
-      'read'
-    );
+    const result = canActOnProject(profile({ companyId: OTHER }), project({}), null, 'read');
     assert.isFalse(result);
   });
 
@@ -75,12 +70,7 @@ test.group('permission_resolver / canActOnProject — owner bypass', () => {
       assert,
     }) => {
       assert.isTrue(
-        canActOnProject(
-          profile({ role: 'owner' }),
-          project({ teamId: 't1' }),
-          null,
-          action
-        )
+        canActOnProject(profile({ role: 'owner' }), project({ teamId: 't1' }), null, action)
       );
     });
   }
@@ -114,15 +104,11 @@ test.group('permission_resolver / canActOnProject — member, team-scoped', () =
   });
 
   test('member with team-member role can read team-scoped project', ({ assert }) => {
-    assert.isTrue(
-      canActOnProject(profile({}), project({ teamId: 't1' }), membership({}), 'read')
-    );
+    assert.isTrue(canActOnProject(profile({}), project({ teamId: 't1' }), membership({}), 'read'));
   });
 
   test('member with team-member role can write team-scoped project', ({ assert }) => {
-    assert.isTrue(
-      canActOnProject(profile({}), project({ teamId: 't1' }), membership({}), 'write')
-    );
+    assert.isTrue(canActOnProject(profile({}), project({ teamId: 't1' }), membership({}), 'write'));
   });
 
   test('member with team-member role cannot delete team-scoped project', ({ assert }) => {
@@ -144,12 +130,7 @@ test.group('permission_resolver / canActOnProject — member, team-scoped', () =
 
   test('membership for a different team does not grant access', ({ assert }) => {
     assert.isFalse(
-      canActOnProject(
-        profile({}),
-        project({ teamId: 't1' }),
-        membership({ teamId: 't2' }),
-        'read'
-      )
+      canActOnProject(profile({}), project({ teamId: 't1' }), membership({ teamId: 't2' }), 'read')
     );
   });
 
@@ -205,9 +186,7 @@ test.group('permission_resolver / canSeeTeam — same-company non-member', () =>
   });
 
   test('sees a public team (inside a private company)', ({ assert }) => {
-    assert.isTrue(
-      canSeeTeam(profile({}), team({ visibility: 'public' }), company({}), null)
-    );
+    assert.isTrue(canSeeTeam(profile({}), team({ visibility: 'public' }), company({}), null));
   });
 
   test('suspended profile cannot see any team without membership', ({ assert }) => {

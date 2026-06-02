@@ -41,9 +41,7 @@ export default class ProjectsController {
         .whereNotIn('id', [...seenIds])
         .orderBy('created_at', 'desc');
     } else {
-      legacyOwned = await Project.query()
-        .where('owner_id', userId)
-        .orderBy('created_at', 'desc');
+      legacyOwned = await Project.query().where('owner_id', userId).orderBy('created_at', 'desc');
     }
 
     return response.ok([

@@ -1,6 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { getAuthUser, signIn, signOut, signUp, updateProfile, verifyEmail, resendVerification, forgotPassword, resetPassword } from '@/services/auth';
+import {
+  getAuthUser,
+  signIn,
+  signOut,
+  signUp,
+  updateProfile,
+  verifyEmail,
+  resendVerification,
+  forgotPassword,
+  resetPassword,
+} from '@/services/auth';
 import { QueryKey } from '@/types/query-key.enum';
 import type { User } from '@/types';
 

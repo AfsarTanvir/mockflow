@@ -7,7 +7,7 @@ const EndpointsController = () => import('../app/controllers/endpoints_controlle
 const MockController = () => import('../app/controllers/mock_controller.js');
 const TeamController = () => import('../app/controllers/team_controller.js');
 const InviteController = () => import('../app/controllers/invite_controller.js');
-const VersionController = () => import('../app/controllers/version_controller.js')
+const VersionController = () => import('../app/controllers/version_controller.js');
 const RequestLogsController = () => import('../app/controllers/request_logs_controller.js');
 const ExportController = () => import('../app/controllers/export_controller.js');
 const ImportController = () => import('../app/controllers/import_controller.js');
@@ -16,8 +16,7 @@ const RulesController = () => import('../app/controllers/rules_controller.js');
 const CompaniesController = () => import('../app/controllers/companies_controller.js');
 const ProfilesController = () => import('../app/controllers/profiles_controller.js');
 const TeamsController = () => import('../app/controllers/teams_controller.js');
-const TeamMembershipsController = () =>
-  import('../app/controllers/team_memberships_controller.js');
+const TeamMembershipsController = () => import('../app/controllers/team_memberships_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -83,7 +82,10 @@ router
     // Scenarios
     router.get('/api/endpoints/:endpointId/scenarios', [ScenariosController, 'index']);
     router.post('/api/endpoints/:endpointId/scenarios', [ScenariosController, 'store']);
-    router.post('/api/endpoints/:endpointId/scenarios/deactivate-all', [ScenariosController, 'deactivateAll']);
+    router.post('/api/endpoints/:endpointId/scenarios/deactivate-all', [
+      ScenariosController,
+      'deactivateAll',
+    ]);
     router.get('/api/scenarios/:id', [ScenariosController, 'show']);
     router.put('/api/scenarios/:id', [ScenariosController, 'update']);
     router.delete('/api/scenarios/:id', [ScenariosController, 'destroy']);

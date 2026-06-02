@@ -72,7 +72,10 @@ export default function LoginForm() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Don&apos;t have an account?{' '}
-          <Link href={`/auth/register${next !== '/dashboard' ? `?next=${encodeURIComponent(next)}` : ''}`} className="text-blue-600 hover:underline font-medium">
+          <Link
+            href={`/auth/register${next !== '/dashboard' ? `?next=${encodeURIComponent(next)}` : ''}`}
+            className="text-blue-600 hover:underline font-medium"
+          >
             Sign up
           </Link>
         </p>

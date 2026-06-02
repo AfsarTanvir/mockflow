@@ -1,5 +1,5 @@
-import { defineConfig, drivers } from '@adonisjs/core/encryption'
-import env from '#start/env'
+import { defineConfig, drivers } from '@adonisjs/core/encryption';
+import env from '#start/env';
 
 const encryptionConfig = defineConfig({
   default: 'app',
@@ -9,6 +9,6 @@ const encryptionConfig = defineConfig({
       keys: [env.get('APP_SECRET')],
     }),
   },
-})
+});
 
-export default encryptionConfig
+export default encryptionConfig;

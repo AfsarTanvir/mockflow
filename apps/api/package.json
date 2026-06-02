@@ -17,7 +17,8 @@
     "test:integration": "node --import tsx/esm bin/test.ts integration",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext=.ts",
-    "format": "prettier --write \"**/*.ts\""
+    "format": "prettier --write \"**/*.ts\"",
+    "format:check": "prettier --check \"**/*.ts\""
   },
   "imports": {
     "#app/*": "./app/*.js",

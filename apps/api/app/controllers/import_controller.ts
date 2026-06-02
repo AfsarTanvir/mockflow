@@ -1,43 +1,43 @@
-import { readFile } from 'node:fs/promises'
-import type { HttpContext } from '@adonisjs/core/http'
-import { Exception } from '@adonisjs/core/exceptions'
-import db from '@adonisjs/lucid/services/db'
-import Project from '../models/project.js'
-import Endpoint from '../models/endpoint.js'
-import TeamMember from '../models/team_member.js'
-import { parseOpenApiSpec } from '../services/openapi_importer.js'
-import { parsePostmanCollection } from '../services/postman_importer.js'
-import { applyImportValidator } from '../validators/import_validator.js'
+import { readFile } from 'node:fs/promises';
+import type { HttpContext } from '@adonisjs/core/http';
+import { Exception } from '@adonisjs/core/exceptions';
+import db from '@adonisjs/lucid/services/db';
+import Project from '../models/project.js';
+import Endpoint from '../models/endpoint.js';
+import TeamMember from '../models/team_member.js';
+import { parseOpenApiSpec } from '../services/openapi_importer.js';
+import { parsePostmanCollection } from '../services/postman_importer.js';
+import { applyImportValidator } from '../validators/import_validator.js';
 
-type TeamRole = 'owner' | 'admin' | 'member' | 'viewer'
+type TeamRole = 'owner' | 'admin' | 'member' | 'viewer';
 
-const ROLE_RANK: Record<TeamRole, number> = { viewer: 0, member: 1, admin: 2, owner: 3 }
+const ROLE_RANK: Record<TeamRole, number> = { viewer: 0, member: 1, admin: 2, owner: 3 };
 
 async function resolveAccess(
   projectId: string,
   userId: string,
   minRole: TeamRole
 ): Promise<Project> {
-  const project = await Project.find(projectId)
-  if (!project) throw new Exception('Project not found', { status: 404 })
+  const project = await Project.find(projectId);
+  if (!project) throw new Exception('Project not found', { status: 404 });
 
-  let role: TeamRole
+  let role: TeamRole;
   if (project.ownerId === userId) {
-    role = 'owner'
+    role = 'owner';
   } else {
     const tm = await TeamMember.query()
       .where('project_id', projectId)
       .where('user_id', userId)
-      .first()
-    if (!tm) throw new Exception('Access denied', { status: 403 })
-    role = tm.role as TeamRole
+      .first();
+    if (!tm) throw new Exception('Access denied', { status: 403 });
+    role = tm.role as TeamRole;
   }
 
   if (ROLE_RANK[role] < ROLE_RANK[minRole]) {
-    throw new Exception('Insufficient permissions', { status: 403 })
+    throw new Exception('Insufficient permissions', { status: 403 });
   }
 
-  return project
+  return project;
 }
 
 export default class ImportController {
@@ -49,25 +49,25 @@ export default class ImportController {
   |--------------------------------------------------------------------------
   */
   async openapiPreview({ auth, params, request, response }: HttpContext) {
-    const project = await resolveAccess(params.id, auth.user!.id, 'admin')
+    const project = await resolveAccess(params.id, auth.user!.id, 'admin');
 
-    const file = request.file('file', { extnames: ['json'], size: '20mb' })
-    if (!file) return response.badRequest({ message: 'No file provided' })
-    if (!file.isValid) return response.unprocessableEntity({ errors: file.errors })
+    const file = request.file('file', { extnames: ['json'], size: '20mb' });
+    if (!file) return response.badRequest({ message: 'No file provided' });
+    if (!file.isValid) return response.unprocessableEntity({ errors: file.errors });
 
-    let raw: unknown
+    let raw: unknown;
     try {
-      const content = await readFile(file.tmpPath!, 'utf-8')
-      raw = JSON.parse(content)
+      const content = await readFile(file.tmpPath!, 'utf-8');
+      raw = JSON.parse(content);
     } catch {
-      return response.unprocessableEntity({ message: 'Could not read or parse the JSON file' })
+      return response.unprocessableEntity({ message: 'Could not read or parse the JSON file' });
     }
 
-    const result = parseOpenApiSpec(raw)
-    if ('error' in result) return response.unprocessableEntity({ message: result.error })
+    const result = parseOpenApiSpec(raw);
+    if ('error' in result) return response.unprocessableEntity({ message: result.error });
 
-    const existing = await Endpoint.query().where('project_id', project.id)
-    const existingMap = new Map(existing.map((e) => [`${e.method} ${e.path}`, e]))
+    const existing = await Endpoint.query().where('project_id', project.id);
+    const existingMap = new Map(existing.map((e) => [`${e.method} ${e.path}`, e]));
 
     const conflicts = result.endpoints
       .filter((ep) => existingMap.has(`${ep.method} ${ep.path}`))
@@ -76,13 +76,13 @@ export default class ImportController {
         path: ep.path,
         existingId: existingMap.get(`${ep.method} ${ep.path}`)!.id,
         incoming: ep,
-      }))
+      }));
 
     return response.ok({
       endpoints: result.endpoints,
       conflicts,
       warnings: result.warnings,
-    })
+    });
   }
 
   /*
@@ -92,37 +92,37 @@ export default class ImportController {
   |--------------------------------------------------------------------------
   */
   async openapiApply({ auth, params, request, response }: HttpContext) {
-    const project = await resolveAccess(params.id, auth.user!.id, 'admin')
+    const project = await resolveAccess(params.id, auth.user!.id, 'admin');
 
-    const data = await request.validateUsing(applyImportValidator)
+    const data = await request.validateUsing(applyImportValidator);
 
-    const existing = await Endpoint.query().where('project_id', project.id)
-    const existingMap = new Map(existing.map((e) => [`${e.method} ${e.path}`, e]))
+    const existing = await Endpoint.query().where('project_id', project.id);
+    const existingMap = new Map(existing.map((e) => [`${e.method} ${e.path}`, e]));
 
-    let created = 0
-    let overwritten = 0
-    let skipped = 0
+    let created = 0;
+    let overwritten = 0;
+    let skipped = 0;
 
     await db.transaction(async (trx) => {
       for (const ep of data.endpoints) {
-        const key = `${ep.method} ${ep.path}`
-        const existingEp = existingMap.get(key)
+        const key = `${ep.method} ${ep.path}`;
+        const existingEp = existingMap.get(key);
 
         if (existingEp) {
-          const resolution = data.resolutions?.[key] ?? 'skip'
+          const resolution = data.resolutions?.[key] ?? 'skip';
           if (resolution === 'overwrite') {
-            existingEp.useTransaction(trx)
+            existingEp.useTransaction(trx);
             existingEp.merge({
               statusCode: ep.statusCode,
               responseBody: ep.responseBody ?? null,
               responseHeaders: ep.responseHeaders ?? {},
               delayMs: ep.delayMs ?? 0,
               isActive: ep.isActive ?? true,
-            })
-            await existingEp.save()
-            overwritten++
+            });
+            await existingEp.save();
+            overwritten++;
           } else {
-            skipped++
+            skipped++;
           }
         } else {
           await Endpoint.create(
@@ -138,13 +138,13 @@ export default class ImportController {
               createdBy: auth.user!.id,
             },
             { client: trx }
-          )
-          created++
+          );
+          created++;
         }
       }
-    })
+    });
 
-    return response.ok({ created, overwritten, skipped, errors: [] })
+    return response.ok({ created, overwritten, skipped, errors: [] });
   }
 
   /*
@@ -153,25 +153,25 @@ export default class ImportController {
   |--------------------------------------------------------------------------
   */
   async postmanPreview({ auth, params, request, response }: HttpContext) {
-    const project = await resolveAccess(params.id, auth.user!.id, 'admin')
+    const project = await resolveAccess(params.id, auth.user!.id, 'admin');
 
-    const file = request.file('file', { extnames: ['json'], size: '20mb' })
-    if (!file) return response.badRequest({ message: 'No file provided' })
-    if (!file.isValid) return response.unprocessableEntity({ errors: file.errors })
+    const file = request.file('file', { extnames: ['json'], size: '20mb' });
+    if (!file) return response.badRequest({ message: 'No file provided' });
+    if (!file.isValid) return response.unprocessableEntity({ errors: file.errors });
 
-    let raw: unknown
+    let raw: unknown;
     try {
-      const content = await readFile(file.tmpPath!, 'utf-8')
-      raw = JSON.parse(content)
+      const content = await readFile(file.tmpPath!, 'utf-8');
+      raw = JSON.parse(content);
     } catch {
-      return response.unprocessableEntity({ message: 'Could not read or parse the JSON file' })
+      return response.unprocessableEntity({ message: 'Could not read or parse the JSON file' });
     }
 
-    const result = parsePostmanCollection(raw)
-    if ('error' in result) return response.unprocessableEntity({ message: result.error })
+    const result = parsePostmanCollection(raw);
+    if ('error' in result) return response.unprocessableEntity({ message: result.error });
 
-    const existing = await Endpoint.query().where('project_id', project.id)
-    const existingMap = new Map(existing.map((e) => [`${e.method} ${e.path}`, e]))
+    const existing = await Endpoint.query().where('project_id', project.id);
+    const existingMap = new Map(existing.map((e) => [`${e.method} ${e.path}`, e]));
 
     const conflicts = result.endpoints
       .filter((ep) => existingMap.has(`${ep.method} ${ep.path}`))
@@ -180,13 +180,13 @@ export default class ImportController {
         path: ep.path,
         existingId: existingMap.get(`${ep.method} ${ep.path}`)!.id,
         incoming: ep,
-      }))
+      }));
 
     return response.ok({
       endpoints: result.endpoints,
       conflicts,
       warnings: result.warnings,
-    })
+    });
   }
 
   /*
@@ -195,37 +195,37 @@ export default class ImportController {
   |--------------------------------------------------------------------------
   */
   async postmanApply({ auth, params, request, response }: HttpContext) {
-    const project = await resolveAccess(params.id, auth.user!.id, 'admin')
+    const project = await resolveAccess(params.id, auth.user!.id, 'admin');
 
-    const data = await request.validateUsing(applyImportValidator)
+    const data = await request.validateUsing(applyImportValidator);
 
-    const existing = await Endpoint.query().where('project_id', project.id)
-    const existingMap = new Map(existing.map((e) => [`${e.method} ${e.path}`, e]))
+    const existing = await Endpoint.query().where('project_id', project.id);
+    const existingMap = new Map(existing.map((e) => [`${e.method} ${e.path}`, e]));
 
-    let created = 0
-    let overwritten = 0
-    let skipped = 0
+    let created = 0;
+    let overwritten = 0;
+    let skipped = 0;
 
     await db.transaction(async (trx) => {
       for (const ep of data.endpoints) {
-        const key = `${ep.method} ${ep.path}`
-        const existingEp = existingMap.get(key)
+        const key = `${ep.method} ${ep.path}`;
+        const existingEp = existingMap.get(key);
 
         if (existingEp) {
-          const resolution = data.resolutions?.[key] ?? 'skip'
+          const resolution = data.resolutions?.[key] ?? 'skip';
           if (resolution === 'overwrite') {
-            existingEp.useTransaction(trx)
+            existingEp.useTransaction(trx);
             existingEp.merge({
               statusCode: ep.statusCode,
               responseBody: ep.responseBody ?? null,
               responseHeaders: ep.responseHeaders ?? {},
               delayMs: ep.delayMs ?? 0,
               isActive: ep.isActive ?? true,
-            })
-            await existingEp.save()
-            overwritten++
+            });
+            await existingEp.save();
+            overwritten++;
           } else {
-            skipped++
+            skipped++;
           }
         } else {
           await Endpoint.create(
@@ -241,12 +241,12 @@ export default class ImportController {
               createdBy: auth.user!.id,
             },
             { client: trx }
-          )
-          created++
+          );
+          created++;
         }
       }
-    })
+    });
 
-    return response.ok({ created, overwritten, skipped, errors: [] })
+    return response.ok({ created, overwritten, skipped, errors: [] });
   }
 }

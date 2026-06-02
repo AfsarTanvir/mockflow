@@ -87,7 +87,8 @@ export default class ScenariosController {
 
     if (!hasAtLeastOneOverride(data as Record<string, unknown>)) {
       return response.unprocessableEntity({
-        message: 'Scenario must override at least one field (statusCode, responseBody, responseHeaders, delayMs, or delayMaxMs)',
+        message:
+          'Scenario must override at least one field (statusCode, responseBody, responseHeaders, delayMs, or delayMaxMs)',
       });
     }
 
@@ -99,7 +100,9 @@ export default class ScenariosController {
       .where('name', data.name)
       .first();
     if (duplicate) {
-      return response.conflict({ message: `Scenario "${data.name}" already exists for this endpoint` });
+      return response.conflict({
+        message: `Scenario "${data.name}" already exists for this endpoint`,
+      });
     }
 
     const scenario = await EndpointScenario.create({
@@ -155,7 +158,9 @@ export default class ScenariosController {
         .whereNot('id', scenario!.id)
         .first();
       if (duplicate) {
-        return response.conflict({ message: `Scenario "${data.name}" already exists for this endpoint` });
+        return response.conflict({
+          message: `Scenario "${data.name}" already exists for this endpoint`,
+        });
       }
     }
 

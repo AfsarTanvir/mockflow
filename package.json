@@ -17,10 +17,17 @@
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "format": "prettier --write \"**/*.{js,ts,tsx,json,md}\"",
-    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules"
+    "format:check": "prettier --check \"**/*.{js,ts,tsx,json,md}\"",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,json,md}": "prettier --write"
   },
   "devDependencies": {
     "concurrently": "^8.2.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
     "prettier": "^3.0.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"

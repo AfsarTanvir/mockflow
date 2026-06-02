@@ -81,9 +81,7 @@ export default class ProfilesController {
       .orderBy('role', 'asc')
       .orderBy('created_at', 'asc');
 
-    return response.ok(
-      profiles.map((p) => fullView(p, p.metadata ?? null))
-    );
+    return response.ok(profiles.map((p) => fullView(p, p.metadata ?? null)));
   }
 
   /*

@@ -6,11 +6,11 @@ export async function getRules(scenarioId: string): Promise<ScenarioRule[]> {
   return data;
 }
 
-export async function createRule(scenarioId: string, body: ScenarioRuleInput): Promise<ScenarioRule> {
-  const { data } = await httpClient.post<ScenarioRule>(
-    `/api/scenarios/${scenarioId}/rules`,
-    body
-  );
+export async function createRule(
+  scenarioId: string,
+  body: ScenarioRuleInput
+): Promise<ScenarioRule> {
+  const { data } = await httpClient.post<ScenarioRule>(`/api/scenarios/${scenarioId}/rules`, body);
   return data;
 }
 

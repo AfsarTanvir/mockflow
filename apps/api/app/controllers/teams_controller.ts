@@ -107,9 +107,7 @@ export default class TeamsController {
       );
     const memberOf = new Set(memberships.map((m) => m.teamId));
 
-    const visible = teams.filter(
-      (t) => memberOf.has(t.id) || t.visibility !== 'private'
-    );
+    const visible = teams.filter((t) => memberOf.has(t.id) || t.visibility !== 'private');
 
     return response.ok(visible.map((t) => teamView(t, t.metadata ?? null)));
   }
@@ -187,7 +185,9 @@ export default class TeamsController {
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
     if (!(await canManageTeam(actor, team))) {
-      return response.forbidden({ message: 'Only team admins or company admins can update this team' });
+      return response.forbidden({
+        message: 'Only team admins or company admins can update this team',
+      });
     }
 
     const data = await request.validateUsing(updateTeamValidator);
@@ -217,7 +217,9 @@ export default class TeamsController {
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
     if (!(await canManageTeam(actor, team))) {
-      return response.forbidden({ message: 'Only team admins or company admins can delete this team' });
+      return response.forbidden({
+        message: 'Only team admins or company admins can delete this team',
+      });
     }
 
     try {

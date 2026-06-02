@@ -118,7 +118,12 @@ export default class TeamMembershipsController {
     const { role } = await request.validateUsing(changeTeamMemberRoleValidator);
 
     try {
-      const membership = await TeamMembershipService.changeRole(team, actor, params.profileId, role);
+      const membership = await TeamMembershipService.changeRole(
+        team,
+        actor,
+        params.profileId,
+        role
+      );
       return response.ok(membershipView(membership));
     } catch (e) {
       if (e instanceof Exception) {

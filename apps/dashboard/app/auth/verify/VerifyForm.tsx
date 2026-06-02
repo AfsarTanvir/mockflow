@@ -36,8 +36,18 @@ export default function VerifyForm() {
         {isSuccess && (
           <>
             <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
-              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-6 h-6 text-green-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
             <h1 className="text-xl font-bold text-gray-900 mb-2">Email verified!</h1>
@@ -48,13 +58,24 @@ export default function VerifyForm() {
         {isError && (
           <>
             <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
-              <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6 text-red-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </div>
             <h1 className="text-xl font-bold text-gray-900 mb-2">Link invalid or expired</h1>
             <p className="text-sm text-gray-500 mb-6">
-              {(error as any)?.response?.data?.message ?? 'This verification link is no longer valid.'}
+              {(error as any)?.response?.data?.message ??
+                'This verification link is no longer valid.'}
             </p>
             <Link href="/auth/login" className="text-sm text-blue-600 hover:underline">
               Back to login

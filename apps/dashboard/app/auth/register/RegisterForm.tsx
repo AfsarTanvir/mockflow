@@ -95,7 +95,10 @@ export default function RegisterForm() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Already have an account?{' '}
-          <Link href={`/auth/login${next !== '/dashboard' ? `?next=${encodeURIComponent(next)}` : ''}`} className="text-blue-600 hover:underline font-medium">
+          <Link
+            href={`/auth/login${next !== '/dashboard' ? `?next=${encodeURIComponent(next)}` : ''}`}
+            className="text-blue-600 hover:underline font-medium"
+          >
             Sign in
           </Link>
         </p>

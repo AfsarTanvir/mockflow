@@ -80,10 +80,10 @@ export default function TeamDetailClient({ initialUser, teamId }: Props) {
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-gray-900">{team.name}</h1>
-            <p className="text-xs text-gray-400 mt-0.5 capitalize">{team.visibility.replace(/_/g, ' ')}</p>
-            {team.description && (
-              <p className="text-sm text-gray-600 mt-2">{team.description}</p>
-            )}
+            <p className="text-xs text-gray-400 mt-0.5 capitalize">
+              {team.visibility.replace(/_/g, ' ')}
+            </p>
+            {team.description && <p className="text-sm text-gray-600 mt-2">{team.description}</p>}
             <div className="flex items-center gap-3 mt-3 text-xs text-gray-500">
               <span className="inline-flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />
@@ -215,9 +215,7 @@ function AddMemberForm({
         <UserPlus className="h-3.5 w-3.5" />
         Add
       </button>
-      {error && (
-        <span className="text-xs text-red-500 ml-2">{(error as Error).message}</span>
-      )}
+      {error && <span className="text-xs text-red-500 ml-2">{(error as Error).message}</span>}
     </form>
   );
 }
@@ -296,9 +294,7 @@ function MemberRow({
         </>
       )}
 
-      {isSelf && canManage && (
-        <span className="text-[10px] text-gray-400">(you)</span>
-      )}
+      {isSelf && canManage && <span className="text-[10px] text-gray-400">(you)</span>}
     </li>
   );
 }

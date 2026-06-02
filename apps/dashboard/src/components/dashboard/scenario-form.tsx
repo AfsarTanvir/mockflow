@@ -35,14 +35,7 @@ function parseJson(str: string): Record<string, unknown> | null {
   }
 }
 
-export function ScenarioForm({
-  mode,
-  initialValues,
-  onSubmit,
-  onCancel,
-  isPending,
-  error,
-}: Props) {
+export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPending, error }: Props) {
   const [name, setName] = useState(initialValues?.name ?? '');
   const [description, setDescription] = useState(initialValues?.description ?? '');
   const [priority, setPriority] = useState<number>(initialValues?.priority ?? 0);
@@ -52,7 +45,9 @@ export function ScenarioForm({
   const [statusCode, setStatusCode] = useState<number>(initialValues?.statusCode ?? 200);
 
   const [overrideBody, setOverrideBody] = useState(initialValues?.responseBody != null);
-  const [responseBodyText, setResponseBodyText] = useState(toJsonString(initialValues?.responseBody));
+  const [responseBodyText, setResponseBodyText] = useState(
+    toJsonString(initialValues?.responseBody)
+  );
 
   const [overrideHeaders, setOverrideHeaders] = useState(initialValues?.responseHeaders != null);
   const [responseHeaders, setResponseHeaders] = useState<Record<string, string>>(
@@ -133,7 +128,9 @@ export function ScenarioForm({
 
       {/* Description */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Description (optional)</label>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          Description (optional)
+        </label>
         <input
           type="text"
           value={description ?? ''}
@@ -265,7 +262,13 @@ export function ScenarioForm({
             'px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
           )}
         >
-          {isPending ? (mode === 'create' ? 'Creating…' : 'Saving…') : mode === 'create' ? 'Create scenario' : 'Save changes'}
+          {isPending
+            ? mode === 'create'
+              ? 'Creating…'
+              : 'Saving…'
+            : mode === 'create'
+              ? 'Create scenario'
+              : 'Save changes'}
         </button>
       </div>
     </form>

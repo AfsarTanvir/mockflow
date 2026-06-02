@@ -21,9 +21,10 @@ export async function getCompany(slug: string): Promise<Company | CompanyLanding
   return data;
 }
 
-export async function createCompany(
-  body: CreateCompanyInput
-): Promise<{ company: { id: string; name: string; slug: string }; profile: { id: string; role: string } }> {
+export async function createCompany(body: CreateCompanyInput): Promise<{
+  company: { id: string; name: string; slug: string };
+  profile: { id: string; role: string };
+}> {
   const { data } = await httpClient.post('/api/companies', body);
   return data;
 }

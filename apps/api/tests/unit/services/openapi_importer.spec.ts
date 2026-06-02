@@ -5,7 +5,9 @@ function spec(paths: Record<string, unknown>): Record<string, unknown> {
   return { openapi: '3.0.3', info: { title: 'Test', version: '1.0.0' }, paths };
 }
 
-function isOk(result: ReturnType<typeof parseOpenApiSpec>): result is { endpoints: any[]; warnings: string[] } {
+function isOk(
+  result: ReturnType<typeof parseOpenApiSpec>
+): result is { endpoints: any[]; warnings: string[] } {
   return !('error' in result);
 }
 
@@ -61,9 +63,7 @@ test.group('openapi_importer — validation', () => {
 
 test.group('openapi_importer — path & method parsing', () => {
   test('converts {id} → :id in path', ({ assert }) => {
-    const result = parseOpenApiSpec(
-      spec({ '/users/{id}': { get: { responses: { '200': {} } } } })
-    );
+    const result = parseOpenApiSpec(spec({ '/users/{id}': { get: { responses: { '200': {} } } } }));
     if (!isOk(result)) return assert.fail('expected ok');
     assert.equal(result.endpoints[0].path, '/users/:id');
   });
@@ -94,10 +94,7 @@ test.group('openapi_importer — path & method parsing', () => {
     );
     if (!isOk(result)) return assert.fail('expected ok');
     assert.lengthOf(result.endpoints, 3);
-    assert.deepEqual(
-      result.endpoints.map((e) => e.method).sort(),
-      ['DELETE', 'GET', 'PUT']
-    );
+    assert.deepEqual(result.endpoints.map((e) => e.method).sort(), ['DELETE', 'GET', 'PUT']);
   });
 
   test('skips unknown operation keys (parameters, summary, etc.)', ({ assert }) => {

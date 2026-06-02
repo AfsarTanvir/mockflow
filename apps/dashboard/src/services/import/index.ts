@@ -30,7 +30,11 @@ export interface ApplyResult {
   errors: string[];
 }
 
-async function previewFile(projectId: string, format: 'openapi' | 'postman', file: File): Promise<PreviewResult> {
+async function previewFile(
+  projectId: string,
+  format: 'openapi' | 'postman',
+  file: File
+): Promise<PreviewResult> {
   const form = new FormData();
   form.append('file', file);
   const { data } = await httpClient.post<PreviewResult>(
