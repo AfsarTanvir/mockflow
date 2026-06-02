@@ -15,7 +15,7 @@ export default class extends BaseSchema {
       table.timestamp('updated_at', { useTz: true }).notNullable();
     });
 
-    this.schema.raw('CREATE INDEX users_email_idx ON users (email)');
+    // `email` is already indexed by the inline .unique() constraint above; no extra index needed.
   }
 
   async down() {
