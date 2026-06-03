@@ -1,38 +1,19 @@
 import type { HttpContext } from '@adonisjs/core/http';
-import { Exception } from '@adonisjs/core/exceptions';
-import Company from '../models/company.js';
-import CompanyMetadata from '../models/company_metadata.js';
-import Profile from '../models/profile.js';
-import Team from '../models/team.js';
-import TeamMembership from '../models/team_membership.js';
-import TeamMetadata from '../models/team_metadata.js';
-import { createTeamValidator, updateTeamValidator } from '../validators/team_validator.js';
-import * as TeamService from '../services/team_service.js';
-import { canSeeTeam } from '../services/permission_resolver.js';
+import { respondError } from '#app/exceptions/respond_error';
+import type Company from '#models/company';
+import type Profile from '#models/profile';
+import type Team from '#models/team';
+import type TeamMetadata from '#models/team_metadata';
+import * as CompanyQueries from '#queries/company_queries';
+import * as ProfileQueries from '#queries/profile_queries';
+import * as TeamQueries from '#queries/team_queries';
+import * as TeamMembershipQueries from '#queries/team_membership_queries';
+import * as TeamService from '#services/team_service';
+import { canSeeTeam } from '#services/permission_resolver';
+import { createTeamValidator, updateTeamValidator } from '#validators/team_validator';
 
 type CompanyRole = 'owner' | 'admin' | 'member' | 'viewer';
-const COMPANY_ROLE_RANK: Record<CompanyRole, number> = {
-  viewer: 0,
-  member: 1,
-  admin: 2,
-  owner: 3,
-};
-
-async function findActorProfile(userId: string | null, companyId: string): Promise<Profile | null> {
-  if (!userId) return null;
-  return Profile.query()
-    .where('user_id', userId)
-    .where('company_id', companyId)
-    .where('status', 'active')
-    .first();
-}
-
-async function getTeamMembership(
-  profileId: string,
-  teamId: string
-): Promise<TeamMembership | null> {
-  return TeamMembership.query().where('profile_id', profileId).where('team_id', teamId).first();
-}
+const COMPANY_ROLE_RANK: Record<CompanyRole, number> = { viewer: 0, member: 1, admin: 2, owner: 3 };
 
 function canCreateTeam(actor: Profile, settings: { members_can_create_teams?: boolean }): boolean {
   if (COMPANY_ROLE_RANK[actor.role] >= COMPANY_ROLE_RANK.admin) return true;
@@ -42,20 +23,19 @@ function canCreateTeam(actor: Profile, settings: { members_can_create_teams?: bo
 
 async function canManageTeam(actor: Profile, team: Team): Promise<boolean> {
   if (COMPANY_ROLE_RANK[actor.role] >= COMPANY_ROLE_RANK.admin) return true;
-  const tm = await getTeamMembership(actor.id, team.id);
+  const tm = await TeamMembershipQueries.findForProfileTeam(actor.id, team.id);
   return tm?.role === 'admin';
 }
 
-/**
- * Async wrapper: loads the viewer's team membership (if any) then delegates
- * to the pure resolver in `permission_resolver.ts`.
- */
+/** Loads the viewer's team membership then delegates to the pure resolver. */
 async function canSeeTeamWithLoad(
   viewer: Profile | null,
   team: Team,
   company: Company
 ): Promise<boolean> {
-  const viewerMembership = viewer ? await getTeamMembership(viewer.id, team.id) : null;
+  const viewerMembership = viewer
+    ? await TeamMembershipQueries.findForProfileTeam(viewer.id, team.id)
+    : null;
   return canSeeTeam(viewer, team, company, viewerMembership);
 }
 
@@ -79,81 +59,56 @@ function teamView(team: Team, metadata: TeamMetadata | null) {
 }
 
 export default class TeamsController {
-  /*
-  |--------------------------------------------------------------------------
-  | Index - GET /api/companies/:companyId/teams   (auth required)
-  | Any active company member can list teams they're allowed to see.
-  |--------------------------------------------------------------------------
-  */
+  /** GET /api/companies/:companyId/teams — visibility-filtered list. */
   async index({ auth, params, response }: HttpContext) {
-    const company = await Company.find(params.companyId);
+    const company = await CompanyQueries.findById(params.companyId);
     if (!company) return response.notFound({ message: 'Company not found' });
 
-    const actor = await findActorProfile(auth.user!.id, company.id);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, company.id);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
-    const teams = await Team.query()
-      .where('company_id', company.id)
-      .preload('metadata')
-      .orderBy('created_at', 'asc');
+    const teams = await TeamQueries.listForCompanyWithMetadata(company.id);
 
-    // Filter by visibility: actor sees all teams they're a member of, plus any
-    // team that is company_member_only or public.
-    const memberships = await TeamMembership.query()
-      .where('profile_id', actor.id)
-      .whereIn(
-        'team_id',
-        teams.map((t) => t.id)
-      );
+    // actor sees teams they're a member of, plus any non-private team.
+    const memberships = await TeamMembershipQueries.listForProfileInTeams(
+      actor.id,
+      teams.map((t) => t.id)
+    );
     const memberOf = new Set(memberships.map((m) => m.teamId));
-
     const visible = teams.filter((t) => memberOf.has(t.id) || t.visibility !== 'private');
 
     return response.ok(visible.map((t) => teamView(t, t.metadata ?? null)));
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Store - POST /api/companies/:companyId/teams   (auth required)
-  | Owner/admin always allowed. Member allowed if settings.members_can_create_teams.
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/companies/:companyId/teams */
   async store({ auth, params, request, response }: HttpContext) {
-    const company = await Company.find(params.companyId);
+    const company = await CompanyQueries.findById(params.companyId);
     if (!company) return response.notFound({ message: 'Company not found' });
 
-    const actor = await findActorProfile(auth.user!.id, company.id);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, company.id);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
-    const metadata = await CompanyMetadata.find(company.id);
+    const metadata = await CompanyQueries.findMetadata(company.id);
     if (!canCreateTeam(actor, metadata?.settings ?? {})) {
       return response.forbidden({ message: 'You do not have permission to create teams' });
     }
 
     const data = await request.validateUsing(createTeamValidator);
-
     try {
       const team = await TeamService.createTeam(company.id, actor.id, data);
-      const teamMeta = await TeamMetadata.find(team.id);
+      const teamMeta = await TeamQueries.findMetadata(team.id);
       return response.created(teamView(team, teamMeta));
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Show - GET /api/teams/:id   (public, visibility-gated)
-  |--------------------------------------------------------------------------
-  */
+  /** GET /api/teams/:id — public, visibility-gated. */
   async show({ auth, params, response }: HttpContext) {
-    const team = await Team.find(params.id);
+    const team = await TeamQueries.findById(params.id);
     if (!team) return response.notFound({ message: 'Team not found' });
 
-    const company = await Company.find(team.companyId);
+    const company = await CompanyQueries.findById(team.companyId);
     if (!company) return response.notFound({ message: 'Team not found' });
 
     let userId: string | null = null;
@@ -164,24 +119,22 @@ export default class TeamsController {
       userId = null;
     }
 
-    const viewer = await findActorProfile(userId, company.id);
+    const viewer = userId
+      ? await ProfileQueries.findActiveByUserAndCompany(userId, company.id)
+      : null;
     const allowed = await canSeeTeamWithLoad(viewer, team, company);
     if (!allowed) return response.notFound({ message: 'Team not found' });
 
-    const metadata = await TeamMetadata.find(team.id);
+    const metadata = await TeamQueries.findMetadata(team.id);
     return response.ok(teamView(team, metadata));
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Update - PUT /api/teams/:id   (auth required, team admin or company admin+)
-  |--------------------------------------------------------------------------
-  */
+  /** PUT /api/teams/:id — team admin or company admin+. */
   async update({ auth, params, request, response }: HttpContext) {
-    const team = await Team.find(params.id);
+    const team = await TeamQueries.findById(params.id);
     if (!team) return response.notFound({ message: 'Team not found' });
 
-    const actor = await findActorProfile(auth.user!.id, team.companyId);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, team.companyId);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
     if (!(await canManageTeam(actor, team))) {
@@ -191,29 +144,21 @@ export default class TeamsController {
     }
 
     const data = await request.validateUsing(updateTeamValidator);
-
     try {
       const updated = await TeamService.updateTeam(team.id, data);
-      const metadata = await TeamMetadata.find(updated.id);
+      const metadata = await TeamQueries.findMetadata(updated.id);
       return response.ok(teamView(updated, metadata));
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Destroy - DELETE /api/teams/:id   (auth required, team admin or company admin+)
-  |--------------------------------------------------------------------------
-  */
+  /** DELETE /api/teams/:id — team admin or company admin+. */
   async destroy({ auth, params, response }: HttpContext) {
-    const team = await Team.find(params.id);
+    const team = await TeamQueries.findById(params.id);
     if (!team) return response.notFound({ message: 'Team not found' });
 
-    const actor = await findActorProfile(auth.user!.id, team.companyId);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, team.companyId);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
     if (!(await canManageTeam(actor, team))) {
@@ -225,11 +170,8 @@ export default class TeamsController {
     try {
       await TeamService.deleteTeam(team.id);
       return response.ok({ message: 'Team deleted' });
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 }

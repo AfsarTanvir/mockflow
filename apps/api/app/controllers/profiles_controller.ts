@@ -1,27 +1,12 @@
 import type { HttpContext } from '@adonisjs/core/http';
-import { Exception } from '@adonisjs/core/exceptions';
-import Profile from '../models/profile.js';
-import ProfileMetadata from '../models/profile_metadata.js';
-import { updateProfileValidator, changeRoleValidator } from '../validators/profile_validator.js';
-import * as ProfileService from '../services/profile_service.js';
+import { respondError } from '#app/exceptions/respond_error';
+import type Profile from '#models/profile';
+import type ProfileMetadata from '#models/profile_metadata';
+import * as ProfileQueries from '#queries/profile_queries';
+import * as ProfileService from '#services/profile_service';
+import { updateProfileValidator, changeRoleValidator } from '#validators/profile_validator';
 
-/**
- * Look up the requester's active profile in a given company.
- * Returns null if unauthenticated, profile-less, or inactive.
- */
-async function findActorProfile(userId: string | null, companyId: string): Promise<Profile | null> {
-  if (!userId) return null;
-  return Profile.query()
-    .where('user_id', userId)
-    .where('company_id', companyId)
-    .where('status', 'active')
-    .first();
-}
-
-/**
- * Safe profile card visible to outsiders when visibility = 'public'.
- * Never exposes role, status, email, phone, audit info.
- */
+/** Safe card for outsiders when visibility = 'public'. Never exposes role/status/contact. */
 function publicCardView(profile: Profile, metadata: ProfileMetadata | null) {
   return {
     id: profile.id,
@@ -36,10 +21,7 @@ function publicCardView(profile: Profile, metadata: ProfileMetadata | null) {
   };
 }
 
-/**
- * Full profile view — visible to members of the same company AND to the
- * profile owner themselves.
- */
+/** Full view — for same-company members and the profile owner. */
 function fullView(profile: Profile, metadata: ProfileMetadata | null) {
   return {
     id: profile.id,
@@ -65,54 +47,29 @@ function fullView(profile: Profile, metadata: ProfileMetadata | null) {
 }
 
 export default class ProfilesController {
-  /*
-  |--------------------------------------------------------------------------
-  | Index - GET /api/companies/:companyId/profiles   (auth required)
-  | Lists all profiles in the company. Caller must be a member.
-  |--------------------------------------------------------------------------
-  */
+  /** GET /api/companies/:companyId/profiles — members only. */
   async index({ auth, params, response }: HttpContext) {
-    const actor = await findActorProfile(auth.user!.id, params.companyId);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, params.companyId);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
-    const profiles = await Profile.query()
-      .where('company_id', params.companyId)
-      .preload('metadata')
-      .orderBy('role', 'asc')
-      .orderBy('created_at', 'asc');
-
+    const profiles = await ProfileQueries.listForCompanyWithMetadata(params.companyId);
     return response.ok(profiles.map((p) => fullView(p, p.metadata ?? null)));
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Me - GET /api/profiles/me?company=:id   (auth required)
-  | Returns the current user's profile in the given company, or 404.
-  |--------------------------------------------------------------------------
-  */
+  /** GET /api/profiles/me?company=:id */
   async me({ auth, request, response }: HttpContext) {
     const companyId = request.input('company') as string | undefined;
     if (!companyId) return response.badRequest({ message: 'company query param required' });
 
-    const profile = await Profile.query()
-      .where('user_id', auth.user!.id)
-      .where('company_id', companyId)
-      .preload('metadata')
-      .first();
+    const profile = await ProfileQueries.findByUserAndCompanyWithMetadata(auth.user!.id, companyId);
     if (!profile) return response.notFound({ message: 'No profile in this company' });
 
     return response.ok(fullView(profile, profile.metadata ?? null));
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Show - GET /api/profiles/:id   (public, visibility-gated)
-  |   public                → safe card returned to anyone
-  |   company_member_only   → full view to same-company members; 404 otherwise
-  |--------------------------------------------------------------------------
-  */
+  /** GET /api/profiles/:id — public, visibility-gated. */
   async show({ auth, params, response }: HttpContext) {
-    const profile = await Profile.find(params.id);
+    const profile = await ProfileQueries.findById(params.id);
     if (!profile) return response.notFound({ message: 'Profile not found' });
 
     let userId: string | null = null;
@@ -123,9 +80,9 @@ export default class ProfilesController {
       userId = null;
     }
 
-    const metadata = await ProfileMetadata.find(profile.id);
+    const metadata = await ProfileQueries.findMetadata(profile.id);
 
-    // Owner of the profile sees full view of self.
+    // The profile owner always sees their own full view.
     if (userId && profile.userId === userId) {
       return response.ok(fullView(profile, metadata));
     }
@@ -135,22 +92,17 @@ export default class ProfilesController {
       return response.ok(publicCardView(profile, metadata));
     }
 
-    // company_member_only — must be active in same company.
-    const actor = await findActorProfile(userId, profile.companyId);
+    // company_member_only — must be active in the same company.
+    const actor = userId
+      ? await ProfileQueries.findActiveByUserAndCompany(userId, profile.companyId)
+      : null;
     if (!actor) return response.notFound({ message: 'Profile not found' });
     return response.ok(fullView(profile, metadata));
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Update - PATCH /api/profiles/:id   (auth required, self only)
-  | Self-edit display_name / avatar / visibility / metadata fields.
-  | Admins do NOT edit other profiles' display data — those are snapshots
-  | owned by the user.
-  |--------------------------------------------------------------------------
-  */
+  /** PATCH /api/profiles/:id — self-edit only. */
   async update({ auth, params, request, response }: HttpContext) {
-    const profile = await Profile.find(params.id);
+    const profile = await ProfileQueries.findById(params.id);
     if (!profile) return response.notFound({ message: 'Profile not found' });
 
     if (profile.userId !== auth.user!.id) {
@@ -158,137 +110,94 @@ export default class ProfilesController {
     }
 
     const data = await request.validateUsing(updateProfileValidator);
-
     try {
       const updated = await ProfileService.updateProfile(profile.id, data);
-      const metadata = await ProfileMetadata.find(updated.id);
+      const metadata = await ProfileQueries.findMetadata(updated.id);
       return response.ok(fullView(updated, metadata));
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Update role - PATCH /api/profiles/:id/role   (auth required, admin+)
-  | Service enforces: no self-change, no owner assignment, rank-aware.
-  |--------------------------------------------------------------------------
-  */
+  /** PATCH /api/profiles/:id/role — admin+. */
   async updateRole({ auth, params, request, response }: HttpContext) {
-    const target = await Profile.find(params.id);
+    const target = await ProfileQueries.findById(params.id);
     if (!target) return response.notFound({ message: 'Profile not found' });
 
-    const actor = await findActorProfile(auth.user!.id, target.companyId);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, target.companyId);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
     const { role } = await request.validateUsing(changeRoleValidator);
-
     try {
       const updated = await ProfileService.changeRole(target.id, actor, role);
-      const metadata = await ProfileMetadata.find(updated.id);
+      const metadata = await ProfileQueries.findMetadata(updated.id);
       return response.ok(fullView(updated, metadata));
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Suspend - POST /api/profiles/:id/suspend   (auth required, admin+)
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/profiles/:id/suspend — admin+. */
   async suspend({ auth, params, response }: HttpContext) {
-    const target = await Profile.find(params.id);
+    const target = await ProfileQueries.findById(params.id);
     if (!target) return response.notFound({ message: 'Profile not found' });
 
-    const actor = await findActorProfile(auth.user!.id, target.companyId);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, target.companyId);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
     try {
       const updated = await ProfileService.suspendProfile(target.id, actor);
       return response.ok({ id: updated.id, status: updated.status });
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Reactivate - POST /api/profiles/:id/reactivate   (auth required, admin+)
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/profiles/:id/reactivate — admin+. */
   async reactivate({ auth, params, response }: HttpContext) {
-    const target = await Profile.find(params.id);
+    const target = await ProfileQueries.findById(params.id);
     if (!target) return response.notFound({ message: 'Profile not found' });
 
-    const actor = await findActorProfile(auth.user!.id, target.companyId);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, target.companyId);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
     try {
       const updated = await ProfileService.reactivateProfile(target.id, actor);
       return response.ok({ id: updated.id, status: updated.status });
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Leave - POST /api/profiles/:id/leave   (auth required, self only)
-  | Soft-delete via status='inactive'. Owner must transferOwnership first.
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/profiles/:id/leave — self only. */
   async leave({ auth, params, response }: HttpContext) {
-    const target = await Profile.find(params.id);
+    const target = await ProfileQueries.findById(params.id);
     if (!target) return response.notFound({ message: 'Profile not found' });
 
-    const actor = await findActorProfile(auth.user!.id, target.companyId);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, target.companyId);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
     try {
       const updated = await ProfileService.setInactive(target.id, actor, 'left');
       return response.ok({ id: updated.id, status: updated.status, leftAt: updated.leftAt });
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Remove - DELETE /api/profiles/:id   (auth required, admin+)
-  | Soft-delete a different profile. Owner cannot be removed.
-  |--------------------------------------------------------------------------
-  */
+  /** DELETE /api/profiles/:id — admin+, soft-delete. */
   async destroy({ auth, params, response }: HttpContext) {
-    const target = await Profile.find(params.id);
+    const target = await ProfileQueries.findById(params.id);
     if (!target) return response.notFound({ message: 'Profile not found' });
 
-    const actor = await findActorProfile(auth.user!.id, target.companyId);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, target.companyId);
     if (!actor) return response.forbidden({ message: 'Access denied' });
 
     try {
       const updated = await ProfileService.setInactive(target.id, actor, 'removed');
       return response.ok({ id: updated.id, status: updated.status, leftAt: updated.leftAt });
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 }
