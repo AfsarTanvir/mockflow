@@ -203,13 +203,16 @@ router
 | Profile Routes
 |--------------------------------------------------------------------------
 */
+// Auth-required — must be registered before the public `:id` route, otherwise
+// `:id` captures the literal "me" and Profile.find('me') fails on a uuid column.
+router.get('/api/profiles/me', [ProfilesController, 'me']).use(middleware.auth());
+
 // Public — visibility-gated inside the controller
 router.get('/api/profiles/:id', [ProfilesController, 'show']);
 
 // Auth-required
 router
   .group(() => {
-    router.get('/me', [ProfilesController, 'me']);
     router.patch('/:id', [ProfilesController, 'update']);
     router.patch('/:id/role', [ProfilesController, 'updateRole']);
     router.post('/:id/suspend', [ProfilesController, 'suspend']);
