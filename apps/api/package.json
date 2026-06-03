@@ -25,6 +25,10 @@
     "#config/*": "./config/*.js",
     "#database/*": "./database/*.js",
     "#middleware/*": "./app/middleware/*.js",
+    "#models/*": "./app/models/*.js",
+    "#services/*": "./app/services/*.js",
+    "#queries/*": "./app/queries/*.js",
+    "#validators/*": "./app/validators/*.js",
     "#start/*": "./start/*.js"
   },
   "devDependencies": {
