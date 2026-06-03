@@ -11,6 +11,18 @@ export function listForProject(projectId: string, client?: TransactionClientCont
   return Endpoint.query({ client }).where('project_id', projectId).orderBy('created_at', 'asc');
 }
 
+/** Active endpoints for a project filtered by HTTP method (mock matching). */
+export function listActiveByMethod(
+  projectId: string,
+  method: string,
+  client?: TransactionClientContract
+) {
+  return Endpoint.query({ client })
+    .where('project_id', projectId)
+    .where('is_active', true)
+    .where('method', method);
+}
+
 /** An existing endpoint with the same (method, path) in the project, optionally excluding one id. */
 export function findConflict(
   projectId: string,

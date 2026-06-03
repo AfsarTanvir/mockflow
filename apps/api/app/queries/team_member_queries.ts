@@ -28,3 +28,20 @@ export function listForUser(userId: string, client?: TransactionClientContract) 
     .preload('project')
     .orderBy('created_at', 'desc');
 }
+
+/** All members of a project (oldest first) with their user preloaded. */
+export function listForProjectWithUser(projectId: string, client?: TransactionClientContract) {
+  return TeamMember.query({ client })
+    .where('project_id', projectId)
+    .preload('user')
+    .orderBy('created_at', 'asc');
+}
+
+/** A single membership row by its id, scoped to the project. */
+export function findInProjectById(
+  projectId: string,
+  memberId: string,
+  client?: TransactionClientContract
+) {
+  return TeamMember.query({ client }).where('project_id', projectId).where('id', memberId).first();
+}

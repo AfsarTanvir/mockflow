@@ -1,321 +1,127 @@
-import { randomBytes } from 'node:crypto';
 import type { HttpContext } from '@adonisjs/core/http';
-import { DateTime } from 'luxon';
-import hash from '@adonisjs/core/services/hash';
-import User from '../models/user.js';
-import UserToken from '../models/user_token.js';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email_service.js';
+import { respondError } from '#app/exceptions/respond_error';
+import * as AuthService from '#services/auth_service';
+import type User from '#models/user';
 import {
   registerValidator,
   loginValidator,
   updateProfileValidator,
   forgotPasswordValidator,
   resetPasswordValidator,
-} from '../validators/auth_validator.js';
+} from '#validators/auth_validator';
+
+/** Public profile shape returned on register/login. */
+function sessionUser(user: User) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatarUrl: user.avatarUrl,
+    createdAt: user.createdAt,
+  };
+}
+
+/** Fuller account shape returned by /me and /profile. */
+function accountUser(user: User) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatarUrl: user.avatarUrl,
+    emailVerified: user.emailVerified,
+    createdAt: user.createdAt,
+  };
+}
 
 export default class AuthController {
-  /*
-  |--------------------------------------------------------------------------
-  | Register - POST /api/auth/register
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/auth/register */
   async register({ request, response }: HttpContext) {
     const data = await request.validateUsing(registerValidator);
-
-    const existingUser = await User.findBy('email', data.email);
-    if (existingUser) {
-      return response.conflict({ message: 'Email already registered' });
-    }
-
-    const user = await User.create({
-      name: data.name,
-      email: data.email,
-      password: data.password,
-      emailVerified: false,
-    });
-
-    const verificationToken = randomBytes(32).toString('hex');
-    await UserToken.create({
-      userId: user.id,
-      type: 'verify_email',
-      token: verificationToken,
-      expiresAt: DateTime.now().plus({ minutes: 10 }),
-    });
-
-    sendVerificationEmail({
-      toEmail: user.email,
-      userName: user.name,
-      verificationToken,
-    }).catch((err) => {
-      console.error('[MockFlow] Failed to send verification email on register:', err);
-    });
-
-    const token = await User.accessTokens.create(user);
-
+    const { user, token } = await AuthService.register(data);
     return response.created({
       message: 'Account created. Check your email to verify your address.',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatarUrl: user.avatarUrl,
-        createdAt: user.createdAt,
-      },
-      token: token.value!.release(),
+      user: sessionUser(user),
+      token,
     });
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Verify Email - POST /api/auth/verify/:token (Public)
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/auth/verify/:token (public) */
   async verifyEmail({ params, response }: HttpContext) {
-    const record = await UserToken.query()
-      .where('token', params.token)
-      .where('type', 'verify_email')
-      .first();
-    if (!record) return response.notFound({ message: 'Invalid verification link' });
-
-    if (record.expiresAt < DateTime.now()) {
-      await record.delete();
-      return response.unprocessableEntity({ message: 'Verification link has expired' });
-    }
-
-    const user = await User.find(record.userId);
-    if (!user) return response.notFound({ message: 'User not found' });
-
-    user.emailVerified = true;
-    await user.save();
-    await record.delete();
-
-    return response.ok({ message: 'Email verified successfully' });
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Resend Verification - POST /api/auth/resend-verification (Protected)
-  |--------------------------------------------------------------------------
-  */
-  async resendVerification({ auth, response }: HttpContext) {
-    const user = auth.user!;
-
-    if (user.emailVerified) {
-      return response.unprocessableEntity({ message: 'Email is already verified' });
-    }
-
-    await UserToken.query().where('user_id', user.id).where('type', 'verify_email').delete();
-
-    const verificationToken = randomBytes(32).toString('hex');
-    await UserToken.create({
-      userId: user.id,
-      type: 'verify_email',
-      token: verificationToken,
-      expiresAt: DateTime.now().plus({ minutes: 10 }),
-    });
-
     try {
-      await sendVerificationEmail({
-        toEmail: user.email,
-        userName: user.name,
-        verificationToken,
-      });
-    } catch (err: any) {
-      console.error('[MockFlow] Failed to resend verification email:', err);
-      return response.internalServerError({
-        message: err?.message ?? 'Failed to send verification email. Check server logs.',
-      });
+      await AuthService.verifyEmail(params.token);
+      return response.ok({ message: 'Email verified successfully' });
+    } catch (error) {
+      return respondError(error, response);
     }
-
-    return response.ok({ message: 'Verification email sent' });
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Forgot Password - POST /api/auth/forgot-password (Public)
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/auth/resend-verification (protected) */
+  async resendVerification({ auth, response }: HttpContext) {
+    try {
+      await AuthService.resendVerification(auth.user!);
+      return response.ok({ message: 'Verification email sent' });
+    } catch (error) {
+      return respondError(error, response);
+    }
+  }
+
+  /** POST /api/auth/forgot-password (public) */
   async forgotPassword({ request, response }: HttpContext) {
     const { email } = await request.validateUsing(forgotPasswordValidator);
-
-    const user = await User.findBy('email', email);
-    if (!user) {
-      return response.notFound({
-        message: 'No account exists with that email. Please sign up first.',
-      });
+    try {
+      await AuthService.forgotPassword(email);
+      return response.ok({ message: 'Check your email for a reset link.' });
+    } catch (error) {
+      return respondError(error, response);
     }
-
-    await UserToken.query().where('user_id', user.id).where('type', 'reset_password').delete();
-
-    const resetToken = randomBytes(32).toString('hex');
-    await UserToken.create({
-      userId: user.id,
-      type: 'reset_password',
-      token: resetToken,
-      expiresAt: DateTime.now().plus({ hours: 1 }),
-    });
-
-    sendPasswordResetEmail({
-      toEmail: user.email,
-      userName: user.name,
-      resetToken,
-    }).catch((err) => {
-      console.error('[MockFlow] Failed to send password reset email:', err);
-    });
-
-    return response.ok({ message: 'Check your email for a reset link.' });
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Reset Password - POST /api/auth/reset-password/:token (Public)
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/auth/reset-password/:token (public) */
   async resetPassword({ params, request, response }: HttpContext) {
     const { newPassword } = await request.validateUsing(resetPasswordValidator);
-
-    const record = await UserToken.query()
-      .where('token', params.token)
-      .where('type', 'reset_password')
-      .first();
-    if (!record) {
-      return response.notFound({
-        message: 'This reset link is invalid or has already been used. Request a new one.',
+    try {
+      await AuthService.resetPassword(params.token, newPassword);
+      return response.ok({
+        message: 'Your password has been updated. You can now sign in with your new password.',
       });
+    } catch (error) {
+      return respondError(error, response);
     }
-
-    if (record.expiresAt < DateTime.now()) {
-      await record.delete();
-      return response.unprocessableEntity({
-        message: 'This reset link has expired. Request a new one.',
-      });
-    }
-
-    const user = await User.find(record.userId);
-    if (!user) return response.notFound({ message: 'Account not found.' });
-
-    user.password = newPassword;
-    await user.save();
-    await record.delete();
-
-    // Invalidate all existing access tokens for this user — force re-login everywhere
-    await User.accessTokens
-      .all(user)
-      .then((tokens) =>
-        Promise.all(tokens.map((t) => User.accessTokens.delete(user, t.identifier)))
-      );
-
-    return response.ok({
-      message: 'Your password has been updated. You can now sign in with your new password.',
-    });
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Login - POST /api/auth/login
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/auth/login — verifyCredentials errors propagate to the global handler. */
   async login({ request, response }: HttpContext) {
     const { email, password } = await request.validateUsing(loginValidator);
-
-    const user = await User.verifyCredentials(email, password);
-    const token = await User.accessTokens.create(user);
-
-    return response.ok({
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatarUrl: user.avatarUrl,
-        createdAt: user.createdAt,
-      },
-      token: token.value!.release(),
-    });
+    const { user, token } = await AuthService.login(email, password);
+    return response.ok({ message: 'Login successful', user: sessionUser(user), token });
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Me - GET /api/auth/me (Protected)
-  |--------------------------------------------------------------------------
-  */
+  /** GET /api/auth/me (protected) */
   async me({ auth, response }: HttpContext) {
-    const user = auth.user!;
-
-    return response.ok({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      avatarUrl: user.avatarUrl,
-      emailVerified: user.emailVerified,
-      createdAt: user.createdAt,
-    });
+    return response.ok(accountUser(auth.user!));
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Update Profile - PATCH /api/auth/profile (Protected)
-  |--------------------------------------------------------------------------
-  */
+  /** PATCH /api/auth/profile (protected) */
   async updateProfile({ auth, request, response }: HttpContext) {
-    const user = auth.user!;
     const data = await request.validateUsing(updateProfileValidator);
-
-    if (data.newPassword) {
-      if (!data.currentPassword) {
-        return response.unprocessableEntity({
-          message: 'Current password is required to set a new password',
-        });
-      }
-      const valid = await hash.verify(user.password ?? '', data.currentPassword);
-      if (!valid) {
-        return response.unprocessableEntity({ message: 'Current password is incorrect' });
-      }
-      const sameAsOld = await hash.verify(user.password ?? '', data.newPassword);
-      if (sameAsOld) {
-        return response.unprocessableEntity({
-          message: 'New password must be different from your current password',
-        });
-      }
-      user.password = data.newPassword;
+    try {
+      const user = await AuthService.updateProfile(auth.user!, data);
+      return response.ok(accountUser(user));
+    } catch (error) {
+      return respondError(error, response);
     }
-
-    if (data.name) user.name = data.name;
-
-    await user.save();
-
-    return response.ok({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      avatarUrl: user.avatarUrl,
-      emailVerified: user.emailVerified,
-      createdAt: user.createdAt,
-    });
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Logout - POST /api/auth/logout (Protected)
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/auth/logout (protected) */
   async logout({ auth, response }: HttpContext) {
-    await User.accessTokens.delete(auth.user!, auth.user!.currentAccessToken.identifier);
-
+    await AuthService.revokeAccessToken(auth.user!, auth.user!.currentAccessToken.identifier);
     return response.ok({ message: 'Logged out successfully' });
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Refresh - POST /api/auth/refresh (Optional - tokens auto-handle this)
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/auth/refresh */
   async refresh({ auth, response }: HttpContext) {
     const user = await auth.authenticate();
-    const token = await User.accessTokens.create(user);
-
-    return response.ok({
-      token: token.value!.release(),
-    });
+    const token = await AuthService.issueAccessToken(user);
+    return response.ok({ token });
   }
 }
