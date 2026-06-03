@@ -1,7 +1,13 @@
 import { Exception } from '@adonisjs/core/exceptions';
 import * as ProjectQueries from '#queries/project_queries';
 import * as TeamMemberQueries from '#queries/team_member_queries';
+import * as EndpointQueries from '#queries/endpoint_queries';
+import * as ScenarioQueries from '#queries/scenario_queries';
+import * as RuleQueries from '#queries/rule_queries';
 import type Project from '#models/project';
+import type Endpoint from '#models/endpoint';
+import type EndpointScenario from '#models/endpoint_scenario';
+import type ScenarioRule from '#models/scenario_rule';
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database';
 
 /**
@@ -106,4 +112,74 @@ export async function assertProjectAccess(
     });
   }
   return { project: access.project, role: access.role };
+}
+
+/**
+ * Access gate for an endpoint: load it, then check the parent project.
+ * Throws 404 if the endpoint is missing.
+ */
+export async function assertEndpointAccess(
+  endpointId: string,
+  userId: string,
+  minRole: ProjectRole,
+  client?: TransactionClientContract
+): Promise<{ endpoint: Endpoint; project: Project; role: ProjectRole }> {
+  const endpoint = await EndpointQueries.findById(endpointId, client);
+  if (!endpoint) {
+    throw new Exception('Endpoint not found', { status: 404, code: 'E_ENDPOINT_NOT_FOUND' });
+  }
+  const { project, role } = await assertProjectAccess(endpoint.projectId, userId, minRole, client);
+  return { endpoint, project, role };
+}
+
+/**
+ * Access gate for a scenario: load it, then walk scenario → endpoint → project.
+ * Throws 404 if the scenario is missing.
+ */
+export async function assertScenarioAccess(
+  scenarioId: string,
+  userId: string,
+  minRole: ProjectRole,
+  client?: TransactionClientContract
+): Promise<{
+  scenario: EndpointScenario;
+  endpoint: Endpoint;
+  project: Project;
+  role: ProjectRole;
+}> {
+  const scenario = await ScenarioQueries.findById(scenarioId, client);
+  if (!scenario) {
+    throw new Exception('Scenario not found', { status: 404, code: 'E_SCENARIO_NOT_FOUND' });
+  }
+  const { endpoint, project, role } = await assertEndpointAccess(
+    scenario.endpointId,
+    userId,
+    minRole,
+    client
+  );
+  return { scenario, endpoint, project, role };
+}
+
+/**
+ * Access gate for a rule: load it, then walk rule → scenario → endpoint → project.
+ * Throws 404 if the rule is missing.
+ */
+export async function assertRuleAccess(
+  ruleId: string,
+  userId: string,
+  minRole: ProjectRole,
+  client?: TransactionClientContract
+): Promise<{
+  rule: ScenarioRule;
+  scenario: EndpointScenario;
+  endpoint: Endpoint;
+  project: Project;
+  role: ProjectRole;
+}> {
+  const rule = await RuleQueries.findById(ruleId, client);
+  if (!rule) {
+    throw new Exception('Rule not found', { status: 404, code: 'E_RULE_NOT_FOUND' });
+  }
+  const access = await assertScenarioAccess(rule.scenarioId, userId, minRole, client);
+  return { rule, ...access };
 }
