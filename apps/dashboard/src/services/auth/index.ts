@@ -21,7 +21,11 @@ export async function signOut(): Promise<void> {
   await httpClient.post('/api/auth/logout', {});
 }
 
-export async function updateProfile(body: { name?: string; currentPassword?: string; newPassword?: string }): Promise<User> {
+export async function updateProfile(body: {
+  name?: string;
+  currentPassword?: string;
+  newPassword?: string;
+}): Promise<User> {
   const { data } = await httpClient.patch<User>('/api/auth/profile', body);
   return data;
 }
@@ -41,7 +45,10 @@ export async function forgotPassword(email: string): Promise<{ message: string }
   return data;
 }
 
-export async function resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+export async function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<{ message: string }> {
   const { data } = await httpClient.post(`/api/auth/reset-password/${token}`, { newPassword });
   return data;
 }

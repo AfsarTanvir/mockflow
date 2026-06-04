@@ -67,19 +67,34 @@ test.group('scenario_resolver / getByPath', () => {
 
 test.group('scenario_resolver / evalRule — header source', () => {
   test('equals — matches when header value is identical', ({ assert }) => {
-    const rule = makeRule({ source: 'header', field: 'Authorization', operator: 'equals', value: 'Bearer abc' });
+    const rule = makeRule({
+      source: 'header',
+      field: 'Authorization',
+      operator: 'equals',
+      value: 'Bearer abc',
+    });
     const req = makeRequest({ headers: { Authorization: 'Bearer abc' } });
     assert.isTrue(evalRule(rule, req));
   });
 
   test('equals — does not match when header value differs', ({ assert }) => {
-    const rule = makeRule({ source: 'header', field: 'X-Role', operator: 'equals', value: 'admin' });
+    const rule = makeRule({
+      source: 'header',
+      field: 'X-Role',
+      operator: 'equals',
+      value: 'admin',
+    });
     const req = makeRequest({ headers: { 'X-Role': 'user' } });
     assert.isFalse(evalRule(rule, req));
   });
 
   test('equals — header lookup is case-insensitive', ({ assert }) => {
-    const rule = makeRule({ source: 'header', field: 'authorization', operator: 'equals', value: 'Bearer abc' });
+    const rule = makeRule({
+      source: 'header',
+      field: 'authorization',
+      operator: 'equals',
+      value: 'Bearer abc',
+    });
     const req = makeRequest({ headers: { Authorization: 'Bearer abc' } });
     assert.isTrue(evalRule(rule, req));
   });
@@ -119,19 +134,34 @@ test.group('scenario_resolver / evalRule — query source', () => {
 
 test.group('scenario_resolver / evalRule — body source', () => {
   test('equals — matches on top-level body field', ({ assert }) => {
-    const rule = makeRule({ source: 'body', field: 'password', operator: 'equals', value: 'wrong' });
+    const rule = makeRule({
+      source: 'body',
+      field: 'password',
+      operator: 'equals',
+      value: 'wrong',
+    });
     const req = makeRequest({ body: { password: 'wrong' } });
     assert.isTrue(evalRule(rule, req));
   });
 
   test('equals — matches on dot-notation body path', ({ assert }) => {
-    const rule = makeRule({ source: 'body', field: 'user.email', operator: 'equals', value: 'a@b.com' });
+    const rule = makeRule({
+      source: 'body',
+      field: 'user.email',
+      operator: 'equals',
+      value: 'a@b.com',
+    });
     const req = makeRequest({ body: { user: { email: 'a@b.com' } } });
     assert.isTrue(evalRule(rule, req));
   });
 
   test('equals — does not match when nested path is missing', ({ assert }) => {
-    const rule = makeRule({ source: 'body', field: 'user.email', operator: 'equals', value: 'a@b.com' });
+    const rule = makeRule({
+      source: 'body',
+      field: 'user.email',
+      operator: 'equals',
+      value: 'a@b.com',
+    });
     const req = makeRequest({ body: { user: {} } });
     assert.isFalse(evalRule(rule, req));
   });

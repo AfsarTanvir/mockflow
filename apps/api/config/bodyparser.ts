@@ -1,4 +1,4 @@
-import { defineConfig } from '@adonisjs/core/bodyparser'
+import { defineConfig } from '@adonisjs/core/bodyparser';
 
 const bodyParserConfig = defineConfig({
   allowedMethods: ['POST', 'PUT', 'PATCH', 'DELETE'],
@@ -25,6 +25,6 @@ const bodyParserConfig = defineConfig({
     limit: '20mb',
     types: ['multipart/form-data'],
   },
-})
+});
 
-export default bodyParserConfig
+export default bodyParserConfig;

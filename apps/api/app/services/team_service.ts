@@ -63,10 +63,7 @@ export async function createTeam(
   });
 }
 
-export async function updateTeam(
-  teamId: string,
-  input: Partial<CreateTeamInput>
-): Promise<Team> {
+export async function updateTeam(teamId: string, input: Partial<CreateTeamInput>): Promise<Team> {
   return db.transaction(async (trx) => {
     const team = await Team.find(teamId, { client: trx });
     if (!team) throw new Exception('Team not found', { status: 404 });

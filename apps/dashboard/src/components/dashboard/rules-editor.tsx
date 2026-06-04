@@ -70,7 +70,9 @@ export function RulesEditor({ scenarioId, canWrite }: Props) {
       {isLoading ? (
         <div className="text-xs text-gray-400">Loading rules…</div>
       ) : rules.length === 0 ? (
-        <div className="text-xs text-gray-400 text-center py-2">No rules — scenario is manual-only.</div>
+        <div className="text-xs text-gray-400 text-center py-2">
+          No rules — scenario is manual-only.
+        </div>
       ) : (
         <div className="border rounded-lg overflow-hidden">
           <div className="grid grid-cols-[80px_1fr_80px_1fr_40px] gap-2 px-3 py-2 bg-gray-50 border-b text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
@@ -107,9 +109,7 @@ export function RulesEditor({ scenarioId, canWrite }: Props) {
 
       {canWrite && (
         <div className="space-y-2">
-          {localError && (
-            <p className="text-xs text-red-500">{localError}</p>
-          )}
+          {localError && <p className="text-xs text-red-500">{localError}</p>}
           <div className="grid grid-cols-[80px_1fr_80px_1fr_auto] gap-2 items-center">
             <select
               value={source}

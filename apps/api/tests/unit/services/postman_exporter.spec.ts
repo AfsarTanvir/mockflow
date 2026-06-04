@@ -101,12 +101,7 @@ test.group('postman_exporter — item building', () => {
   });
 
   test('request.method matches endpoint method', ({ assert }) => {
-    const doc = buildPostmanCollection(
-      PROJECT,
-      [endpoint({ method: 'PATCH' })],
-      'http://x',
-      false
-    );
+    const doc = buildPostmanCollection(PROJECT, [endpoint({ method: 'PATCH' })], 'http://x', false);
     const items = doc.item as any[];
     assert.equal(items[0].request.method, 'PATCH');
   });
@@ -128,12 +123,7 @@ test.group('postman_exporter — response building', () => {
   });
 
   test('response code is numeric, status is string', ({ assert }) => {
-    const doc = buildPostmanCollection(
-      PROJECT,
-      [endpoint({ statusCode: 404 })],
-      'http://x',
-      false
-    );
+    const doc = buildPostmanCollection(PROJECT, [endpoint({ statusCode: 404 })], 'http://x', false);
     const items = doc.item as any[];
     assert.equal(items[0].response[0].code, 404);
     assert.equal(items[0].response[0].status, '404');
@@ -185,11 +175,7 @@ test.group('postman_exporter — sorting & filtering', () => {
   test('items sorted alphabetically by path', ({ assert }) => {
     const doc = buildPostmanCollection(
       PROJECT,
-      [
-        endpoint({ path: '/zebra' }),
-        endpoint({ path: '/apple' }),
-        endpoint({ path: '/mango' }),
-      ],
+      [endpoint({ path: '/zebra' }), endpoint({ path: '/apple' }), endpoint({ path: '/mango' })],
       'http://x',
       false
     );

@@ -30,7 +30,13 @@ export function ExportPanel({ projectId }: Props) {
     }
   }
 
-  const rows: { label: string; rawKey: ExportKey; evalKey: ExportKey; rawFn: () => Promise<void>; evalFn: () => Promise<void> }[] = [
+  const rows: {
+    label: string;
+    rawKey: ExportKey;
+    evalKey: ExportKey;
+    rawFn: () => Promise<void>;
+    evalFn: () => Promise<void>;
+  }[] = [
     {
       label: 'OpenAPI 3.0',
       rawKey: 'openapi-raw',
@@ -53,7 +59,8 @@ export function ExportPanel({ projectId }: Props) {
       <p className="text-xs text-gray-400">
         Download your project as a standard API spec file.{' '}
         <span className="text-gray-500 font-medium">Raw</span> keeps faker templates as-is;{' '}
-        <span className="text-gray-500 font-medium">Evaluated</span> replaces them with sample values.
+        <span className="text-gray-500 font-medium">Evaluated</span> replaces them with sample
+        values.
       </p>
 
       <div className="space-y-3">

@@ -55,10 +55,7 @@ export default function TeamsListClient({ initialUser }: Props) {
 
   const [showCreate, setShowCreate] = useState(false);
 
-  const canCreate =
-    actorRole === 'owner' ||
-    actorRole === 'admin' ||
-    (actorRole === 'member'); // settings.members_can_create_teams gating happens server-side; surface anyway
+  const canCreate = actorRole === 'owner' || actorRole === 'admin' || actorRole === 'member'; // settings.members_can_create_teams gating happens server-side; surface anyway
 
   if (companiesLoading || !active) {
     return (
@@ -210,7 +207,9 @@ function CreateTeamForm({
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Description (optional)</label>
+        <label className="block text-xs font-medium text-gray-700 mb-1">
+          Description (optional)
+        </label>
         <input
           type="text"
           {...register('description')}

@@ -129,10 +129,7 @@ export async function suspendProfile(targetProfileId: string, actor: Profile): P
   return target;
 }
 
-export async function reactivateProfile(
-  targetProfileId: string,
-  actor: Profile
-): Promise<Profile> {
+export async function reactivateProfile(targetProfileId: string, actor: Profile): Promise<Profile> {
   if (ROLE_RANK[actor.role] < ROLE_RANK.admin) {
     throw new Exception('Only admin or owner can reactivate profiles', { status: 403 });
   }

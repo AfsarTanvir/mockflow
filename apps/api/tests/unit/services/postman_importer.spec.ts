@@ -49,7 +49,10 @@ test.group('postman_importer — validation', () => {
 
   test('rejects v2.0.0 schema', ({ assert }) => {
     const result = parsePostmanCollection({
-      info: { name: 'x', schema: 'https://schema.getpostman.com/json/collection/v2.0.0/collection.json' },
+      info: {
+        name: 'x',
+        schema: 'https://schema.getpostman.com/json/collection/v2.0.0/collection.json',
+      },
       item: [],
     });
     if (isOk(result)) return assert.fail('expected error');
@@ -83,7 +86,9 @@ test.group('postman_importer — URL parsing', () => {
   test('strips {{anyVar}} prefix (not just baseUrl)', ({ assert }) => {
     const result = parsePostmanCollection(
       collection([
-        leaf({ url: { raw: '{{server}}/users/:id', host: ['{{server}}'], path: ['users', ':id'] } }),
+        leaf({
+          url: { raw: '{{server}}/users/:id', host: ['{{server}}'], path: ['users', ':id'] },
+        }),
       ])
     );
     if (!isOk(result)) return assert.fail('expected ok');
@@ -107,17 +112,13 @@ test.group('postman_importer — URL parsing', () => {
   });
 
   test('falls back to "/" when url is empty', ({ assert }) => {
-    const result = parsePostmanCollection(
-      collection([leaf({ url: { raw: '{{baseUrl}}' } })])
-    );
+    const result = parsePostmanCollection(collection([leaf({ url: { raw: '{{baseUrl}}' } })]));
     if (!isOk(result)) return assert.fail('expected ok');
     assert.equal(result.endpoints[0].path, '/');
   });
 
   test('accepts url.raw as a plain string', ({ assert }) => {
-    const result = parsePostmanCollection(
-      collection([leaf({ url: '{{baseUrl}}/health' })])
-    );
+    const result = parsePostmanCollection(collection([leaf({ url: '{{baseUrl}}/health' })]));
     if (!isOk(result)) return assert.fail('expected ok');
     assert.equal(result.endpoints[0].path, '/health');
   });
@@ -257,18 +258,16 @@ test.group('postman_importer — folder walking', () => {
     );
     if (!isOk(result)) return assert.fail('expected ok');
     assert.lengthOf(result.endpoints, 2);
-    assert.deepEqual(
-      result.endpoints.map((e) => `${e.method} ${e.path}`).sort(),
-      ['GET /health', 'POST /users']
-    );
+    assert.deepEqual(result.endpoints.map((e) => `${e.method} ${e.path}`).sort(), [
+      'GET /health',
+      'POST /users',
+    ]);
   });
 });
 
 test.group('postman_importer — method handling', () => {
   test('uppercases method', ({ assert }) => {
-    const result = parsePostmanCollection(
-      collection([leaf({ method: 'post' })])
-    );
+    const result = parsePostmanCollection(collection([leaf({ method: 'post' })]));
     if (!isOk(result)) return assert.fail('expected ok');
     assert.equal(result.endpoints[0].method, 'POST');
   });

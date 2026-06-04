@@ -17,7 +17,7 @@ export default class extends BaseSchema {
     });
 
     this.schema.raw('CREATE INDEX projects_owner_id_idx ON projects (owner_id)');
-    this.schema.raw('CREATE UNIQUE INDEX projects_slug_idx ON projects (slug)');
+    // `slug` is already covered by the inline .unique() constraint above; no extra unique index needed.
   }
 
   async down() {

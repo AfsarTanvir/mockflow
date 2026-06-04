@@ -59,9 +59,10 @@ export function ImportPanel({ projectId }: Props) {
     setPreview(null);
     setSuccess(null);
     try {
-      const result = format === 'openapi'
-        ? await previewOpenApi(projectId, file)
-        : await previewPostman(projectId, file);
+      const result =
+        format === 'openapi'
+          ? await previewOpenApi(projectId, file)
+          : await previewPostman(projectId, file);
       setPreview(result);
       const defaultResolutions: Record<string, 'skip' | 'overwrite'> = {};
       for (const c of result.conflicts) {
@@ -80,9 +81,10 @@ export function ImportPanel({ projectId }: Props) {
     setApplying(true);
     setError(null);
     try {
-      const result = format === 'openapi'
-        ? await applyOpenApi(projectId, preview.endpoints, resolutions)
-        : await applyPostman(projectId, preview.endpoints, resolutions);
+      const result =
+        format === 'openapi'
+          ? await applyOpenApi(projectId, preview.endpoints, resolutions)
+          : await applyPostman(projectId, preview.endpoints, resolutions);
       setSuccess(
         `Imported successfully — created ${result.created}, overwrote ${result.overwritten}, skipped ${result.skipped}.`
       );
@@ -103,8 +105,8 @@ export function ImportPanel({ projectId }: Props) {
     <div className="bg-white rounded-xl border p-6 space-y-4">
       <h2 className="text-sm font-semibold text-gray-900">Import</h2>
       <p className="text-xs text-gray-400">
-        Import endpoints from an OpenAPI 3.0 or Postman v2.1 JSON file. Existing endpoints with
-        the same method + path will be flagged as conflicts.
+        Import endpoints from an OpenAPI 3.0 or Postman v2.1 JSON file. Existing endpoints with the
+        same method + path will be flagged as conflicts.
       </p>
 
       {/* Format selector */}

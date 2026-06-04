@@ -1,4 +1,4 @@
-import vine from '@vinejs/vine'
+import vine from '@vinejs/vine';
 
 const parsedEndpointSchema = vine.object({
   method: vine.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const),
@@ -8,11 +8,11 @@ const parsedEndpointSchema = vine.object({
   responseHeaders: vine.record(vine.string()).optional(),
   delayMs: vine.number().min(0).max(5000).optional(),
   isActive: vine.boolean().optional(),
-})
+});
 
 export const applyImportValidator = vine.compile(
   vine.object({
     endpoints: vine.array(parsedEndpointSchema),
     resolutions: vine.record(vine.enum(['skip', 'overwrite'] as const)).optional(),
   })
-)
+);

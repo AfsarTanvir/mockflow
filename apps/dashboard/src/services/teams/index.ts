@@ -82,10 +82,7 @@ export async function createWorkspaceTeam(
   companyId: string,
   body: CreateTeamInput
 ): Promise<WorkspaceTeam> {
-  const { data } = await httpClient.post<WorkspaceTeam>(
-    `/api/companies/${companyId}/teams`,
-    body
-  );
+  const { data } = await httpClient.post<WorkspaceTeam>(`/api/companies/${companyId}/teams`, body);
   return data;
 }
 

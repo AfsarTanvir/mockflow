@@ -1,40 +1,21 @@
 import type { HttpContext } from '@adonisjs/core/http';
-import { Exception } from '@adonisjs/core/exceptions';
-import Company from '../models/company.js';
-import CompanyMetadata from '../models/company_metadata.js';
-import Profile from '../models/profile.js';
+import { respondError } from '#app/exceptions/respond_error';
+import type Company from '#models/company';
+import type CompanyMetadata from '#models/company_metadata';
+import type Profile from '#models/profile';
+import * as CompanyQueries from '#queries/company_queries';
+import * as ProfileQueries from '#queries/profile_queries';
+import * as CompanyService from '#services/company_service';
 import {
   createCompanyValidator,
   updateCompanyValidator,
   transferOwnershipValidator,
-} from '../validators/company_validator.js';
-import * as CompanyService from '../services/company_service.js';
+} from '#validators/company_validator';
 
 type ProfileRole = 'owner' | 'admin' | 'member' | 'viewer';
-const ROLE_RANK: Record<ProfileRole, number> = {
-  viewer: 0,
-  member: 1,
-  admin: 2,
-  owner: 3,
-};
+const ROLE_RANK: Record<ProfileRole, number> = { viewer: 0, member: 1, admin: 2, owner: 3 };
 
-/**
- * Look up the requester's active profile in this company.
- * Returns null if unauthenticated, profile-less in this company, or inactive.
- */
-async function findActorProfile(userId: string | null, companyId: string): Promise<Profile | null> {
-  if (!userId) return null;
-  return Profile.query()
-    .where('user_id', userId)
-    .where('company_id', companyId)
-    .where('status', 'active')
-    .first();
-}
-
-/**
- * Public-facing landing-view shape. Safe for unauthenticated visitors of
- * protected / public companies.
- */
+/** Public-facing landing view — safe for unauthenticated visitors of protected/public companies. */
 function landingView(company: Company, metadata: CompanyMetadata | null) {
   return {
     id: company.id,
@@ -53,10 +34,7 @@ function landingView(company: Company, metadata: CompanyMetadata | null) {
   };
 }
 
-/**
- * Full member-view shape. Includes everything plus the requester's own
- * role inside the company.
- */
+/** Full member view — everything plus the requester's own role. */
 function memberView(company: Company, metadata: CompanyMetadata | null, actor: Profile) {
   return {
     ...landingView(company, metadata),
@@ -71,20 +49,9 @@ function memberView(company: Company, metadata: CompanyMetadata | null, actor: P
 }
 
 export default class CompaniesController {
-  /*
-  |--------------------------------------------------------------------------
-  | Index - GET /api/companies   (auth required)
-  | Lists the current user's active profiles' companies.
-  |--------------------------------------------------------------------------
-  */
+  /** GET /api/companies — the current user's companies (via active profiles). */
   async index({ auth, response }: HttpContext) {
-    const userId = auth.user!.id;
-
-    const profiles = await Profile.query()
-      .where('user_id', userId)
-      .where('status', 'active')
-      .preload('company')
-      .orderBy('created_at', 'desc');
+    const profiles = await ProfileQueries.listActiveForUserWithCompany(auth.user!.id);
 
     return response.ok(
       profiles.map((p) => ({
@@ -107,15 +74,9 @@ export default class CompaniesController {
     );
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Store - POST /api/companies   (auth required)
-  | Creates company + owner profile + metadata in one tx.
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/companies — creates company + owner profile + metadata in one tx. */
   async store({ auth, request, response }: HttpContext) {
     const data = await request.validateUsing(createCompanyValidator);
-
     const { company, profile } = await CompanyService.createCompany(auth.user!.id, data);
 
     return response.created({
@@ -127,27 +88,16 @@ export default class CompaniesController {
         logoUrl: company.logoUrl,
         avatarUrl: company.avatarUrl,
       },
-      profile: {
-        id: profile.id,
-        role: profile.role,
-        displayName: profile.displayName,
-      },
+      profile: { id: profile.id, role: profile.role, displayName: profile.displayName },
     });
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Show - GET /api/companies/:slug   (public, visibility-gated)
-  |   private    → must have an active profile in the company; else 404
-  |   protected  → anyone sees landing view; members see full view
-  |   public     → anyone sees landing view; members see full view
-  |--------------------------------------------------------------------------
-  */
+  /** GET /api/companies/:slug — public, visibility-gated. */
   async show({ auth, params, response }: HttpContext) {
-    const company = await Company.findBy('slug', params.slug);
+    const company = await CompanyQueries.findBySlug(params.slug);
     if (!company) return response.notFound({ message: 'Company not found' });
 
-    // Best-effort authenticate. If no token / invalid token, userId stays null.
+    // Best-effort authenticate; stay anonymous on missing/invalid token.
     let userId: string | null = null;
     try {
       await auth.check();
@@ -156,59 +106,48 @@ export default class CompaniesController {
       userId = null;
     }
 
-    const actor = await findActorProfile(userId, company.id);
-    const metadata = await CompanyMetadata.find(company.id);
+    const actor = userId
+      ? await ProfileQueries.findActiveByUserAndCompany(userId, company.id)
+      : null;
+    const metadata = await CompanyQueries.findMetadata(company.id);
 
     if (company.visibility === 'private') {
-      // Private companies are invisible to non-members. Return 404 to hide existence.
+      // Hide existence from non-members.
       if (!actor) return response.notFound({ message: 'Company not found' });
       return response.ok(memberView(company, metadata, actor));
     }
 
-    // protected / public — members get the full view, outsiders get the landing view
     if (actor) return response.ok(memberView(company, metadata, actor));
     return response.ok(landingView(company, metadata));
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Update - PUT /api/companies/:id   (auth required, owner/admin)
-  |--------------------------------------------------------------------------
-  */
+  /** PUT /api/companies/:id — owner/admin. */
   async update({ auth, params, request, response }: HttpContext) {
-    const company = await Company.find(params.id);
+    const company = await CompanyQueries.findById(params.id);
     if (!company) return response.notFound({ message: 'Company not found' });
 
-    const actor = await findActorProfile(auth.user!.id, company.id);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, company.id);
     if (!actor) return response.forbidden({ message: 'Access denied' });
     if (ROLE_RANK[actor.role] < ROLE_RANK.admin) {
       return response.forbidden({ message: 'Only admin or owner can update the company' });
     }
 
     const data = await request.validateUsing(updateCompanyValidator);
-
     try {
       const updated = await CompanyService.updateCompany(company.id, data);
-      const metadata = await CompanyMetadata.find(company.id);
+      const metadata = await CompanyQueries.findMetadata(company.id);
       return response.ok(memberView(updated, metadata, actor));
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Destroy - DELETE /api/companies/:id   (auth required, owner only)
-  |--------------------------------------------------------------------------
-  */
+  /** DELETE /api/companies/:id — owner only. */
   async destroy({ auth, params, response }: HttpContext) {
-    const company = await Company.find(params.id);
+    const company = await CompanyQueries.findById(params.id);
     if (!company) return response.notFound({ message: 'Company not found' });
 
-    const actor = await findActorProfile(auth.user!.id, company.id);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, company.id);
     if (!actor || actor.role !== 'owner') {
       return response.forbidden({ message: 'Only the owner can delete the company' });
     }
@@ -217,31 +156,22 @@ export default class CompaniesController {
     return response.ok({ message: 'Company deleted' });
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Transfer Ownership - POST /api/companies/:id/transfer-ownership
-  | Owner only. Atomic role swap + companies.owner_user_id update.
-  |--------------------------------------------------------------------------
-  */
+  /** POST /api/companies/:id/transfer-ownership — owner only. */
   async transferOwnership({ auth, params, request, response }: HttpContext) {
-    const company = await Company.find(params.id);
+    const company = await CompanyQueries.findById(params.id);
     if (!company) return response.notFound({ message: 'Company not found' });
 
-    const actor = await findActorProfile(auth.user!.id, company.id);
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, company.id);
     if (!actor || actor.role !== 'owner') {
       return response.forbidden({ message: 'Only the owner can transfer ownership' });
     }
 
     const { newOwnerProfileId } = await request.validateUsing(transferOwnershipValidator);
-
     try {
       await CompanyService.transferOwnership(company.id, newOwnerProfileId);
       return response.ok({ message: 'Ownership transferred' });
-    } catch (e) {
-      if (e instanceof Exception) {
-        return response.status(e.status).json({ message: e.message });
-      }
-      throw e;
+    } catch (error) {
+      return respondError(error, response);
     }
   }
 }

@@ -58,8 +58,18 @@ export default function ResetPasswordForm() {
         {isSuccess ? (
           <div className="text-center">
             <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-6 h-6 text-green-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
             <p className="text-sm font-medium text-gray-900 mb-1">Password updated</p>
@@ -80,7 +90,9 @@ export default function ResetPasswordForm() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">Confirm new password</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                Confirm new password
+              </label>
               <input
                 type="password"
                 value={confirm}
@@ -93,7 +105,8 @@ export default function ResetPasswordForm() {
 
             {error && (
               <p className="text-xs text-red-500">
-                {(error as any)?.response?.data?.message ?? "We couldn't update your password. Try again."}
+                {(error as any)?.response?.data?.message ??
+                  "We couldn't update your password. Try again."}
               </p>
             )}
 

@@ -6,12 +6,7 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid('id').primary().defaultTo(this.db.rawQuery('gen_random_uuid()').knexQuery);
-      table
-        .uuid('user_id')
-        .notNullable()
-        .references('id')
-        .inTable('users')
-        .onDelete('CASCADE');
+      table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
       table
         .uuid('company_id')
         .notNullable()
@@ -20,14 +15,8 @@ export default class extends BaseSchema {
         .onDelete('CASCADE');
       table.string('display_name', 120).notNullable();
       table.string('avatar_url', 500).nullable();
-      table
-        .enum('role', ['owner', 'admin', 'member', 'viewer'])
-        .notNullable()
-        .defaultTo('member');
-      table
-        .enum('status', ['active', 'suspended', 'inactive'])
-        .notNullable()
-        .defaultTo('active');
+      table.enum('role', ['owner', 'admin', 'member', 'viewer']).notNullable().defaultTo('member');
+      table.enum('status', ['active', 'suspended', 'inactive']).notNullable().defaultTo('active');
       table
         .enum('visibility', ['public', 'company_member_only'])
         .notNullable()

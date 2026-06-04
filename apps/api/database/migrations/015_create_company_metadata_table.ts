@@ -5,12 +5,7 @@ export default class extends BaseSchema {
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table
-        .uuid('company_id')
-        .primary()
-        .references('id')
-        .inTable('companies')
-        .onDelete('CASCADE');
+      table.uuid('company_id').primary().references('id').inTable('companies').onDelete('CASCADE');
       table.text('description').nullable();
       table.string('website', 255).nullable();
       table.string('industry', 80).nullable();

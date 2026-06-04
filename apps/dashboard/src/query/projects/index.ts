@@ -33,10 +33,7 @@ export const useCreateProject = () => {
   return useMutation({
     mutationFn: (body: CreateProjectInput) => createProject(body),
     onSuccess: (newProject) => {
-      queryClient.setQueryData<Project[]>([QueryKey.PROJECTS], (old = []) => [
-        newProject,
-        ...old,
-      ]);
+      queryClient.setQueryData<Project[]>([QueryKey.PROJECTS], (old = []) => [newProject, ...old]);
     },
   });
 };
