@@ -2,16 +2,15 @@ import { cn } from '@/lib/utils';
 import type { HttpMethod } from '@/types';
 
 /**
- * HTTP-method pill. Methods keep distinct, conventional colors (GET=blue,
- * POST=green, …) but as token-relative tints that adapt to dark mode — no flat
- * palette literals scattered across screens.
+ * HTTP-method pill. Colors come from the --method-* design tokens
+ * (styles/globals.css), so they're defined in one place and adapt to dark mode.
  */
 const METHOD_STYLES: Record<HttpMethod, string> = {
-  GET: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  POST: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  PUT: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  PATCH: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
-  DELETE: 'bg-red-500/10 text-red-600 dark:text-red-400',
+  GET: 'bg-method-get/10 text-method-get',
+  POST: 'bg-method-post/10 text-method-post',
+  PUT: 'bg-method-put/10 text-method-put',
+  PATCH: 'bg-method-patch/10 text-method-patch',
+  DELETE: 'bg-method-delete/10 text-method-delete',
 };
 
 export function MethodBadge({ method, className }: { method: HttpMethod; className?: string }) {

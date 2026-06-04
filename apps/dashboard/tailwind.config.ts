@@ -28,6 +28,25 @@ const config: Config = {
           DEFAULT: 'var(--destructive)',
           foreground: 'var(--destructive-foreground)',
         },
+        success: {
+          DEFAULT: 'var(--success)',
+          foreground: 'var(--success-foreground)',
+        },
+        warning: {
+          DEFAULT: 'var(--warning)',
+          foreground: 'var(--warning-foreground)',
+        },
+        info: {
+          DEFAULT: 'var(--info)',
+          foreground: 'var(--info-foreground)',
+        },
+        method: {
+          get: 'var(--method-get)',
+          post: 'var(--method-post)',
+          put: 'var(--method-put)',
+          patch: 'var(--method-patch)',
+          delete: 'var(--method-delete)',
+        },
         muted: {
           DEFAULT: 'var(--muted)',
           foreground: 'var(--muted-foreground)',
