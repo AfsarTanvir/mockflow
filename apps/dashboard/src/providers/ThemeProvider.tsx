@@ -32,12 +32,14 @@ function applyTheme(resolved: ResolvedTheme): void {
  * keeps React state in sync and reacts to user + system changes.
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('system');
+  // Default to light until every screen is tokenized for dark mode; users can
+  // still opt into dark/system via the toggle.
+  const [theme, setThemeState] = useState<Theme>('light');
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light');
 
   // Hydrate from storage once on mount.
   useEffect(() => {
-    const stored = (localStorage.getItem(THEME_STORAGE_KEY) as Theme | null) ?? 'system';
+    const stored = (localStorage.getItem(THEME_STORAGE_KEY) as Theme | null) ?? 'light';
     setThemeState(stored);
   }, []);
 
