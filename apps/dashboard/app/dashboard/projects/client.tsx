@@ -7,6 +7,12 @@ import Link from 'next/link';
 import { useUser } from '@/query/auth';
 import { useProjects, useCreateProject, useDeleteProject } from '@/query/projects';
 import { createProjectSchema, type CreateProjectInput } from '@/schema/projects';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { User } from '@/types';
 
 export default function ProjectsClient({ initialUser }: { initialUser: User }) {
@@ -38,125 +44,117 @@ export default function ProjectsClient({ initialUser }: { initialUser: User }) {
   if (!user) return null;
 
   return (
-    <main className="max-w-4xl mx-auto mt-8 px-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-lg font-semibold text-gray-900">Projects</h1>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-        >
+    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-foreground text-lg font-semibold">Projects</h1>
+        <Button onClick={() => setShowForm((v) => !v)}>
           {showForm ? 'Cancel' : '+ New Project'}
-        </button>
+        </Button>
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-xl border p-6 mb-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Create Project</h3>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Create Project</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {createError && (
+              <div className="bg-destructive/10 text-destructive mb-4 rounded-lg px-3 py-2 text-sm">
+                {createError.message}
+              </div>
+            )}
 
-          {createError && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">
-              {createError.message}
-            </div>
-          )}
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="name">Project Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="My API"
+                  aria-invalid={!!errors.name}
+                  {...register('name')}
+                />
+                {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
+              </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
-              <input
-                type="text"
-                {...register('name')}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-400' : 'border-gray-300'}`}
-                placeholder="My API"
-              />
-              {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
-            </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="basePath">Base Path</Label>
+                <Input
+                  id="basePath"
+                  type="text"
+                  placeholder="/"
+                  aria-invalid={!!errors.basePath}
+                  {...register('basePath')}
+                />
+                {errors.basePath && (
+                  <p className="text-destructive text-xs">{errors.basePath.message}</p>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Base Path</label>
-              <input
-                type="text"
-                {...register('basePath')}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.basePath ? 'border-red-400' : 'border-gray-300'}`}
-                placeholder="/"
-              />
-              {errors.basePath && (
-                <p className="mt-1 text-xs text-red-500">{errors.basePath.message}</p>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isPublic"
-                {...register('isPublic')}
-                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-              />
-              <label htmlFor="isPublic" className="text-sm text-gray-700">
+              <Label htmlFor="isPublic" className="font-normal">
+                <input
+                  type="checkbox"
+                  id="isPublic"
+                  {...register('isPublic')}
+                  className="border-input accent-primary size-4 rounded"
+                />
                 Make project public
-              </label>
-            </div>
+              </Label>
 
-            <button
-              type="submit"
-              disabled={creating}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {creating ? 'Creating…' : 'Create Project'}
-            </button>
-          </form>
-        </div>
+              <Button type="submit" disabled={creating}>
+                {creating ? 'Creating…' : 'Create Project'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
       {isLoading ? (
-        <div className="text-sm text-gray-400 text-center py-12">Loading projects…</div>
-      ) : projects.length === 0 ? (
-        <div className="bg-white rounded-xl border p-12 text-center">
-          <p className="text-gray-400 text-sm mb-3">No projects yet</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="text-blue-600 hover:underline text-sm font-medium"
-          >
-            Create your first project
-          </button>
+        <div className="grid gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-[76px] w-full rounded-xl" />
+          ))}
         </div>
+      ) : projects.length === 0 ? (
+        <Card className="p-12 text-center">
+          <p className="text-muted-foreground text-sm">No projects yet</p>
+          <Button variant="link" className="mt-2" onClick={() => setShowForm(true)}>
+            Create your first project
+          </Button>
+        </Card>
       ) : (
         <div className="grid gap-3">
           {projects.map((project) => {
             const isOwner = !project.userRole || project.userRole === 'owner';
             return (
-              <div
-                key={project.id}
-                className="bg-white rounded-xl border p-5 flex items-center justify-between"
-              >
-                <Link href={`/dashboard/projects/${project.id}`} className="flex-1 min-w-0 group">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+              <Card key={project.id} className="flex-row items-center justify-between p-5">
+                <Link href={`/dashboard/projects/${project.id}`} className="group min-w-0 flex-1">
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <h3 className="text-foreground group-hover:text-primary text-sm font-semibold transition-colors">
                       {project.name}
                     </h3>
-                    {project.isPublic && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                        Public
-                      </span>
-                    )}
+                    {project.isPublic && <Badge variant="success">Public</Badge>}
                     {project.userRole && project.userRole !== 'owner' && (
-                      <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full capitalize">
+                      <Badge variant="muted" className="capitalize">
                         {project.userRole}
-                      </span>
+                      </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 font-mono">/{project.slug}</p>
+                  <p className="text-muted-foreground font-mono text-xs">/{project.slug}</p>
                 </Link>
                 {isOwner && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive ml-4 shrink-0"
                     onClick={() => {
                       if (confirm(`Delete "${project.name}"?`)) deleteProject(project.id);
                     }}
-                    className="text-xs text-gray-400 hover:text-red-500 transition-colors ml-4 shrink-0"
                   >
                     Delete
-                  </button>
+                  </Button>
                 )}
-              </div>
+              </Card>
             );
           })}
         </div>
