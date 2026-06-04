@@ -50,9 +50,9 @@ export default function OnboardingClient() {
           <div className="grid gap-4 md:grid-cols-2">
             <button
               onClick={() => setStep('create')}
-              className="flex flex-col items-start gap-3 rounded-xl border bg-white p-5 text-left hover:border-blue-500 hover:shadow-sm transition-all"
+              className="flex flex-col items-start gap-3 rounded-xl border bg-white p-5 text-left hover:border-ring hover:shadow-sm transition-all"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Building2 className="h-5 w-5" />
               </div>
               <div>
@@ -108,7 +108,7 @@ export default function OnboardingClient() {
               type="text"
               {...register('name')}
               placeholder="Acme Inc."
-              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
                 errors.name ? 'border-red-400' : 'border-gray-300'
               }`}
             />
@@ -119,7 +119,7 @@ export default function OnboardingClient() {
             <label className="block text-xs font-medium text-gray-700 mb-1">Visibility</label>
             <select
               {...register('visibility')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="private">Private — invite only</option>
               <option value="protected">Protected — listed, join by approval</option>
@@ -139,7 +139,7 @@ export default function OnboardingClient() {
             <button
               type="submit"
               disabled={isPending}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isPending ? 'Creating…' : 'Create company'}
             </button>

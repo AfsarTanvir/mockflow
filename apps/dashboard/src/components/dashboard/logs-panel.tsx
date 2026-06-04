@@ -4,7 +4,7 @@ import { useRequestLogs } from '@/query/logs';
 import type { Project } from '@/types';
 
 const METHOD_COLORS: Record<string, string> = {
-  GET: 'bg-blue-100 text-blue-700',
+  GET: 'bg-primary/10 text-primary',
   POST: 'bg-green-100 text-green-700',
   PUT: 'bg-yellow-100 text-yellow-700',
   PATCH: 'bg-orange-100 text-orange-700',

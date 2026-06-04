@@ -6,7 +6,7 @@ import type { User, TeamRole } from '@/types';
 
 const ROLE_COLORS: Record<TeamRole, string> = {
   owner: 'bg-purple-100 text-purple-700',
-  admin: 'bg-blue-100 text-blue-700',
+  admin: 'bg-primary/10 text-primary',
   member: 'bg-green-100 text-green-700',
   viewer: 'bg-gray-100 text-gray-500',
 };
@@ -32,7 +32,7 @@ export default function TeamClient({ initialUser }: { initialUser: User }) {
           <p className="text-gray-400 text-sm mb-3">No memberships yet</p>
           <Link
             href="/dashboard/projects"
-            className="text-blue-600 hover:underline text-sm font-medium"
+            className="text-primary hover:underline text-sm font-medium"
           >
             Go to your projects
           </Link>
@@ -46,7 +46,7 @@ export default function TeamClient({ initialUser }: { initialUser: User }) {
             <Link
               key={m.id}
               href={`/dashboard/projects/${m.project.id}`}
-              className="bg-white rounded-xl border px-4 py-3 flex items-center gap-4 hover:border-blue-300 transition-colors block"
+              className="bg-white rounded-xl border px-4 py-3 flex items-center gap-4 hover:border-ring transition-colors block"
             >
               <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 shrink-0">
                 {m.project.name[0].toUpperCase()}

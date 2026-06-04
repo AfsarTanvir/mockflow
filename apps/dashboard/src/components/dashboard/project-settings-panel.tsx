@@ -82,7 +82,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setDirty(true);
             }}
             maxLength={100}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
           {nameError && dirty && <p className="text-xs text-red-500 mt-1">{nameError}</p>}
         </div>
@@ -98,7 +98,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setDirty(true);
             }}
             maxLength={255}
-            className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="/"
           />
           {basePathError && dirty && <p className="text-xs text-red-500 mt-1">{basePathError}</p>}
@@ -119,8 +119,8 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setIsPublic((v) => !v);
               setDirty(true);
             }}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-              isPublic ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
+              isPublic ? 'bg-primary' : 'bg-gray-200'
             }`}
           >
             <span
@@ -149,8 +149,8 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setCors((v) => !v);
               setDirty(true);
             }}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-              cors ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
+              cors ? 'bg-primary' : 'bg-gray-200'
             }`}
           >
             <span
@@ -175,8 +175,8 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setLogRequests((v) => !v);
               setDirty(true);
             }}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-              logRequests ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
+              logRequests ? 'bg-primary' : 'bg-gray-200'
             }`}
           >
             <span
@@ -221,7 +221,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
         <button
           type="submit"
           disabled={isPending || !dirty || !!nameError || !!basePathError}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isPending ? 'Saving…' : 'Save changes'}
         </button>

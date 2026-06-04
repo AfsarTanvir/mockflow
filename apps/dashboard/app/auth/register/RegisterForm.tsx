@@ -41,7 +41,7 @@ export default function RegisterForm() {
             <input
               type="text"
               {...register('name')}
-              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${errors.name ? 'border-red-400' : 'border-gray-300'}`}
               placeholder="John Doe"
             />
             {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
@@ -52,7 +52,7 @@ export default function RegisterForm() {
             <input
               type="email"
               {...register('email')}
-              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${errors.email ? 'border-red-400' : 'border-gray-300'}`}
               placeholder="you@example.com"
             />
             {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
@@ -63,7 +63,7 @@ export default function RegisterForm() {
             <input
               type="password"
               {...register('password')}
-              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.password ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${errors.password ? 'border-red-400' : 'border-gray-300'}`}
               placeholder="••••••••"
             />
             {errors.password && (
@@ -76,7 +76,7 @@ export default function RegisterForm() {
             <input
               type="password"
               {...register('confirmPassword')}
-              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.confirmPassword ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${errors.confirmPassword ? 'border-red-400' : 'border-gray-300'}`}
               placeholder="••••••••"
             />
             {errors.confirmPassword && (
@@ -87,7 +87,7 @@ export default function RegisterForm() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2 px-4 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isPending ? 'Creating account…' : 'Create account'}
           </button>
@@ -97,7 +97,7 @@ export default function RegisterForm() {
           Already have an account?{' '}
           <Link
             href={`/auth/login${next !== '/dashboard' ? `?next=${encodeURIComponent(next)}` : ''}`}
-            className="text-blue-600 hover:underline font-medium"
+            className="text-primary hover:underline font-medium"
           >
             Sign in
           </Link>

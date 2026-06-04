@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: 'bg-blue-100 text-blue-700',
+  admin: 'bg-primary/10 text-primary',
   member: 'bg-green-100 text-green-700',
   viewer: 'bg-gray-100 text-gray-500',
 };
@@ -79,7 +79,7 @@ export function NotificationBell() {
                     <button
                       onClick={() => accept(invite.token)}
                       disabled={isPending}
-                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors"
                     >
                       {isAccepting ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
                       Accept

@@ -28,7 +28,7 @@ export default function VerifyForm() {
       <div className="bg-white rounded-2xl border shadow-sm p-10 w-full max-w-md text-center">
         {isPending && (
           <>
-            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-8 h-8 border-2 border-ring border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-sm text-gray-500">Verifying your email…</p>
           </>
         )}
@@ -77,7 +77,7 @@ export default function VerifyForm() {
               {(error as any)?.response?.data?.message ??
                 'This verification link is no longer valid.'}
             </p>
-            <Link href="/auth/login" className="text-sm text-blue-600 hover:underline">
+            <Link href="/auth/login" className="text-sm text-primary hover:underline">
               Back to login
             </Link>
           </>
@@ -87,7 +87,7 @@ export default function VerifyForm() {
           <>
             <h1 className="text-xl font-bold text-gray-900 mb-2">Missing token</h1>
             <p className="text-sm text-gray-500 mb-4">No verification token found in the URL.</p>
-            <Link href="/auth/login" className="text-sm text-blue-600 hover:underline">
+            <Link href="/auth/login" className="text-sm text-primary hover:underline">
               Back to login
             </Link>
           </>

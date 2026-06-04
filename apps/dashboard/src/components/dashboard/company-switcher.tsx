@@ -75,7 +75,7 @@ export function CompanySwitcher() {
       >
         <Avatar className="h-7 w-7 rounded-md">
           <AvatarImage src={active.company.avatarUrl ?? undefined} />
-          <AvatarFallback className="rounded-md bg-blue-100 text-blue-600 text-[10px] font-semibold">
+          <AvatarFallback className="rounded-md bg-primary/10 text-primary text-[10px] font-semibold">
             {initials(active.company.name)}
           </AvatarFallback>
         </Avatar>
@@ -110,7 +110,7 @@ export function CompanySwitcher() {
               <p className="text-xs font-medium text-gray-900 truncate">{m.company.name}</p>
               <p className="text-[10px] text-gray-400 capitalize">{m.profile.role}</p>
             </div>
-            {m.company.slug === activeSlug && <Check className="h-3.5 w-3.5 text-blue-600" />}
+            {m.company.slug === activeSlug && <Check className="h-3.5 w-3.5 text-primary" />}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />

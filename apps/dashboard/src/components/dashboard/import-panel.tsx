@@ -13,7 +13,7 @@ interface Props {
 }
 
 const METHOD_COLORS: Record<string, string> = {
-  GET: 'bg-blue-100 text-blue-700',
+  GET: 'bg-primary/10 text-primary',
   POST: 'bg-green-100 text-green-700',
   PUT: 'bg-yellow-100 text-yellow-700',
   PATCH: 'bg-orange-100 text-orange-700',
@@ -221,7 +221,7 @@ export function ImportPanel({ projectId }: Props) {
                           value="overwrite"
                           checked={resolutions[key] === 'overwrite'}
                           onChange={() => setResolutions((r) => ({ ...r, [key]: 'overwrite' }))}
-                          className="accent-blue-600"
+                          className="accent-primary"
                         />
                         Overwrite
                       </label>
@@ -245,7 +245,7 @@ export function ImportPanel({ projectId }: Props) {
               type="button"
               disabled={applying}
               onClick={handleApply}
-              className="px-4 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 text-xs font-medium bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {applying ? 'Importing…' : `Confirm import (${preview.endpoints.length} endpoints)`}
             </button>

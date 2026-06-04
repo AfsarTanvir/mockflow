@@ -26,7 +26,7 @@ function VisibilityBadge({ visibility }: { visibility: TeamVisibility }) {
   }
   if (visibility === 'company_member_only') {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
         <Building2 className="h-2.5 w-2.5" /> Company members
       </span>
     );
@@ -78,7 +78,7 @@ export default function TeamsListClient({ initialUser }: Props) {
           <button
             type="button"
             onClick={() => setShowCreate((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             <Plus className="h-4 w-4" />
             {showCreate ? 'Cancel' : 'New team'}
@@ -103,7 +103,7 @@ export default function TeamsListClient({ initialUser }: Props) {
           {canCreate && (
             <button
               onClick={() => setShowCreate(true)}
-              className="mt-3 text-sm text-blue-600 hover:underline font-medium"
+              className="mt-3 text-sm text-primary hover:underline font-medium"
             >
               Create the first team
             </button>
@@ -115,7 +115,7 @@ export default function TeamsListClient({ initialUser }: Props) {
             <Link
               key={t.id}
               href={`/dashboard/teams/${t.id}`}
-              className="block bg-white border rounded-xl p-4 hover:border-blue-300 hover:shadow-sm transition-all"
+              className="block bg-white border rounded-xl p-4 hover:border-ring hover:shadow-sm transition-all"
             >
               <div className="flex items-start gap-3">
                 <div
@@ -199,7 +199,7 @@ function CreateTeamForm({
           type="text"
           {...register('name')}
           placeholder="e.g. Backend, Design, Customer Success"
-          className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
             errors.name ? 'border-red-400' : 'border-gray-300'
           }`}
         />
@@ -214,7 +214,7 @@ function CreateTeamForm({
           type="text"
           {...register('description')}
           placeholder="What does this team work on?"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
@@ -222,7 +222,7 @@ function CreateTeamForm({
         <label className="block text-xs font-medium text-gray-700 mb-1">Visibility</label>
         <select
           {...register('visibility')}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <option value="private">Private — only team members can see</option>
           <option value="company_member_only">Company members can see the team exists</option>
@@ -241,7 +241,7 @@ function CreateTeamForm({
         <button
           type="submit"
           disabled={isPending}
-          className="px-4 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="px-4 py-1.5 text-xs font-medium bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
           {isPending ? 'Creating…' : 'Create team'}
         </button>

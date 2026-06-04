@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 
 const ROLE_COLORS: Record<TeamRole, string> = {
   owner: 'bg-purple-100 text-purple-700',
-  admin: 'bg-blue-100 text-blue-700',
+  admin: 'bg-primary/10 text-primary',
   member: 'bg-green-100 text-green-700',
   viewer: 'bg-gray-100 text-gray-500',
 };
@@ -50,7 +50,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-600 transition-colors"
+      className="flex items-center gap-1 text-xs text-gray-400 hover:text-primary transition-colors"
       title="Copy invite link"
     >
       {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
@@ -116,7 +116,7 @@ export function TeamPanel({ projectId, currentUserId }: TeamPanelProps) {
                   {...register('email')}
                   placeholder="colleague@example.com"
                   className={cn(
-                    'w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                    'w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring',
                     errors.email ? 'border-red-400' : 'border-gray-300'
                   )}
                 />
@@ -126,7 +126,7 @@ export function TeamPanel({ projectId, currentUserId }: TeamPanelProps) {
               </div>
               <select
                 {...register('role')}
-                className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="viewer">Viewer</option>
                 <option value="member">Member</option>
@@ -135,7 +135,7 @@ export function TeamPanel({ projectId, currentUserId }: TeamPanelProps) {
               <button
                 type="submit"
                 disabled={inviting}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors shrink-0"
+                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0"
               >
                 {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Invite'}
               </button>
@@ -185,7 +185,7 @@ export function TeamPanel({ projectId, currentUserId }: TeamPanelProps) {
                         body: { role: e.target.value as Exclude<TeamRole, 'owner'> },
                       })
                     }
-                    className="text-xs border border-gray-200 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="text-xs border border-gray-200 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-ring"
                   >
                     <option value="viewer">Viewer</option>
                     <option value="member">Member</option>

@@ -27,9 +27,9 @@ export default function ForgotPasswordForm() {
 
         {isSuccess ? (
           <div className="text-center">
-            <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
-                className="w-6 h-6 text-blue-600"
+                className="w-6 h-6 text-primary"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -59,7 +59,7 @@ export default function ForgotPasswordForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
@@ -83,7 +83,7 @@ export default function ForgotPasswordForm() {
             <button
               type="submit"
               disabled={isPending || !email.trim()}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isPending ? 'Sending…' : 'Send reset link'}
             </button>
@@ -92,7 +92,7 @@ export default function ForgotPasswordForm() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Remembered your password?{' '}
-          <Link href="/auth/login" className="text-blue-600 hover:underline font-medium">
+          <Link href="/auth/login" className="text-primary hover:underline font-medium">
             Sign in
           </Link>
         </p>

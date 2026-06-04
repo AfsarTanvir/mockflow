@@ -79,7 +79,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
               setNameSuccess(false);
             }}
             maxLength={100}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
           {nameError && nameDirty && <p className="text-xs text-red-500 mt-1">{nameError}</p>}
         </div>
@@ -90,7 +90,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
             <button
               type="submit"
               disabled={isPending || !nameDirty || !!nameError}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isPending ? 'Saving…' : 'Save name'}
             </button>
@@ -139,7 +139,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
                 type="button"
                 onClick={() => resendVerify()}
                 disabled={resendingVerify}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {resendingVerify ? 'Sending…' : 'Send verification email'}
               </button>
@@ -161,7 +161,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
               setCurrentPassword(e.target.value);
               setPwSuccess(false);
             }}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
@@ -174,7 +174,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
               setNewPassword(e.target.value);
               setPwSuccess(false);
             }}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
           {newPwError && <p className="text-xs text-red-500 mt-1">{newPwError}</p>}
         </div>
@@ -190,7 +190,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
               setConfirmPassword(e.target.value);
               setPwSuccess(false);
             }}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
           {confirmError && <p className="text-xs text-red-500 mt-1">{confirmError}</p>}
         </div>
@@ -202,7 +202,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
             disabled={
               isPending || !currentPassword || !newPassword || !!confirmError || !!newPwError
             }
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isPending ? 'Saving…' : 'Update password'}
           </button>

@@ -113,7 +113,7 @@ export function EndpointForm({
           <label className="block text-xs font-medium text-gray-600 mb-1">Method</label>
           <select
             {...register('method')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {HTTP_METHODS.map((m) => (
               <option key={m} value={m}>
@@ -129,7 +129,7 @@ export function EndpointForm({
             type="text"
             {...register('path')}
             className={cn(
-              'w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500',
+              'w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring',
               errors.path ? 'border-red-400' : 'border-gray-300'
             )}
             placeholder="/users/:id"
@@ -141,7 +141,7 @@ export function EndpointForm({
           <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
           <select
             {...register('statusCode')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
@@ -168,7 +168,7 @@ export function EndpointForm({
             type="checkbox"
             checked={randomize}
             onChange={(e) => setRandomize(e.target.checked)}
-            className="w-4 h-4 text-blue-600 rounded"
+            className="w-4 h-4 text-primary rounded"
           />
           <span className="text-xs text-gray-700">Randomize between min and max</span>
         </label>
@@ -199,7 +199,7 @@ export function EndpointForm({
           />
           Response Headers
           {Object.keys(responseHeaders).length > 0 && (
-            <span className="ml-1 bg-blue-100 text-blue-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+            <span className="ml-1 bg-primary/10 text-primary text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
               {Object.keys(responseHeaders).length}
             </span>
           )}
@@ -218,7 +218,7 @@ export function EndpointForm({
           <input
             type="checkbox"
             {...register('isActive')}
-            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+            className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-ring"
           />
           <span className="text-sm text-gray-700">Active</span>
         </label>
@@ -234,7 +234,7 @@ export function EndpointForm({
           <button
             type="submit"
             disabled={isPending}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isPending
               ? mode === 'create'

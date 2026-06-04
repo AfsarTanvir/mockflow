@@ -34,8 +34,8 @@ export default function AcceptInviteClient({
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl border shadow-sm p-8 w-full max-w-md">
-        <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-5">
-          <span className="text-blue-600 font-bold text-lg">
+        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
+          <span className="text-primary font-bold text-lg">
             {invite.project.name[0].toUpperCase()}
           </span>
         </div>
@@ -67,7 +67,7 @@ export default function AcceptInviteClient({
           <button
             onClick={handleAccept}
             disabled={isPending || emailMismatch}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isPending ? 'Accepting…' : 'Accept Invite'}
           </button>

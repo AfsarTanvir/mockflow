@@ -76,7 +76,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
         <div className="text-xs">
           <span className="text-gray-400">Currently active: </span>
           {activeScenario ? (
-            <span className="font-semibold text-blue-700">{activeScenario.name}</span>
+            <span className="font-semibold text-primary">{activeScenario.name}</span>
           ) : (
             <span className="font-semibold text-gray-700">Default (endpoint response)</span>
           )}
@@ -104,13 +104,13 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
               <div
                 className={`bg-white border rounded-lg px-3 py-2.5 flex items-center gap-3 ${
                   editingId === s.id || rulesOpenId === s.id ? 'rounded-b-none border-b-0' : ''
-                } ${s.isActive ? 'border-blue-300' : ''}`}
+                } ${s.isActive ? 'border-ring' : ''}`}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-mono font-medium text-gray-900">{s.name}</span>
                     {s.isActive && (
-                      <span className="text-[10px] font-semibold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">
                         ACTIVE
                       </span>
                     )}
@@ -131,7 +131,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                     setRulesOpenId((prev) => (prev === s.id ? null : s.id));
                   }}
                   className={`text-xs font-medium shrink-0 transition-colors ${
-                    rulesOpenId === s.id ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
+                    rulesOpenId === s.id ? 'text-primary' : 'text-gray-400 hover:text-primary'
                   }`}
                 >
                   {rulesOpenId === s.id ? 'Close rules' : 'Rules'}
@@ -143,7 +143,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                       <button
                         onClick={() => activateScenario(s.id)}
                         disabled={activating}
-                        className="text-xs font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50 shrink-0"
+                        className="text-xs font-medium text-primary hover:text-primary disabled:opacity-50 shrink-0"
                       >
                         Activate
                       </button>
@@ -155,7 +155,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                         setEditingId((prev) => (prev === s.id ? null : s.id));
                       }}
                       className={`text-xs font-medium shrink-0 transition-colors ${
-                        editingId === s.id ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
+                        editingId === s.id ? 'text-primary' : 'text-gray-400 hover:text-primary'
                       }`}
                     >
                       {editingId === s.id ? 'Close' : 'Edit'}

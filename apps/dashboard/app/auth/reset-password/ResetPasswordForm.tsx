@@ -39,7 +39,7 @@ export default function ResetPasswordForm() {
           <p className="text-sm text-gray-500 mb-4">
             This page needs a reset token. Please use the link from your email.
           </p>
-          <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:underline">
+          <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
             Request a new reset link
           </Link>
         </div>
@@ -84,7 +84,7 @@ export default function ResetPasswordForm() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
               {pwError && <p className="text-xs text-red-500 mt-1">{pwError}</p>}
             </div>
@@ -98,7 +98,7 @@ export default function ResetPasswordForm() {
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 required
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
               {confirmError && <p className="text-xs text-red-500 mt-1">{confirmError}</p>}
             </div>
@@ -113,7 +113,7 @@ export default function ResetPasswordForm() {
             <button
               type="submit"
               disabled={isPending || !newPassword || !!pwError || !!confirmError}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isPending ? 'Saving…' : 'Save new password'}
             </button>

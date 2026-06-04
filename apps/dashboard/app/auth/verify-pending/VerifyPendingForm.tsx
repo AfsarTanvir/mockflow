@@ -13,9 +13,9 @@ export default function VerifyPendingForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white rounded-2xl border shadow-sm p-10 w-full max-w-md text-center">
-        <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
+        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
           <svg
-            className="w-6 h-6 text-blue-600"
+            className="w-6 h-6 text-primary"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -46,7 +46,7 @@ export default function VerifyPendingForm() {
             <button
               onClick={() => resend()}
               disabled={isPending}
-              className="text-sm text-blue-600 hover:underline disabled:opacity-50 mb-6 block mx-auto"
+              className="text-sm text-primary hover:underline disabled:opacity-50 mb-6 block mx-auto"
             >
               {isPending ? 'Sending…' : "Didn't receive it? Resend"}
             </button>

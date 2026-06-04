@@ -190,7 +190,7 @@ function AddMemberForm({
       <select
         value={profileId}
         onChange={(e) => setProfileId(e.target.value)}
-        className="flex-1 px-2 py-1.5 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="flex-1 px-2 py-1.5 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-ring"
       >
         <option value="">Pick a profile to add…</option>
         {eligible.map((p) => (
@@ -202,7 +202,7 @@ function AddMemberForm({
       <select
         value={role}
         onChange={(e) => setRole(e.target.value as WorkspaceTeamRole)}
-        className="px-2 py-1.5 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="px-2 py-1.5 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-ring"
       >
         <option value="member">Member</option>
         <option value="admin">Admin</option>
@@ -238,7 +238,7 @@ function MemberRow({
 
   return (
     <li className="flex items-center gap-3 py-2.5">
-      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-semibold text-blue-700 shrink-0">
+      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary shrink-0">
         {membership.profile ? initials(membership.profile.displayName) : '??'}
       </div>
       <div className="flex-1 min-w-0">
@@ -254,7 +254,7 @@ function MemberRow({
       </div>
 
       {membership.role === 'admin' && (
-        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
           <Crown className="h-2.5 w-2.5" />
           Team admin
         </span>
@@ -266,7 +266,7 @@ function MemberRow({
             <button
               onClick={() => changeRole({ profileId: membership.profileId, role: 'admin' })}
               disabled={changing}
-              className="text-xs font-medium text-gray-500 hover:text-blue-600 transition-colors"
+              className="text-xs font-medium text-gray-500 hover:text-primary transition-colors"
             >
               Promote
             </button>
@@ -274,7 +274,7 @@ function MemberRow({
             <button
               onClick={() => changeRole({ profileId: membership.profileId, role: 'member' })}
               disabled={changing}
-              className="text-xs font-medium text-gray-500 hover:text-blue-600 transition-colors"
+              className="text-xs font-medium text-gray-500 hover:text-primary transition-colors"
             >
               Demote
             </button>

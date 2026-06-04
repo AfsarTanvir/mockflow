@@ -53,7 +53,7 @@ function SnapshotPreview({ projectId, versionId }: { projectId: string; versionI
               <span
                 className={cn(
                   'text-[10px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0',
-                  ep.method === 'GET' && 'bg-blue-100 text-blue-700',
+                  ep.method === 'GET' && 'bg-primary/10 text-primary',
                   ep.method === 'POST' && 'bg-green-100 text-green-700',
                   ep.method === 'PUT' && 'bg-yellow-100 text-yellow-700',
                   ep.method === 'PATCH' && 'bg-orange-100 text-orange-700',
@@ -118,12 +118,12 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
               placeholder="Optional description (e.g. before refactor)"
               maxLength={500}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors shrink-0"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save snapshot
@@ -175,7 +175,7 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
                       <button
                         onClick={() => handleRestore(v.id, label)}
                         disabled={restoring}
-                        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-blue-600 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary transition-colors disabled:opacity-50"
                         title="Restore to this version"
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
