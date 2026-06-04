@@ -14,10 +14,10 @@ interface Props {
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'bg-primary/10 text-primary',
-  POST: 'bg-green-100 text-green-700',
-  PUT: 'bg-yellow-100 text-yellow-700',
-  PATCH: 'bg-orange-100 text-orange-700',
-  DELETE: 'bg-red-100 text-red-700',
+  POST: 'bg-success/10 text-success',
+  PUT: 'bg-warning/10 text-warning',
+  PATCH: 'bg-warning/10 text-warning',
+  DELETE: 'bg-destructive/10 text-destructive',
 };
 
 const FORMATS: { value: ImportFormat; label: string }[] = [
@@ -102,9 +102,9 @@ export function ImportPanel({ projectId }: Props) {
   const newCount = preview ? preview.endpoints.length - preview.conflicts.length : 0;
 
   return (
-    <div className="bg-white rounded-xl border p-6 space-y-4">
-      <h2 className="text-sm font-semibold text-gray-900">Import</h2>
-      <p className="text-xs text-gray-400">
+    <div className="bg-card rounded-xl border p-6 space-y-4">
+      <h2 className="text-sm font-semibold text-foreground">Import</h2>
+      <p className="text-xs text-muted-foreground">
         Import endpoints from an OpenAPI 3.0 or Postman v2.1 JSON file. Existing endpoints with the
         same method + path will be flagged as conflicts.
       </p>
@@ -118,8 +118,8 @@ export function ImportPanel({ projectId }: Props) {
             onClick={() => handleFormatChange(f.value)}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
               format === f.value
-                ? 'bg-gray-900 text-white border-gray-900'
-                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                ? 'bg-primary text-primary-foreground border-border'
+                : 'bg-card text-muted-foreground border-input hover:bg-muted'
             }`}
           >
             {f.label}
@@ -139,43 +139,43 @@ export function ImportPanel({ projectId }: Props) {
             setError(null);
             setSuccess(null);
           }}
-          className="flex-1 text-xs text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:text-xs file:font-medium file:bg-white file:text-gray-700 file:cursor-pointer hover:file:bg-gray-50"
+          className="flex-1 text-xs text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:text-xs file:font-medium file:bg-card file:text-foreground file:cursor-pointer hover:file:bg-muted"
         />
         <button
           type="button"
           disabled={!file || previewing}
           onClick={handlePreview}
-          className="px-3 py-1.5 text-xs font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          className="px-3 py-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >
           {previewing ? 'Parsing…' : 'Preview'}
         </button>
       </div>
 
       {/* Error */}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
 
       {/* Success */}
-      {success && <p className="text-xs text-green-600">{success}</p>}
+      {success && <p className="text-xs text-success">{success}</p>}
 
       {/* Preview results */}
       {preview && (
         <div className="space-y-3 border-t pt-4">
           {/* Summary */}
-          <div className="flex items-center gap-4 text-xs text-gray-600">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span>
-              <span className="font-semibold text-gray-900">{newCount}</span> to create
+              <span className="font-semibold text-foreground">{newCount}</span> to create
             </span>
             <span>
-              <span className="font-semibold text-gray-900">{preview.conflicts.length}</span>{' '}
+              <span className="font-semibold text-foreground">{preview.conflicts.length}</span>{' '}
               conflict{preview.conflicts.length !== 1 ? 's' : ''} found
             </span>
           </div>
 
           {/* Warnings */}
           {preview.warnings.length > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 space-y-1">
+            <div className="bg-warning/10 border border-warning/30 rounded-lg px-3 py-2 space-y-1">
               {preview.warnings.map((w, i) => (
-                <p key={i} className="text-xs text-yellow-700">
+                <p key={i} className="text-xs text-warning">
                   {w}
                 </p>
               ))}
@@ -185,8 +185,8 @@ export function ImportPanel({ projectId }: Props) {
           {/* Conflicts table */}
           {preview.conflicts.length > 0 && (
             <div className="border rounded-lg overflow-hidden">
-              <div className="px-3 py-2 bg-gray-50 border-b">
-                <p className="text-xs font-medium text-gray-600">
+              <div className="px-3 py-2 bg-muted border-b">
+                <p className="text-xs font-medium text-muted-foreground">
                   Choose how to handle each conflict
                 </p>
               </div>
@@ -196,25 +196,25 @@ export function ImportPanel({ projectId }: Props) {
                   return (
                     <div key={key} className="flex items-center gap-3 px-3 py-2.5">
                       <span
-                        className={`text-xs font-bold px-2 py-0.5 rounded font-mono shrink-0 ${METHOD_COLORS[c.method] ?? 'bg-gray-100 text-gray-600'}`}
+                        className={`text-xs font-bold px-2 py-0.5 rounded font-mono shrink-0 ${METHOD_COLORS[c.method] ?? 'bg-muted text-muted-foreground'}`}
                       >
                         {c.method}
                       </span>
-                      <span className="flex-1 text-xs font-mono text-gray-800 truncate">
+                      <span className="flex-1 text-xs font-mono text-foreground truncate">
                         {c.path}
                       </span>
-                      <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
                         <input
                           type="radio"
                           name={key}
                           value="skip"
                           checked={resolutions[key] === 'skip'}
                           onChange={() => setResolutions((r) => ({ ...r, [key]: 'skip' }))}
-                          className="accent-gray-700"
+                          className="accent-primary"
                         />
                         Skip
                       </label>
-                      <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
                         <input
                           type="radio"
                           name={key}
@@ -237,7 +237,7 @@ export function ImportPanel({ projectId }: Props) {
             <button
               type="button"
               onClick={reset}
-              className="px-3 py-1.5 text-xs font-medium border rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium border rounded-lg hover:bg-muted transition-colors"
             >
               Cancel
             </button>
@@ -245,7 +245,7 @@ export function ImportPanel({ projectId }: Props) {
               type="button"
               disabled={applying}
               onClick={handleApply}
-              className="px-4 py-1.5 text-xs font-medium bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {applying ? 'Importing…' : `Confirm import (${preview.endpoints.length} endpoints)`}
             </button>

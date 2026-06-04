@@ -59,7 +59,7 @@ export function HeadersEditor({ value, onChange }: HeadersEditorProps) {
   return (
     <div className="space-y-2">
       {rows.length === 0 ? (
-        <p className="text-xs text-gray-400 py-1">No custom headers</p>
+        <p className="text-xs text-muted-foreground py-1">No custom headers</p>
       ) : (
         rows.map((row) => (
           <div key={row.id} className="flex gap-2 items-center">
@@ -68,19 +68,19 @@ export function HeadersEditor({ value, onChange }: HeadersEditorProps) {
               value={row.key}
               onChange={(e) => setKey(row.id, e.target.value)}
               placeholder="Header name"
-              className="w-44 px-2 py-1.5 border border-gray-300 rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-44 px-2 py-1.5 border border-input rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <input
               type="text"
               value={row.value}
               onChange={(e) => setValue(row.id, e.target.value)}
               placeholder="Value"
-              className="flex-1 px-2 py-1.5 border border-gray-300 rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+              className="flex-1 px-2 py-1.5 border border-input rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <button
               type="button"
               onClick={() => removeRow(row.id)}
-              className="shrink-0 text-gray-400 hover:text-red-500 transition-colors"
+              className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
             >
               <X className="h-4 w-4" />
             </button>

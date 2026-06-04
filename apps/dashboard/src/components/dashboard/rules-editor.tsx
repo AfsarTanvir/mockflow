@@ -62,20 +62,20 @@ export function RulesEditor({ scenarioId, canWrite }: Props) {
 
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-gray-500">
+      <p className="text-[11px] text-muted-foreground">
         A scenario activates when <span className="font-semibold">all</span> its rules match.
         Scenarios without rules never auto-activate — use the manual switcher.
       </p>
 
       {isLoading ? (
-        <div className="text-xs text-gray-400">Loading rules…</div>
+        <div className="text-xs text-muted-foreground">Loading rules…</div>
       ) : rules.length === 0 ? (
-        <div className="text-xs text-gray-400 text-center py-2">
+        <div className="text-xs text-muted-foreground text-center py-2">
           No rules — scenario is manual-only.
         </div>
       ) : (
         <div className="border rounded-lg overflow-hidden">
-          <div className="grid grid-cols-[80px_1fr_80px_1fr_40px] gap-2 px-3 py-2 bg-gray-50 border-b text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+          <div className="grid grid-cols-[80px_1fr_80px_1fr_40px] gap-2 px-3 py-2 bg-muted border-b text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
             <span>Source</span>
             <span>Field</span>
             <span>Operator</span>
@@ -87,14 +87,14 @@ export function RulesEditor({ scenarioId, canWrite }: Props) {
               key={r.id}
               className="grid grid-cols-[80px_1fr_80px_1fr_40px] gap-2 px-3 py-2 border-b last:border-b-0 items-center text-xs"
             >
-              <span className="font-mono text-gray-600">{r.source}</span>
-              <span className="font-mono text-gray-900 truncate">{r.field}</span>
-              <span className="font-mono text-gray-600">{r.operator}</span>
-              <span className="font-mono text-gray-900 truncate">{r.value ?? '—'}</span>
+              <span className="font-mono text-muted-foreground">{r.source}</span>
+              <span className="font-mono text-foreground truncate">{r.field}</span>
+              <span className="font-mono text-muted-foreground">{r.operator}</span>
+              <span className="font-mono text-foreground truncate">{r.value ?? '—'}</span>
               {canWrite ? (
                 <button
                   onClick={() => deleteRule(r.id)}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
+                  className="text-muted-foreground hover:text-destructive transition-colors"
                   title="Delete rule"
                 >
                   ×
@@ -109,12 +109,12 @@ export function RulesEditor({ scenarioId, canWrite }: Props) {
 
       {canWrite && (
         <div className="space-y-2">
-          {localError && <p className="text-xs text-red-500">{localError}</p>}
+          {localError && <p className="text-xs text-destructive">{localError}</p>}
           <div className="grid grid-cols-[80px_1fr_80px_1fr_auto] gap-2 items-center">
             <select
               value={source}
               onChange={(e) => setSource(e.target.value as RuleSource)}
-              className="px-2 py-1.5 border border-gray-300 rounded text-xs"
+              className="px-2 py-1.5 border border-input rounded text-xs"
             >
               {SOURCE_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -127,12 +127,12 @@ export function RulesEditor({ scenarioId, canWrite }: Props) {
               value={field}
               onChange={(e) => setField(e.target.value)}
               placeholder={SOURCE_OPTIONS.find((o) => o.value === source)?.hint ?? ''}
-              className="px-2 py-1.5 border border-gray-300 rounded text-xs font-mono"
+              className="px-2 py-1.5 border border-input rounded text-xs font-mono"
             />
             <select
               value={operator}
               onChange={(e) => setOperator(e.target.value as RuleOperator)}
-              className="px-2 py-1.5 border border-gray-300 rounded text-xs"
+              className="px-2 py-1.5 border border-input rounded text-xs"
             >
               {OPERATOR_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -146,12 +146,12 @@ export function RulesEditor({ scenarioId, canWrite }: Props) {
               onChange={(e) => setValue(e.target.value)}
               disabled={operator === 'exists'}
               placeholder={operator === 'exists' ? '(not used)' : 'value'}
-              className="px-2 py-1.5 border border-gray-300 rounded text-xs font-mono disabled:bg-gray-50"
+              className="px-2 py-1.5 border border-input rounded text-xs font-mono disabled:bg-muted"
             />
             <button
               onClick={handleAdd}
               disabled={creating}
-              className="px-3 py-1.5 bg-gray-900 text-white rounded text-xs font-medium hover:bg-gray-700 disabled:opacity-50"
+              className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-xs font-medium hover:bg-primary/90 disabled:opacity-50"
             >
               Add
             </button>

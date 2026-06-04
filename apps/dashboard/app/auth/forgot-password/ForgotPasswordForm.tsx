@@ -18,10 +18,10 @@ export default function ForgotPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl border shadow-sm p-10 w-full max-w-md">
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Reset your password</h1>
-        <p className="text-sm text-gray-500 mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-muted px-4">
+      <div className="bg-card rounded-2xl border shadow-sm p-10 w-full max-w-md">
+        <h1 className="text-xl font-bold text-foreground mb-2">Reset your password</h1>
+        <p className="text-sm text-muted-foreground mb-6">
           Enter the email you signed up with. We'll send you a link to set a new password.
         </p>
 
@@ -42,17 +42,17 @@ export default function ForgotPasswordForm() {
                 />
               </svg>
             </div>
-            <p className="text-sm font-medium text-gray-900 mb-1">Check your email</p>
-            <p className="text-sm text-gray-500 mb-1">We've sent a reset link to</p>
-            <p className="text-sm font-medium text-gray-900 mb-3">{submittedEmail}</p>
-            <p className="text-xs text-gray-400">
+            <p className="text-sm font-medium text-foreground mb-1">Check your email</p>
+            <p className="text-sm text-muted-foreground mb-1">We've sent a reset link to</p>
+            <p className="text-sm font-medium text-foreground mb-3">{submittedEmail}</p>
+            <p className="text-xs text-muted-foreground">
               The link expires in 1 hour. Don't see it? Check your spam folder.
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
+              <label className="block text-xs font-medium text-foreground mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
@@ -64,14 +64,14 @@ export default function ForgotPasswordForm() {
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-xs text-red-700">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 text-xs text-destructive">
                 <p>
                   {(error as any)?.response?.data?.message ??
                     "We couldn't send the reset link. Try again in a moment."}
                 </p>
                 {(error as any)?.response?.status === 404 && (
                   <p className="mt-1">
-                    <Link href="/auth/register" className="font-medium text-red-700 underline">
+                    <Link href="/auth/register" className="font-medium text-destructive underline">
                       Create an account
                     </Link>{' '}
                     instead.
@@ -83,14 +83,14 @@ export default function ForgotPasswordForm() {
             <button
               type="submit"
               disabled={isPending || !email.trim()}
-              className="w-full px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isPending ? 'Sending…' : 'Send reset link'}
             </button>
           </form>
         )}
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
           Remembered your password?{' '}
           <Link href="/auth/login" className="text-primary hover:underline font-medium">
             Sign in

@@ -32,42 +32,44 @@ export default function AcceptInviteClient({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl border shadow-sm p-8 w-full max-w-md">
+    <div className="min-h-screen bg-muted flex items-center justify-center px-4">
+      <div className="bg-card rounded-2xl border shadow-sm p-8 w-full max-w-md">
         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
           <span className="text-primary font-bold text-lg">
             {invite.project.name[0].toUpperCase()}
           </span>
         </div>
 
-        <h1 className="text-lg font-semibold text-gray-900 mb-1">You&apos;ve been invited</h1>
-        <p className="text-sm text-gray-500 mb-6">
-          Join <span className="font-medium text-gray-800">{invite.project.name}</span> as{' '}
-          <span className="font-medium text-gray-800 capitalize">{invite.role}</span>
+        <h1 className="text-lg font-semibold text-foreground mb-1">You&apos;ve been invited</h1>
+        <p className="text-sm text-muted-foreground mb-6">
+          Join <span className="font-medium text-foreground">{invite.project.name}</span> as{' '}
+          <span className="font-medium text-foreground capitalize">{invite.role}</span>
         </p>
 
         {emailMismatch && (
-          <div className="mb-5 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
+          <div className="mb-5 p-3 rounded-lg bg-warning/10 border border-warning/30 text-warning text-sm">
             This invite was sent to <strong>{invite.email}</strong> but you&apos;re signed in as{' '}
             <strong>{sessionUser.email}</strong>. Please sign in with the correct account.
           </div>
         )}
 
         {error && (
-          <div className="mb-5 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error.message}</div>
+          <div className="mb-5 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            {error.message}
+          </div>
         )}
 
         <div className="flex gap-3">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1 px-4 py-2 border border-input text-foreground rounded-lg text-sm font-medium hover:bg-muted transition-colors"
           >
             Decline
           </button>
           <button
             onClick={handleAccept}
             disabled={isPending || emailMismatch}
-            className="flex-1 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isPending ? 'Accepting…' : 'Accept Invite'}
           </button>

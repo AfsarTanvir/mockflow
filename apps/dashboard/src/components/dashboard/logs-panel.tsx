@@ -5,16 +5,16 @@ import type { Project } from '@/types';
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'bg-primary/10 text-primary',
-  POST: 'bg-green-100 text-green-700',
-  PUT: 'bg-yellow-100 text-yellow-700',
-  PATCH: 'bg-orange-100 text-orange-700',
-  DELETE: 'bg-red-100 text-red-700',
+  POST: 'bg-success/10 text-success',
+  PUT: 'bg-warning/10 text-warning',
+  PATCH: 'bg-warning/10 text-warning',
+  DELETE: 'bg-destructive/10 text-destructive',
 };
 
 function statusColor(code: number) {
-  if (code < 300) return 'text-green-600';
-  if (code < 400) return 'text-yellow-600';
-  return 'text-red-500';
+  if (code < 300) return 'text-success';
+  if (code < 400) return 'text-warning';
+  return 'text-destructive';
 }
 
 function timeAgo(iso: string) {
@@ -37,33 +37,37 @@ export function LogsPanel({ project }: Props) {
 
   if (!project.settings.log_requests) {
     return (
-      <div className="bg-white rounded-xl border p-12 text-center">
-        <p className="text-sm text-gray-400 mb-2">Request logging is disabled for this project.</p>
-        <p className="text-xs text-gray-400">
-          Enable <span className="font-medium text-gray-600">Log requests</span> in the Settings tab
-          to start recording mock hits.
+      <div className="bg-card rounded-xl border p-12 text-center">
+        <p className="text-sm text-muted-foreground mb-2">
+          Request logging is disabled for this project.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Enable <span className="font-medium text-muted-foreground">Log requests</span> in the
+          Settings tab to start recording mock hits.
         </p>
       </div>
     );
   }
 
   if (isLoading) {
-    return <div className="text-sm text-gray-400 text-center py-12">Loading…</div>;
+    return <div className="text-sm text-muted-foreground text-center py-12">Loading…</div>;
   }
 
   if (logs.length === 0) {
     return (
-      <div className="bg-white rounded-xl border p-12 text-center">
-        <p className="text-sm text-gray-400">No requests logged yet.</p>
-        <p className="text-xs text-gray-400 mt-1">Hit a mock endpoint to see it appear here.</p>
+      <div className="bg-card rounded-xl border p-12 text-center">
+        <p className="text-sm text-muted-foreground">No requests logged yet.</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Hit a mock endpoint to see it appear here.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border overflow-hidden">
+    <div className="bg-card rounded-xl border overflow-hidden">
       <div className="px-4 py-3 border-b">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Last {logs.length} requests
         </h2>
       </div>
@@ -71,20 +75,22 @@ export function LogsPanel({ project }: Props) {
         {logs.map((log) => (
           <div key={log.id} className="flex items-center gap-3 px-4 py-3">
             <span
-              className={`text-xs font-bold px-2 py-0.5 rounded font-mono shrink-0 ${METHOD_COLORS[log.method] ?? 'bg-gray-100 text-gray-600'}`}
+              className={`text-xs font-bold px-2 py-0.5 rounded font-mono shrink-0 ${METHOD_COLORS[log.method] ?? 'bg-muted text-muted-foreground'}`}
             >
               {log.method}
             </span>
 
-            <p className="flex-1 text-sm font-mono text-gray-800 truncate">{log.path}</p>
+            <p className="flex-1 text-sm font-mono text-foreground truncate">{log.path}</p>
 
             <span className={`text-xs font-medium shrink-0 ${statusColor(log.statusCode)}`}>
               {log.statusCode}
             </span>
 
-            <span className="text-xs text-gray-400 shrink-0 w-14 text-right">{log.duration}ms</span>
+            <span className="text-xs text-muted-foreground shrink-0 w-14 text-right">
+              {log.duration}ms
+            </span>
 
-            <span className="text-xs text-gray-400 shrink-0 w-16 text-right">
+            <span className="text-xs text-muted-foreground shrink-0 w-16 text-right">
               {timeAgo(log.createdAt)}
             </span>
           </div>

@@ -63,13 +63,13 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
 
   return (
     <main className="max-w-2xl mx-auto mt-8 px-6 pb-12 space-y-6">
-      <h1 className="text-base font-semibold text-gray-900">Profile settings</h1>
+      <h1 className="text-base font-semibold text-foreground">Profile settings</h1>
 
       {/* Name */}
-      <form onSubmit={handleNameSubmit} className="bg-white rounded-xl border p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">Display name</h2>
+      <form onSubmit={handleNameSubmit} className="bg-card rounded-xl border p-6 space-y-4">
+        <h2 className="text-sm font-semibold text-foreground">Display name</h2>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">Name</label>
+          <label className="block text-xs font-medium text-foreground mb-1.5">Name</label>
           <input
             type="text"
             value={name}
@@ -81,16 +81,16 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
             maxLength={100}
             className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          {nameError && nameDirty && <p className="text-xs text-red-500 mt-1">{nameError}</p>}
+          {nameError && nameDirty && <p className="text-xs text-destructive mt-1">{nameError}</p>}
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">{user?.email}</span>
+          <span className="text-xs text-muted-foreground">{user?.email}</span>
           <div className="flex items-center gap-3">
-            {nameSuccess && <span className="text-xs text-green-600">Saved.</span>}
+            {nameSuccess && <span className="text-xs text-success">Saved.</span>}
             <button
               type="submit"
               disabled={isPending || !nameDirty || !!nameError}
-              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isPending ? 'Saving…' : 'Save name'}
             </button>
@@ -99,39 +99,40 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
       </form>
 
       {/* Email verification */}
-      <div className="bg-white rounded-xl border p-6 space-y-4">
+      <div className="bg-card rounded-xl border p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-900">Email verification</h2>
+          <h2 className="text-sm font-semibold text-foreground">Email verification</h2>
           {user?.emailVerified ? (
-            <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium">
+            <span className="text-xs px-2 py-1 rounded-full bg-success/10 text-success font-medium">
               Verified
             </span>
           ) : (
-            <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-medium">
+            <span className="text-xs px-2 py-1 rounded-full bg-warning/10 text-warning font-medium">
               Not verified
             </span>
           )}
         </div>
 
         {user?.emailVerified ? (
-          <p className="text-xs text-gray-500">
-            Your email <span className="font-medium text-gray-700">{user.email}</span> is verified.
+          <p className="text-xs text-muted-foreground">
+            Your email <span className="font-medium text-foreground">{user.email}</span> is
+            verified.
           </p>
         ) : (
           <>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Verify your email to confirm{' '}
-              <span className="font-medium text-gray-700">{user?.email}</span>. Verification is
+              <span className="font-medium text-foreground">{user?.email}</span>. Verification is
               optional — you can keep using MockFlow either way.
             </p>
             <div className="flex items-center justify-end gap-3">
               {verifySent && (
-                <span className="text-xs text-green-600">
+                <span className="text-xs text-success">
                   Verification email sent. Check your inbox.
                 </span>
               )}
               {verifyError && (
-                <span className="text-xs text-red-500">
+                <span className="text-xs text-destructive">
                   {(verifyError as any)?.response?.data?.message ?? 'Failed to send'}
                 </span>
               )}
@@ -139,7 +140,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
                 type="button"
                 onClick={() => resendVerify()}
                 disabled={resendingVerify}
-                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {resendingVerify ? 'Sending…' : 'Send verification email'}
               </button>
@@ -149,11 +150,13 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
       </div>
 
       {/* Password */}
-      <form onSubmit={handlePasswordSubmit} className="bg-white rounded-xl border p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">Change password</h2>
+      <form onSubmit={handlePasswordSubmit} className="bg-card rounded-xl border p-6 space-y-4">
+        <h2 className="text-sm font-semibold text-foreground">Change password</h2>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">Current password</label>
+          <label className="block text-xs font-medium text-foreground mb-1.5">
+            Current password
+          </label>
           <input
             type="password"
             value={currentPassword}
@@ -166,7 +169,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">New password</label>
+          <label className="block text-xs font-medium text-foreground mb-1.5">New password</label>
           <input
             type="password"
             value={newPassword}
@@ -176,11 +179,11 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
             }}
             className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          {newPwError && <p className="text-xs text-red-500 mt-1">{newPwError}</p>}
+          {newPwError && <p className="text-xs text-destructive mt-1">{newPwError}</p>}
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">
+          <label className="block text-xs font-medium text-foreground mb-1.5">
             Confirm new password
           </label>
           <input
@@ -192,17 +195,17 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
             }}
             className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          {confirmError && <p className="text-xs text-red-500 mt-1">{confirmError}</p>}
+          {confirmError && <p className="text-xs text-destructive mt-1">{confirmError}</p>}
         </div>
 
         <div className="flex items-center justify-end gap-3">
-          {pwSuccess && <span className="text-xs text-green-600">Password updated.</span>}
+          {pwSuccess && <span className="text-xs text-success">Password updated.</span>}
           <button
             type="submit"
             disabled={
               isPending || !currentPassword || !newPassword || !!confirmError || !!newPwError
             }
-            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isPending ? 'Saving…' : 'Update password'}
           </button>

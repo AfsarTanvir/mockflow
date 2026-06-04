@@ -29,7 +29,7 @@ function SnapshotPreview({ projectId, versionId }: { projectId: string; versionI
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 py-3 text-xs text-gray-400">
+      <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
         <Loader2 className="h-3 w-3 animate-spin" /> Loading snapshot…
       </div>
     );
@@ -41,11 +41,11 @@ function SnapshotPreview({ projectId, versionId }: { projectId: string; versionI
 
   return (
     <div className="mt-3 space-y-2">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
         Snapshot — {snapshot.endpoints.length} endpoint{snapshot.endpoints.length !== 1 ? 's' : ''}
       </p>
       {snapshot.endpoints.length === 0 ? (
-        <p className="text-xs text-gray-400 italic">No endpoints in this snapshot</p>
+        <p className="text-xs text-muted-foreground italic">No endpoints in this snapshot</p>
       ) : (
         <div className="space-y-1">
           {snapshot.endpoints.map((ep, i) => (
@@ -54,17 +54,19 @@ function SnapshotPreview({ projectId, versionId }: { projectId: string; versionI
                 className={cn(
                   'text-[10px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0',
                   ep.method === 'GET' && 'bg-primary/10 text-primary',
-                  ep.method === 'POST' && 'bg-green-100 text-green-700',
-                  ep.method === 'PUT' && 'bg-yellow-100 text-yellow-700',
-                  ep.method === 'PATCH' && 'bg-orange-100 text-orange-700',
-                  ep.method === 'DELETE' && 'bg-red-100 text-red-700'
+                  ep.method === 'POST' && 'bg-success/10 text-success',
+                  ep.method === 'PUT' && 'bg-warning/10 text-warning',
+                  ep.method === 'PATCH' && 'bg-warning/10 text-warning',
+                  ep.method === 'DELETE' && 'bg-destructive/10 text-destructive'
                 )}
               >
                 {ep.method}
               </span>
-              <span className="text-xs font-mono text-gray-600 truncate">{ep.path}</span>
-              <span className="text-xs text-gray-400 shrink-0">{ep.statusCode}</span>
-              {!ep.isActive && <span className="text-[10px] text-gray-400 shrink-0">inactive</span>}
+              <span className="text-xs font-mono text-muted-foreground truncate">{ep.path}</span>
+              <span className="text-xs text-muted-foreground shrink-0">{ep.statusCode}</span>
+              {!ep.isActive && (
+                <span className="text-[10px] text-muted-foreground shrink-0">inactive</span>
+              )}
             </div>
           ))}
         </div>
@@ -101,15 +103,15 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
   }
 
   if (isLoading) {
-    return <div className="text-sm text-gray-400 text-center py-12">Loading history…</div>;
+    return <div className="text-sm text-muted-foreground text-center py-12">Loading history…</div>;
   }
 
   return (
     <div className="space-y-6">
       {/* Save snapshot form — admin/owner only */}
       {canManage && (
-        <div className="bg-white rounded-xl border p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Save current state</h3>
+        <div className="bg-card rounded-xl border p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Save current state</h3>
           <div className="flex gap-3 items-center">
             <input
               type="text"
@@ -118,12 +120,12 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
               placeholder="Optional description (e.g. before refactor)"
               maxLength={500}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="flex-1 px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save snapshot
@@ -134,16 +136,16 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
 
       {/* Version list */}
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           History ({versions.length})
         </h3>
 
         {versions.length === 0 ? (
-          <div className="bg-white rounded-xl border p-10 text-center">
-            <Clock className="h-8 w-8 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm text-gray-400">No snapshots yet.</p>
+          <div className="bg-card rounded-xl border p-10 text-center">
+            <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">No snapshots yet.</p>
             {canManage && (
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Save a snapshot to record the current state of your project.
               </p>
             )}
@@ -154,16 +156,16 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
             const isExpanded = expandedId === v.id;
 
             return (
-              <div key={v.id} className="bg-white rounded-xl border overflow-hidden">
+              <div key={v.id} className="bg-card rounded-xl border overflow-hidden">
                 <div className="px-4 py-3 flex items-center gap-3">
-                  <Clock className="h-4 w-4 text-gray-300 shrink-0" />
+                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-sm font-medium text-foreground truncate">{label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {timeAgo(v.createdAt)}
                       {v.createdBy && <span className="ml-1">by {v.createdBy.name}</span>}
-                      <span className="ml-2 text-gray-300">·</span>
+                      <span className="ml-2 text-muted-foreground">·</span>
                       <span className="ml-2">
                         {v.endpointCount} endpoint{v.endpointCount !== 1 ? 's' : ''}
                       </span>
@@ -175,7 +177,7 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
                       <button
                         onClick={() => handleRestore(v.id, label)}
                         disabled={restoring}
-                        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
                         title="Restore to this version"
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
@@ -184,7 +186,7 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
                     )}
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : v.id)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className="text-muted-foreground hover:text-muted-foreground transition-colors"
                       title={isExpanded ? 'Collapse' : 'Preview snapshot'}
                     >
                       {isExpanded ? (
@@ -197,7 +199,7 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
                 </div>
 
                 {isExpanded && (
-                  <div className="px-4 pb-4 border-t bg-gray-50">
+                  <div className="px-4 pb-4 border-t bg-muted">
                     <SnapshotPreview projectId={projectId} versionId={v.id} />
                   </div>
                 )}

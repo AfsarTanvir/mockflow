@@ -60,8 +60,8 @@ export function CompanySwitcher() {
   if (isLoading || !active) {
     return (
       <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
-        <div className="h-7 w-7 rounded-md bg-gray-200 animate-pulse" />
-        <div className="hidden sm:block h-3 w-20 rounded bg-gray-200 animate-pulse" />
+        <div className="h-7 w-7 rounded-md bg-muted animate-pulse" />
+        <div className="hidden sm:block h-3 w-20 rounded bg-muted animate-pulse" />
       </div>
     );
   }
@@ -70,7 +70,7 @@ export function CompanySwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-100 transition-colors outline-none" />
+          <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors outline-none" />
         }
       >
         <Avatar className="h-7 w-7 rounded-md">
@@ -80,18 +80,18 @@ export function CompanySwitcher() {
           </AvatarFallback>
         </Avatar>
         <div className="text-left hidden sm:block">
-          <p className="text-xs font-semibold text-gray-900 leading-none truncate max-w-[140px]">
+          <p className="text-xs font-semibold text-foreground leading-none truncate max-w-[140px]">
             {active.company.name}
           </p>
-          <p className="text-[10px] text-gray-400 mt-0.5 leading-none capitalize">
+          <p className="text-[10px] text-muted-foreground mt-0.5 leading-none capitalize">
             {active.profile.role}
           </p>
         </div>
-        <ChevronsUpDown className="h-3 w-3 text-gray-400" />
+        <ChevronsUpDown className="h-3 w-3 text-muted-foreground" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="start" className="w-64" sideOffset={4}>
-        <div className="px-2 py-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+        <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
           Your companies
         </div>
         {memberships.map((m) => (
@@ -102,13 +102,13 @@ export function CompanySwitcher() {
           >
             <Avatar className="h-6 w-6 rounded-md shrink-0">
               <AvatarImage src={m.company.avatarUrl ?? undefined} />
-              <AvatarFallback className="rounded-md bg-gray-100 text-gray-600 text-[10px] font-semibold">
+              <AvatarFallback className="rounded-md bg-muted text-muted-foreground text-[10px] font-semibold">
                 {initials(m.company.name)}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-gray-900 truncate">{m.company.name}</p>
-              <p className="text-[10px] text-gray-400 capitalize">{m.profile.role}</p>
+              <p className="text-xs font-medium text-foreground truncate">{m.company.name}</p>
+              <p className="text-[10px] text-muted-foreground capitalize">{m.profile.role}</p>
             </div>
             {m.company.slug === activeSlug && <Check className="h-3.5 w-3.5 text-primary" />}
           </DropdownMenuItem>

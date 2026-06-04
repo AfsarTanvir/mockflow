@@ -11,8 +11,8 @@ export default function VerifyPendingForm() {
   const { mutate: resend, isPending, isSuccess, error } = useResendVerification();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl border shadow-sm p-10 w-full max-w-md text-center">
+    <div className="min-h-screen flex items-center justify-center bg-muted px-4">
+      <div className="bg-card rounded-2xl border shadow-sm p-10 w-full max-w-md text-center">
         <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
           <svg
             className="w-6 h-6 text-primary"
@@ -29,17 +29,17 @@ export default function VerifyPendingForm() {
           </svg>
         </div>
 
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Check your email</h1>
-        <p className="text-sm text-gray-500 mb-1">We sent a verification link to</p>
-        <p className="text-sm font-medium text-gray-900 mb-6">{email}</p>
-        <p className="text-xs text-gray-400 mb-8">The link expires in 10 minutes.</p>
+        <h1 className="text-xl font-bold text-foreground mb-2">Check your email</h1>
+        <p className="text-sm text-muted-foreground mb-1">We sent a verification link to</p>
+        <p className="text-sm font-medium text-foreground mb-6">{email}</p>
+        <p className="text-xs text-muted-foreground mb-8">The link expires in 10 minutes.</p>
 
         {isSuccess ? (
-          <p className="text-sm text-green-600 mb-6">Verification email resent.</p>
+          <p className="text-sm text-success mb-6">Verification email resent.</p>
         ) : (
           <>
             {error && (
-              <p className="text-xs text-red-500 mb-4">
+              <p className="text-xs text-destructive mb-4">
                 {(error as any)?.response?.data?.message ?? 'Failed to resend'}
               </p>
             )}
@@ -53,7 +53,10 @@ export default function VerifyPendingForm() {
           </>
         )}
 
-        <Link href="/auth/login" className="text-xs text-gray-400 hover:text-gray-600">
+        <Link
+          href="/auth/login"
+          className="text-xs text-muted-foreground hover:text-muted-foreground"
+        >
           Back to login
         </Link>
       </div>

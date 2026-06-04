@@ -26,7 +26,7 @@ export function DelaySlider({ value, onChange }: DelaySliderProps) {
           onChange={(e) => onChange(Number(e.target.value))}
           className="flex-1 h-1.5 accent-primary cursor-pointer"
         />
-        <span className="w-14 text-right text-sm font-mono font-medium text-gray-700 shrink-0">
+        <span className="w-14 text-right text-sm font-mono font-medium text-foreground shrink-0">
           {label(value)}
         </span>
       </div>
@@ -37,7 +37,9 @@ export function DelaySlider({ value, onChange }: DelaySliderProps) {
             type="button"
             onClick={() => onChange(ms)}
             className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
-              value === ms ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              value === ms
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted'
             }`}
           >
             {label(ms)}

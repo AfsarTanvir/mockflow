@@ -55,7 +55,7 @@ export default function TeamDetailClient({ initialUser, teamId }: Props) {
   if (teamLoading || !team) {
     return (
       <main className="max-w-4xl mx-auto mt-8 px-6 pb-12">
-        <p className="text-sm text-gray-400">Loading team…</p>
+        <p className="text-sm text-muted-foreground">Loading team…</p>
       </main>
     );
   }
@@ -64,13 +64,13 @@ export default function TeamDetailClient({ initialUser, teamId }: Props) {
     <main className="max-w-4xl mx-auto mt-8 px-6 pb-12">
       <Link
         href="/dashboard/teams"
-        className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 mb-4"
+        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-4"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to teams
       </Link>
 
-      <div className="bg-white border rounded-xl p-6 mb-6">
+      <div className="bg-card border rounded-xl p-6 mb-6">
         <div className="flex items-start gap-4">
           <div
             className="h-12 w-12 rounded-lg flex items-center justify-center text-sm font-semibold shrink-0"
@@ -79,12 +79,14 @@ export default function TeamDetailClient({ initialUser, teamId }: Props) {
             {initials(team.name)}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-gray-900">{team.name}</h1>
-            <p className="text-xs text-gray-400 mt-0.5 capitalize">
+            <h1 className="text-lg font-bold text-foreground">{team.name}</h1>
+            <p className="text-xs text-muted-foreground mt-0.5 capitalize">
               {team.visibility.replace(/_/g, ' ')}
             </p>
-            {team.description && <p className="text-sm text-gray-600 mt-2">{team.description}</p>}
-            <div className="flex items-center gap-3 mt-3 text-xs text-gray-500">
+            {team.description && (
+              <p className="text-sm text-muted-foreground mt-2">{team.description}</p>
+            )}
+            <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />
                 {team.totalMember} member{team.totalMember === 1 ? '' : 's'}
@@ -95,7 +97,7 @@ export default function TeamDetailClient({ initialUser, teamId }: Props) {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="text-xs font-medium text-gray-400 hover:text-red-600 transition-colors"
+              className="text-xs font-medium text-muted-foreground hover:text-destructive transition-colors"
             >
               {deleting ? 'Deleting…' : 'Delete team'}
             </button>
@@ -103,9 +105,9 @@ export default function TeamDetailClient({ initialUser, teamId }: Props) {
         </div>
       </div>
 
-      <section className="bg-white border rounded-xl p-5">
+      <section className="bg-card border rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-gray-900">Members</h2>
+          <h2 className="text-sm font-semibold text-foreground">Members</h2>
         </div>
 
         {canManage && (
@@ -118,9 +120,9 @@ export default function TeamDetailClient({ initialUser, teamId }: Props) {
         )}
 
         {membersLoading ? (
-          <p className="text-sm text-gray-400 text-center py-6">Loading members…</p>
+          <p className="text-sm text-muted-foreground text-center py-6">Loading members…</p>
         ) : members.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-6">No members yet.</p>
+          <p className="text-sm text-muted-foreground text-center py-6">No members yet.</p>
         ) : (
           <ul className="divide-y">
             {members.map((m) => (
@@ -179,7 +181,7 @@ function AddMemberForm({
 
   if (eligible.length === 0) {
     return (
-      <div className="bg-gray-50 border border-dashed rounded-lg px-3 py-2 mb-4 text-xs text-gray-400 text-center">
+      <div className="bg-muted border border-dashed rounded-lg px-3 py-2 mb-4 text-xs text-muted-foreground text-center">
         Every active company profile is already on this team.
       </div>
     );
@@ -210,12 +212,12 @@ function AddMemberForm({
       <button
         type="submit"
         disabled={!profileId || isPending}
-        className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-medium hover:bg-gray-700 disabled:opacity-40 transition-colors"
+        className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:bg-primary/90 disabled:opacity-40 transition-colors"
       >
         <UserPlus className="h-3.5 w-3.5" />
         Add
       </button>
-      {error && <span className="text-xs text-red-500 ml-2">{(error as Error).message}</span>}
+      {error && <span className="text-xs text-destructive ml-2">{(error as Error).message}</span>}
     </form>
   );
 }
@@ -242,13 +244,13 @@ function MemberRow({
         {membership.profile ? initials(membership.profile.displayName) : '??'}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">
+        <p className="text-sm font-medium text-foreground truncate">
           {membership.profile?.displayName ?? 'Unknown profile'}
         </p>
-        <p className="text-[11px] text-gray-400 capitalize">
+        <p className="text-[11px] text-muted-foreground capitalize">
           {membership.profile?.companyRole}
           {membership.profile?.status !== 'active' && (
-            <span className="ml-1 text-red-500">· {membership.profile?.status}</span>
+            <span className="ml-1 text-destructive">· {membership.profile?.status}</span>
           )}
         </p>
       </div>
@@ -266,7 +268,7 @@ function MemberRow({
             <button
               onClick={() => changeRole({ profileId: membership.profileId, role: 'admin' })}
               disabled={changing}
-              className="text-xs font-medium text-gray-500 hover:text-primary transition-colors"
+              className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
             >
               Promote
             </button>
@@ -274,7 +276,7 @@ function MemberRow({
             <button
               onClick={() => changeRole({ profileId: membership.profileId, role: 'member' })}
               disabled={changing}
-              className="text-xs font-medium text-gray-500 hover:text-primary transition-colors"
+              className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
             >
               Demote
             </button>
@@ -286,7 +288,7 @@ function MemberRow({
               }
             }}
             disabled={removing}
-            className="text-gray-400 hover:text-red-500 transition-colors"
+            className="text-muted-foreground hover:text-destructive transition-colors"
             title="Remove from team"
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -294,7 +296,7 @@ function MemberRow({
         </>
       )}
 
-      {isSelf && canManage && <span className="text-[10px] text-gray-400">(you)</span>}
+      {isSelf && canManage && <span className="text-[10px] text-muted-foreground">(you)</span>}
     </li>
   );
 }

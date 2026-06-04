@@ -56,8 +56,8 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
   if (!canEdit) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-xl border p-6">
-          <p className="text-sm text-gray-400 text-center">
+        <div className="bg-card rounded-xl border p-6">
+          <p className="text-sm text-muted-foreground text-center">
             Only admins and owners can edit project settings.
           </p>
         </div>
@@ -68,12 +68,12 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white rounded-xl border p-6 space-y-5">
-        <h2 className="text-sm font-semibold text-gray-900">General</h2>
+      <div className="bg-card rounded-xl border p-6 space-y-5">
+        <h2 className="text-sm font-semibold text-foreground">General</h2>
 
         {/* Name */}
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">Project name</label>
+          <label className="block text-xs font-medium text-foreground mb-1.5">Project name</label>
           <input
             type="text"
             value={name}
@@ -84,12 +84,12 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
             maxLength={100}
             className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          {nameError && dirty && <p className="text-xs text-red-500 mt-1">{nameError}</p>}
+          {nameError && dirty && <p className="text-xs text-destructive mt-1">{nameError}</p>}
         </div>
 
         {/* Base path */}
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">Base path</label>
+          <label className="block text-xs font-medium text-foreground mb-1.5">Base path</label>
           <input
             type="text"
             value={basePath}
@@ -101,15 +101,19 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
             className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="/"
           />
-          {basePathError && dirty && <p className="text-xs text-red-500 mt-1">{basePathError}</p>}
-          <p className="text-xs text-gray-400 mt-1">Prepended to all mock endpoint paths.</p>
+          {basePathError && dirty && (
+            <p className="text-xs text-destructive mt-1">{basePathError}</p>
+          )}
+          <p className="text-xs text-muted-foreground mt-1">
+            Prepended to all mock endpoint paths.
+          </p>
         </div>
 
         {/* Public toggle */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-700">Public project</p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs font-medium text-foreground">Public project</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Anyone with the mock URL can hit endpoints — no auth required.
             </p>
           </div>
@@ -120,25 +124,25 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setDirty(true);
             }}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
-              isPublic ? 'bg-primary' : 'bg-gray-200'
+              isPublic ? 'bg-primary' : 'bg-muted'
             }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+              className={`inline-block h-4 w-4 transform rounded-full bg-card shadow transition-transform ${
                 isPublic ? 'translate-x-6' : 'translate-x-1'
               }`}
             />
           </button>
         </div>
 
-        <hr className="border-gray-100" />
-        <h2 className="text-sm font-semibold text-gray-900">Advanced</h2>
+        <hr className="border-input" />
+        <h2 className="text-sm font-semibold text-foreground">Advanced</h2>
 
         {/* CORS toggle */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-700">CORS</p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs font-medium text-foreground">CORS</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Add <code className="font-mono">Access-Control-Allow-Origin: *</code> to every mock
               response.
             </p>
@@ -150,11 +154,11 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setDirty(true);
             }}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
-              cors ? 'bg-primary' : 'bg-gray-200'
+              cors ? 'bg-primary' : 'bg-muted'
             }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+              className={`inline-block h-4 w-4 transform rounded-full bg-card shadow transition-transform ${
                 cors ? 'translate-x-6' : 'translate-x-1'
               }`}
             />
@@ -164,8 +168,8 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
         {/* Log requests toggle */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-700">Log requests</p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs font-medium text-foreground">Log requests</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Record every mock hit — view them in the Logs tab.
             </p>
           </div>
@@ -176,11 +180,11 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setDirty(true);
             }}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
-              logRequests ? 'bg-primary' : 'bg-gray-200'
+              logRequests ? 'bg-primary' : 'bg-muted'
             }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+              className={`inline-block h-4 w-4 transform rounded-full bg-card shadow transition-transform ${
                 logRequests ? 'translate-x-6' : 'translate-x-1'
               }`}
             />
@@ -188,10 +192,10 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border p-6 space-y-3">
+      <div className="bg-card rounded-xl border p-6 space-y-3">
         <div>
-          <h2 className="text-sm font-semibold text-gray-900">Global response headers</h2>
-          <p className="text-xs text-gray-400 mt-1">
+          <h2 className="text-sm font-semibold text-foreground">Global response headers</h2>
+          <p className="text-xs text-muted-foreground mt-1">
             Added to every mock response in this project. Endpoint-level headers override these when
             keys match.
           </p>
@@ -212,16 +216,16 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
       <div className="flex items-center justify-between">
         <div>
           {error && (
-            <p className="text-xs text-red-500">
+            <p className="text-xs text-destructive">
               {(error as any)?.response?.data?.message ?? 'Failed to save settings'}
             </p>
           )}
-          {isSuccess && !dirty && <p className="text-xs text-green-600">Settings saved.</p>}
+          {isSuccess && !dirty && <p className="text-xs text-success">Settings saved.</p>}
         </div>
         <button
           type="submit"
           disabled={isPending || !dirty || !!nameError || !!basePathError}
-          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isPending ? 'Saving…' : 'Save changes'}
         </button>
