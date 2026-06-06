@@ -5,6 +5,8 @@ export type User = {
   avatarUrl: string | null;
   emailVerified: boolean;
   createdAt: string;
+  /** Present on `/auth/me`; true when the user is a platform super-admin. */
+  isSuperAdmin?: boolean;
 };
 
 /* ------------------------------------------------------------------ */
