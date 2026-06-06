@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http';
 import { respondError } from '#app/exceptions/respond_error';
 import * as AuthService from '#services/auth_service';
+import * as AdminAccessService from '#services/admin_access_service';
 import type User from '#models/user';
 import {
   registerValidator,
@@ -98,7 +99,8 @@ export default class AuthController {
 
   /** GET /api/auth/me (protected) */
   async me({ auth, response }: HttpContext) {
-    return response.ok(accountUser(auth.user!));
+    const isSuperAdmin = await AdminAccessService.isSuperAdmin(auth.user!);
+    return response.ok({ ...accountUser(auth.user!), isSuperAdmin });
   }
 
   /** PATCH /api/auth/profile (protected) */

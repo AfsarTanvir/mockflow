@@ -12,4 +12,5 @@ router.use([() => import('@adonisjs/auth/initialize_auth_middleware')]);
 
 export const middleware = router.named({
   auth: () => import('#middleware/auth_middleware'),
+  superAdmin: () => import('#middleware/super_admin_middleware'),
 });
