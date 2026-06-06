@@ -6,6 +6,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useSignIn } from '@/query/auth';
 import { loginSchema, type LoginInput } from '@/schema/auth';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert } from '@/components/ui/alert';
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
@@ -22,68 +27,64 @@ export default function LoginForm() {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted">
-      <div className="w-full max-w-md bg-card rounded-xl shadow p-8">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Sign in</h1>
-        <p className="text-sm text-muted-foreground mb-6">Welcome back to MockFlow</p>
+    <div className="bg-muted flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-md p-6 sm:p-8">
+        <h1 className="text-foreground text-2xl font-bold">Sign in</h1>
+        <p className="text-muted-foreground mt-1 mb-6 text-sm">Welcome back to MockFlow</p>
 
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+          <Alert variant="destructive" className="mb-4">
             {error.message}
-          </div>
+          </Alert>
         )}
 
         <form onSubmit={handleSubmit((data) => signIn(data))} noValidate className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Email</label>
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
               type="email"
-              {...register('email')}
-              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${errors.email ? 'border-destructive' : 'border-input'}`}
               placeholder="you@example.com"
+              aria-invalid={!!errors.email}
+              {...register('email')}
             />
-            {errors.email && (
-              <p className="mt-1 text-xs text-destructive">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-foreground">Password</label>
-              <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link href="/auth/forgot-password" className="text-primary text-xs hover:underline">
                 Forgot password?
               </Link>
             </div>
-            <input
+            <Input
+              id="password"
               type="password"
-              {...register('password')}
-              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${errors.password ? 'border-destructive' : 'border-input'}`}
               placeholder="••••••••"
+              aria-invalid={!!errors.password}
+              {...register('password')}
             />
             {errors.password && (
-              <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>
+              <p className="text-destructive text-xs">{errors.password.message}</p>
             )}
           </div>
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
+          <Button type="submit" className="w-full" disabled={isPending}>
             {isPending ? 'Signing in…' : 'Sign in'}
-          </button>
+          </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-6 text-center text-sm">
           Don&apos;t have an account?{' '}
           <Link
             href={`/auth/register${next !== '/dashboard' ? `?next=${encodeURIComponent(next)}` : ''}`}
-            className="text-primary hover:underline font-medium"
+            className="text-primary font-medium hover:underline"
           >
             Sign up
           </Link>
         </p>
-      </div>
+      </Card>
     </div>
   );
 }
