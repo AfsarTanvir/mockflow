@@ -100,7 +100,7 @@ export function AdminProfilesClient() {
     { header: 'Status', className: 'w-0', cell: (p) => <StatusBadge status={p.status} /> },
     {
       header: 'Joined',
-      className: 'w-0 text-right',
+      className: 'w-0 text-right whitespace-nowrap',
       cell: (p) => <span className="text-muted-foreground">{formatDate(p.createdAt)}</span>,
     },
   ];

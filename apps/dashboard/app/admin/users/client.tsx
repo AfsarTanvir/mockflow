@@ -57,7 +57,7 @@ export function AdminUsersClient() {
     },
     {
       header: 'Joined',
-      className: 'w-0 text-right',
+      className: 'w-0 text-right whitespace-nowrap',
       cell: (u) => <span className="text-muted-foreground">{formatDate(u.createdAt)}</span>,
     },
   ];

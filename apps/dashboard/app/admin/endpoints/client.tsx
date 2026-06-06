@@ -50,7 +50,7 @@ export function AdminEndpointsClient() {
     },
     {
       header: 'Created',
-      className: 'w-0 text-right',
+      className: 'w-0 text-right whitespace-nowrap',
       cell: (e) => <span className="text-muted-foreground">{formatDate(e.createdAt)}</span>,
     },
   ];

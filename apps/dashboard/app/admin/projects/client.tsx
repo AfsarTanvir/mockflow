@@ -42,7 +42,7 @@ export function AdminProjectsClient() {
     },
     {
       header: 'Created',
-      className: 'w-0 text-right',
+      className: 'w-0 text-right whitespace-nowrap',
       cell: (p) => <span className="text-muted-foreground">{formatDate(p.createdAt)}</span>,
     },
   ];

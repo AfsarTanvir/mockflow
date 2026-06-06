@@ -45,7 +45,7 @@ export function AdminRequestLogsClient() {
     },
     {
       header: 'When',
-      className: 'w-0 text-right',
+      className: 'w-0 text-right whitespace-nowrap',
       cell: (l) => <span className="text-muted-foreground">{formatDate(l.createdAt)}</span>,
     },
   ];

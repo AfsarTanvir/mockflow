@@ -76,7 +76,7 @@ export function AdminCompaniesClient() {
     },
     {
       header: 'Created',
-      className: 'w-0 text-right',
+      className: 'w-0 text-right whitespace-nowrap',
       cell: (c) => <span className="text-muted-foreground">{formatDate(c.createdAt)}</span>,
     },
   ];

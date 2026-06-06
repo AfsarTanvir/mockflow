@@ -31,7 +31,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <DashboardHeader user={user} />
         <div className="flex flex-1">
           <AdminSidebar />
-          <SidebarInset className="bg-muted/30">{children}</SidebarInset>
+          {/* The shared Sidebar renders as a fixed overlay that reserves no flow
+              space, so the admin console (which needs full-width tables) offsets
+              the inset by the sidebar width itself. Dashboard pages instead center
+              their content in a max-width container, so they are unaffected. */}
+          <SidebarInset className="bg-muted/30 md:peer-data-[state=expanded]:pl-[150px] md:peer-data-[state=collapsed]:pl-[54px]">
+            {children}
+          </SidebarInset>
         </div>
       </div>
     </SidebarProvider>
