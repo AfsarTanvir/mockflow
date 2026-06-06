@@ -3,7 +3,9 @@
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { CircleCheck, CircleX, Loader2 } from 'lucide-react';
 import { useVerifyEmail } from '@/query/auth';
+import { Card } from '@/components/ui/card';
 
 export default function VerifyForm() {
   const searchParams = useSearchParams();
@@ -24,60 +26,36 @@ export default function VerifyForm() {
   }, [isSuccess]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted px-4">
-      <div className="bg-card rounded-2xl border shadow-sm p-10 w-full max-w-md text-center">
+    <div className="bg-muted flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-md p-6 text-center sm:p-8">
         {isPending && (
           <>
-            <div className="w-8 h-8 border-2 border-ring border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-sm text-muted-foreground">Verifying your email…</p>
+            <Loader2 className="text-muted-foreground mx-auto mb-4 size-8 animate-spin" />
+            <p className="text-muted-foreground text-sm">Verifying your email…</p>
           </>
         )}
 
         {isSuccess && (
           <>
-            <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-5">
-              <svg
-                className="w-6 h-6 text-success"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+            <div className="bg-success/10 mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full">
+              <CircleCheck className="text-success size-6" />
             </div>
-            <h1 className="text-xl font-bold text-foreground mb-2">Email verified!</h1>
-            <p className="text-sm text-muted-foreground">Redirecting you to login…</p>
+            <h1 className="text-foreground mb-2 text-xl font-bold">Email verified!</h1>
+            <p className="text-muted-foreground text-sm">Redirecting you to login…</p>
           </>
         )}
 
         {isError && (
           <>
-            <div className="w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-5">
-              <svg
-                className="w-6 h-6 text-destructive"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+            <div className="bg-destructive/10 mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full">
+              <CircleX className="text-destructive size-6" />
             </div>
-            <h1 className="text-xl font-bold text-foreground mb-2">Link invalid or expired</h1>
-            <p className="text-sm text-muted-foreground mb-6">
+            <h1 className="text-foreground mb-2 text-xl font-bold">Link invalid or expired</h1>
+            <p className="text-muted-foreground mb-6 text-sm">
               {(error as any)?.response?.data?.message ??
                 'This verification link is no longer valid.'}
             </p>
-            <Link href="/auth/login" className="text-sm text-primary hover:underline">
+            <Link href="/auth/login" className="text-primary text-sm hover:underline">
               Back to login
             </Link>
           </>
@@ -85,16 +63,16 @@ export default function VerifyForm() {
 
         {!token && (
           <>
-            <h1 className="text-xl font-bold text-foreground mb-2">Missing token</h1>
-            <p className="text-sm text-muted-foreground mb-4">
+            <h1 className="text-foreground mb-2 text-xl font-bold">Missing token</h1>
+            <p className="text-muted-foreground mb-4 text-sm">
               No verification token found in the URL.
             </p>
-            <Link href="/auth/login" className="text-sm text-primary hover:underline">
+            <Link href="/auth/login" className="text-primary text-sm hover:underline">
               Back to login
             </Link>
           </>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
