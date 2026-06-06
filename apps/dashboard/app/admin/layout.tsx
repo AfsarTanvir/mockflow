@@ -26,7 +26,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const sidebarOpen = cookieStore.get('sidebar_state')?.value !== 'false';
 
   return (
-    <SidebarProvider defaultOpen={sidebarOpen}>
+    <SidebarProvider
+      defaultOpen={sidebarOpen}
+      style={{ '--app-header-h': '3.5rem' } as React.CSSProperties}
+    >
       <div className="flex min-h-screen w-full flex-col">
         <DashboardHeader user={user} />
         <div className="flex flex-1">
