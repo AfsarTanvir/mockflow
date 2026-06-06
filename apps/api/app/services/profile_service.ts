@@ -6,6 +6,8 @@ import ProfileMetadata from '../models/profile_metadata.js';
 import type { ProfileRole, ProfileVisibility } from '../models/profile.js';
 import type { ProfileLink, ProfilePreferences } from '../models/profile_metadata.js';
 import { cleanupForInactiveProfile } from './team_membership_service.js';
+import * as AvatarService from './avatar_service.js';
+import type { MultipartFile } from '@adonisjs/core/bodyparser';
 
 export interface UpdateProfileInput {
   displayName?: string;
@@ -35,17 +37,21 @@ export async function updateProfile(
   profileId: string,
   input: UpdateProfileInput
 ): Promise<Profile> {
-  return db.transaction(async (trx) => {
-    const profile = await Profile.find(profileId, { client: trx });
-    if (!profile) throw new Exception('Profile not found', { status: 404 });
+  let previousAvatar: string | null = null;
+  const profile = await db.transaction(async (trx) => {
+    const found = await Profile.find(profileId, { client: trx });
+    if (!found) throw new Exception('Profile not found', { status: 404 });
 
-    profile.useTransaction(trx);
-    if (input.displayName !== undefined) profile.displayName = input.displayName;
-    if (input.avatarUrl !== undefined) profile.avatarUrl = input.avatarUrl;
-    if (input.visibility !== undefined) profile.visibility = input.visibility;
-    await profile.save();
+    found.useTransaction(trx);
+    if (input.displayName !== undefined) found.displayName = input.displayName;
+    if (input.avatarUrl !== undefined && input.avatarUrl !== found.avatarUrl) {
+      previousAvatar = found.avatarUrl;
+      found.avatarUrl = input.avatarUrl;
+    }
+    if (input.visibility !== undefined) found.visibility = input.visibility;
+    await found.save();
 
-    const metadata = await ProfileMetadata.find(profile.id, { client: trx });
+    const metadata = await ProfileMetadata.find(found.id, { client: trx });
     if (metadata) {
       metadata.useTransaction(trx);
       if (input.jobTitle !== undefined) metadata.jobTitle = input.jobTitle;
@@ -57,8 +63,29 @@ export async function updateProfile(
       await metadata.save();
     }
 
-    return profile;
+    return found;
   });
+
+  // Clean up the previous upload (if local) once the change is committed.
+  if (previousAvatar) await AvatarService.deleteIfLocal(previousAvatar);
+  return profile;
+}
+
+/** Replace a profile's avatar with a freshly uploaded image. */
+export async function setAvatarFromUpload(
+  profileId: string,
+  file: MultipartFile,
+  baseUrl: string
+): Promise<Profile> {
+  const profile = await Profile.find(profileId);
+  if (!profile) throw new Exception('Profile not found', { status: 404 });
+
+  const url = await AvatarService.storeUpload(file, baseUrl);
+  const previous = profile.avatarUrl;
+  profile.avatarUrl = url;
+  await profile.save();
+  await AvatarService.deleteIfLocal(previous);
+  return profile;
 }
 
 /**

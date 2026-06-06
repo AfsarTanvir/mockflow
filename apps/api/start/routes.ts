@@ -224,6 +224,7 @@ router.get('/api/profiles/:id', [ProfilesController, 'show']);
 router
   .group(() => {
     router.patch('/:id', [ProfilesController, 'update']);
+    router.post('/:id/avatar', [ProfilesController, 'uploadAvatar']);
     router.patch('/:id/role', [ProfilesController, 'updateRole']);
     router.post('/:id/suspend', [ProfilesController, 'suspend']);
     router.post('/:id/reactivate', [ProfilesController, 'reactivate']);

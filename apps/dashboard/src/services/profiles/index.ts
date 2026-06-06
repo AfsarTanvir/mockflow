@@ -41,6 +41,16 @@ export async function updateProfile(id: string, body: UpdateProfileBody): Promis
   return data;
 }
 
+/** Upload an image file as the profile's avatar (multipart). */
+export async function uploadProfileAvatar(id: string, file: File): Promise<Profile> {
+  const form = new FormData();
+  form.append('avatar', file);
+  const { data } = await httpClient.post<Profile>(`/api/profiles/${id}/avatar`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
 export async function changeProfileRole(
   id: string,
   role: Exclude<ProfileRole, 'owner'>

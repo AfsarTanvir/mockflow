@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUser, useUpdateProfile, useUploadAvatar, useResendVerification } from '@/query/auth';
+import { useMyCompanies } from '@/query/companies';
+import { useUpdateProfile as useEditProfile, useUploadProfileAvatar } from '@/query/profiles';
+import { getActiveCompanyClient } from '@/lib/active-company';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +27,20 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
 
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const { mutate: uploadAvatar, isPending: uploadingAvatar } = useUploadAvatar();
+
+  // Company profile (per-company display name + avatar) for the active company.
+  const { data: memberships = [] } = useMyCompanies();
+  const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  useEffect(() => setActiveSlug(getActiveCompanyClient()), []);
+  const activeMembership = memberships.find((m) => m.company.slug === activeSlug) ?? memberships[0];
+  const profileId = activeMembership?.profile.id ?? '';
+  const companyId = activeMembership?.company.id ?? '';
+  const { mutate: editProfile, isPending: savingProfile } = useEditProfile(profileId, companyId);
+  const { mutate: uploadProfileAvatar, isPending: uploadingProfileAvatar } = useUploadProfileAvatar(
+    profileId,
+    companyId
+  );
+
   const {
     mutate: resendVerify,
     isPending: resendingVerify,
@@ -88,6 +105,29 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
           />
         </CardContent>
       </Card>
+
+      {/* Company profile avatar (active company) */}
+      {activeMembership && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Company profile — {activeMembership.company.name}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AvatarUploader
+              currentUrl={activeMembership.profile.avatarUrl ?? null}
+              name={activeMembership.profile.displayName || user?.name || ''}
+              isPending={uploadingProfileAvatar || savingProfile}
+              onUploadFile={(file) => uploadProfileAvatar(file)}
+              onSetUrl={(url) => editProfile({ avatarUrl: url })}
+              onRemove={() => editProfile({ avatarUrl: null })}
+            />
+            <p className="text-muted-foreground mt-3 text-xs">
+              This avatar is shown to members of {activeMembership.company.name}. Switch companies
+              in the top bar to edit a different profile.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Name */}
       <Card>

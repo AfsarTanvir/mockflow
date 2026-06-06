@@ -1,9 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http';
+import { Exception } from '@adonisjs/core/exceptions';
 import { respondError } from '#app/exceptions/respond_error';
 import type Profile from '#models/profile';
 import type ProfileMetadata from '#models/profile_metadata';
 import * as ProfileQueries from '#queries/profile_queries';
 import * as ProfileService from '#services/profile_service';
+import { AVATAR_EXTNAMES, AVATAR_MAX_SIZE } from '#services/avatar_service';
 import { updateProfileValidator, changeRoleValidator } from '#validators/profile_validator';
 
 /** Safe card for outsiders when visibility = 'public'. Never exposes role/status/contact. */
@@ -112,6 +114,29 @@ export default class ProfilesController {
     const data = await request.validateUsing(updateProfileValidator);
     try {
       const updated = await ProfileService.updateProfile(profile.id, data);
+      const metadata = await ProfileQueries.findMetadata(updated.id);
+      return response.ok(fullView(updated, metadata));
+    } catch (error) {
+      return respondError(error, response);
+    }
+  }
+
+  /** POST /api/profiles/:id/avatar — self only; multipart image upload. */
+  async uploadAvatar({ auth, params, request, response }: HttpContext) {
+    const profile = await ProfileQueries.findById(params.id);
+    if (!profile) return response.notFound({ message: 'Profile not found' });
+
+    if (profile.userId !== auth.user!.id) {
+      return response.forbidden({ message: 'You can only edit your own profile' });
+    }
+
+    const file = request.file('avatar', { size: AVATAR_MAX_SIZE, extnames: AVATAR_EXTNAMES });
+    try {
+      if (!file) {
+        throw new Exception('No image file provided', { status: 422, code: 'E_NO_FILE' });
+      }
+      const baseUrl = `${request.protocol()}://${request.host()}`;
+      const updated = await ProfileService.setAvatarFromUpload(profile.id, file, baseUrl);
       const metadata = await ProfileQueries.findMetadata(updated.id);
       return response.ok(fullView(updated, metadata));
     } catch (error) {
