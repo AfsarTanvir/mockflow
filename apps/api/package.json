@@ -12,6 +12,7 @@
     "migration:rollback": "node --import tsx/esm ace migration:rollback",
     "migration:fresh": "node --import tsx/esm ace migration:fresh --seed",
     "db:seed": "node --import tsx/esm ace db:seed",
+    "seed:fake": "SEED_FAKE=true node --import tsx/esm ace db:seed --files=./database/seeders/fake_seeder.ts",
     "test": "node --import tsx/esm bin/test.ts",
     "test:unit": "node --import tsx/esm bin/test.ts unit",
     "test:integration": "node --import tsx/esm bin/test.ts integration",
