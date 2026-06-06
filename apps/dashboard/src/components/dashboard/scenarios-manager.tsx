@@ -11,6 +11,7 @@ import {
 } from '@/query/scenarios';
 import { ScenarioForm } from './scenario-form';
 import { RulesEditor } from './rules-editor';
+import { useConfirm } from '@/providers/ConfirmProvider';
 import type { Scenario, ScenarioInput } from '@/types';
 
 type Props = {
@@ -34,7 +35,7 @@ function OverrideChips({ s }: { s: Scenario }) {
       {chips.map((c) => (
         <span
           key={c}
-          className="text-[10px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono"
+          className="text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded font-mono"
         >
           {c}
         </span>
@@ -54,6 +55,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
   const { mutate: deleteScenario } = useDeleteScenario(endpointId);
   const { mutate: activateScenario, isPending: activating } = useActivateScenario(endpointId);
   const { mutate: deactivateAll, isPending: deactivating } = useDeactivateAllScenarios(endpointId);
+  const confirm = useConfirm();
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -66,26 +68,26 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
   }
 
   if (isLoading) {
-    return <div className="text-xs text-gray-400 text-center py-4">Loading scenarios…</div>;
+    return <div className="text-xs text-muted-foreground text-center py-4">Loading scenarios…</div>;
   }
 
   return (
     <div className="space-y-3">
       {/* Active state header */}
-      <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 border">
+      <div className="flex items-center justify-between bg-muted rounded-lg px-3 py-2 border">
         <div className="text-xs">
-          <span className="text-gray-400">Currently active: </span>
+          <span className="text-muted-foreground">Currently active: </span>
           {activeScenario ? (
-            <span className="font-semibold text-blue-700">{activeScenario.name}</span>
+            <span className="font-semibold text-primary">{activeScenario.name}</span>
           ) : (
-            <span className="font-semibold text-gray-700">Default (endpoint response)</span>
+            <span className="font-semibold text-foreground">Default (endpoint response)</span>
           )}
         </div>
         {canWrite && activeScenario && (
           <button
             onClick={() => deactivateAll()}
             disabled={deactivating}
-            className="text-xs text-gray-500 hover:text-gray-900 disabled:opacity-50"
+            className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
           >
             {deactivating ? 'Clearing…' : 'Use default'}
           </button>
@@ -94,7 +96,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
 
       {/* Scenarios list */}
       {scenarios.length === 0 ? (
-        <div className="text-xs text-gray-400 text-center py-4">
+        <div className="text-xs text-muted-foreground text-center py-4">
           No scenarios yet — endpoint always returns the default response.
         </div>
       ) : (
@@ -102,24 +104,26 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
           {scenarios.map((s) => (
             <div key={s.id}>
               <div
-                className={`bg-white border rounded-lg px-3 py-2.5 flex items-center gap-3 ${
+                className={`bg-card border rounded-lg px-3 py-2.5 flex items-center gap-3 ${
                   editingId === s.id || rulesOpenId === s.id ? 'rounded-b-none border-b-0' : ''
-                } ${s.isActive ? 'border-blue-300' : ''}`}
+                } ${s.isActive ? 'border-ring' : ''}`}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-mono font-medium text-gray-900">{s.name}</span>
+                    <span className="text-sm font-mono font-medium text-foreground">{s.name}</span>
                     {s.isActive && (
-                      <span className="text-[10px] font-semibold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">
                         ACTIVE
                       </span>
                     )}
                     {s.priority !== 0 && (
-                      <span className="text-[10px] text-gray-400">priority {s.priority}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        priority {s.priority}
+                      </span>
                     )}
                   </div>
                   {s.description && (
-                    <p className="text-xs text-gray-500 mb-1.5 truncate">{s.description}</p>
+                    <p className="text-xs text-muted-foreground mb-1.5 truncate">{s.description}</p>
                   )}
                   <OverrideChips s={s} />
                 </div>
@@ -131,7 +135,9 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                     setRulesOpenId((prev) => (prev === s.id ? null : s.id));
                   }}
                   className={`text-xs font-medium shrink-0 transition-colors ${
-                    rulesOpenId === s.id ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
+                    rulesOpenId === s.id
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-primary'
                   }`}
                 >
                   {rulesOpenId === s.id ? 'Close rules' : 'Rules'}
@@ -143,7 +149,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                       <button
                         onClick={() => activateScenario(s.id)}
                         disabled={activating}
-                        className="text-xs font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50 shrink-0"
+                        className="text-xs font-medium text-primary hover:text-primary disabled:opacity-50 shrink-0"
                       >
                         Activate
                       </button>
@@ -155,16 +161,24 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                         setEditingId((prev) => (prev === s.id ? null : s.id));
                       }}
                       className={`text-xs font-medium shrink-0 transition-colors ${
-                        editingId === s.id ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
+                        editingId === s.id
+                          ? 'text-primary'
+                          : 'text-muted-foreground hover:text-primary'
                       }`}
                     >
                       {editingId === s.id ? 'Close' : 'Edit'}
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm(`Delete scenario "${s.name}"?`)) deleteScenario(s.id);
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: 'Delete scenario?',
+                          description: `"${s.name}" will be permanently removed.`,
+                          confirmText: 'Delete',
+                          destructive: true,
+                        });
+                        if (ok) deleteScenario(s.id);
                       }}
-                      className="text-xs text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                      className="text-xs text-muted-foreground hover:text-destructive transition-colors shrink-0"
                     >
                       Delete
                     </button>
@@ -181,7 +195,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
               )}
 
               {rulesOpenId === s.id && (
-                <div className="bg-white border border-t-0 rounded-b-lg px-4 py-3">
+                <div className="bg-card border border-t-0 rounded-b-lg px-4 py-3">
                   <RulesEditor scenarioId={s.id} canWrite={canWrite} />
                 </div>
               )}
@@ -194,8 +208,8 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
       {canWrite && (
         <>
           {showCreate ? (
-            <div className="bg-white border rounded-lg p-4">
-              <h4 className="text-xs font-semibold text-gray-700 mb-3">New scenario</h4>
+            <div className="bg-card border rounded-lg p-4">
+              <h4 className="text-xs font-semibold text-foreground mb-3">New scenario</h4>
               <ScenarioForm
                 mode="create"
                 onSubmit={handleCreate}
@@ -210,7 +224,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                 setEditingId(null);
                 setShowCreate(true);
               }}
-              className="w-full px-3 py-2 border border-dashed border-gray-300 rounded-lg text-xs text-gray-500 hover:text-gray-900 hover:border-gray-400 transition-colors"
+              className="w-full px-3 py-2 border border-dashed border-input rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-input transition-colors"
             >
               + New scenario
             </button>
@@ -234,7 +248,7 @@ function ScenarioEditWrapper({
   const { mutate: updateScenario, isPending, error } = useUpdateScenario(scenario.id, endpointId);
 
   return (
-    <div className="bg-white border border-t-0 rounded-b-lg px-4 py-3">
+    <div className="bg-card border border-t-0 rounded-b-lg px-4 py-3">
       <ScenarioForm
         mode="edit"
         initialValues={scenario}

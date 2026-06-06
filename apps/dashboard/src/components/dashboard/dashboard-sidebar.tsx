@@ -32,14 +32,14 @@ export function DashboardSidebar() {
       <button
         onClick={handleToggle}
         className={cn(
-          'absolute top-5 -right-3 z-20 flex h-6 w-6 items-center justify-center rounded-full border bg-white shadow-sm transition-transform hover:bg-gray-50',
+          'bg-background hover:bg-accent absolute top-5 -right-3 z-20 flex h-6 w-6 items-center justify-center rounded-full border shadow-sm transition-transform',
           open && 'rotate-180'
         )}
       >
-        <ChevronRight className="h-3 w-3 text-gray-500" />
+        <ChevronRight className="text-muted-foreground h-3 w-3" />
       </button>
 
-      <SidebarContent className="bg-white pt-2">
+      <SidebarContent className="pt-2">
         {dashboardNavGroups.map((group, groupIdx, arr) => (
           <div key={groupIdx}>
             <SidebarGroup>
@@ -57,8 +57,9 @@ export function DashboardSidebar() {
                       disabled={item.disabled}
                       tooltip={item.label}
                       className={cn(
-                        'text-gray-600 hover:bg-blue-50 hover:text-blue-600',
-                        isActive && 'bg-blue-50 text-blue-600 font-medium',
+                        'text-muted-foreground hover:bg-accent hover:text-foreground',
+                        isActive &&
+                          'bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary font-medium',
                         item.disabled && 'pointer-events-none opacity-40'
                       )}
                     >

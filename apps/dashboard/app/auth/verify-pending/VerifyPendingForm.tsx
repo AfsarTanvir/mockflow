@@ -2,7 +2,10 @@
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Mail } from 'lucide-react';
 import { useResendVerification } from '@/query/auth';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 export default function VerifyPendingForm() {
   const searchParams = useSearchParams();
@@ -11,52 +14,43 @@ export default function VerifyPendingForm() {
   const { mutate: resend, isPending, isSuccess, error } = useResendVerification();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl border shadow-sm p-10 w-full max-w-md text-center">
-        <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
-          <svg
-            className="w-6 h-6 text-blue-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            />
-          </svg>
+    <div className="bg-muted flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-md p-6 text-center sm:p-8">
+        <div className="bg-primary/10 mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full">
+          <Mail className="text-primary size-6" />
         </div>
 
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Check your email</h1>
-        <p className="text-sm text-gray-500 mb-1">We sent a verification link to</p>
-        <p className="text-sm font-medium text-gray-900 mb-6">{email}</p>
-        <p className="text-xs text-gray-400 mb-8">The link expires in 10 minutes.</p>
+        <h1 className="text-foreground mb-2 text-xl font-bold">Check your email</h1>
+        <p className="text-muted-foreground text-sm">We sent a verification link to</p>
+        <p className="text-foreground mb-6 text-sm font-medium">{email}</p>
+        <p className="text-muted-foreground mb-8 text-xs">The link expires in 10 minutes.</p>
 
         {isSuccess ? (
-          <p className="text-sm text-green-600 mb-6">Verification email resent.</p>
+          <p className="text-success mb-6 text-sm">Verification email resent.</p>
         ) : (
           <>
             {error && (
-              <p className="text-xs text-red-500 mb-4">
+              <p className="text-destructive mb-4 text-xs">
                 {(error as any)?.response?.data?.message ?? 'Failed to resend'}
               </p>
             )}
-            <button
+            <Button
+              variant="link"
               onClick={() => resend()}
               disabled={isPending}
-              className="text-sm text-blue-600 hover:underline disabled:opacity-50 mb-6 block mx-auto"
+              className="mx-auto mb-6"
             >
               {isPending ? 'Sending…' : "Didn't receive it? Resend"}
-            </button>
+            </Button>
           </>
         )}
 
-        <Link href="/auth/login" className="text-xs text-gray-400 hover:text-gray-600">
-          Back to login
-        </Link>
-      </div>
+        <div>
+          <Link href="/auth/login" className="text-muted-foreground text-xs hover:underline">
+            Back to login
+          </Link>
+        </div>
+      </Card>
     </div>
   );
 }

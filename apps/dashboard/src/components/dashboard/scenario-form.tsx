@@ -96,7 +96,7 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
       {(error || localError) && (
-        <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+        <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
           {localError ?? error?.message}
         </div>
       )}
@@ -104,31 +104,31 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
       {/* Name + Priority */}
       <div className="flex gap-3">
         <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-600 mb-1">Name</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1">Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={80}
             placeholder="e.g. not-found, rate-limited"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
         <div className="w-28">
-          <label className="block text-xs font-medium text-gray-600 mb-1">Priority</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1">Priority</label>
           <input
             type="number"
             value={priority}
             onChange={(e) => setPriority(Number(e.target.value))}
             min={0}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
       </div>
 
       {/* Description */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">
+        <label className="block text-xs font-medium text-muted-foreground mb-1">
           Description (optional)
         </label>
         <input
@@ -137,12 +137,12 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
           onChange={(e) => setDescription(e.target.value)}
           maxLength={500}
           placeholder="When does this scenario apply?"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
       <div className="border-t pt-4 space-y-4">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           Tick to override the endpoint default — unticked fields inherit from the endpoint.
         </p>
 
@@ -153,15 +153,15 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
               type="checkbox"
               checked={overrideStatus}
               onChange={(e) => setOverrideStatus(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded"
+              className="w-4 h-4 text-primary rounded"
             />
-            <span className="text-xs font-medium text-gray-700">Override status code</span>
+            <span className="text-xs font-medium text-foreground">Override status code</span>
           </label>
           {overrideStatus && (
             <select
               value={statusCode}
               onChange={(e) => setStatusCode(Number(e.target.value))}
-              className="ml-6 w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="ml-6 w-32 px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {STATUS_OPTIONS.map((s) => (
                 <option key={s} value={s}>
@@ -179,9 +179,9 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
               type="checkbox"
               checked={overrideBody}
               onChange={(e) => setOverrideBody(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded"
+              className="w-4 h-4 text-primary rounded"
             />
-            <span className="text-xs font-medium text-gray-700">Override response body</span>
+            <span className="text-xs font-medium text-foreground">Override response body</span>
           </label>
           {overrideBody && (
             <div className="ml-6">
@@ -197,9 +197,9 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
               type="checkbox"
               checked={overrideHeaders}
               onChange={(e) => setOverrideHeaders(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded"
+              className="w-4 h-4 text-primary rounded"
             />
-            <span className="text-xs font-medium text-gray-700">Override response headers</span>
+            <span className="text-xs font-medium text-foreground">Override response headers</span>
           </label>
           {overrideHeaders && (
             <div className="ml-6">
@@ -215,9 +215,9 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
               type="checkbox"
               checked={overrideDelay}
               onChange={(e) => setOverrideDelay(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded"
+              className="w-4 h-4 text-primary rounded"
             />
-            <span className="text-xs font-medium text-gray-700">Override delay</span>
+            <span className="text-xs font-medium text-foreground">Override delay</span>
           </label>
           {overrideDelay && (
             <div className="ml-6 space-y-3">
@@ -228,14 +228,14 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
                   type="checkbox"
                   checked={randomize}
                   onChange={(e) => setRandomize(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded"
+                  className="w-4 h-4 text-primary rounded"
                 />
-                <span className="text-xs text-gray-700">Randomize between min and max</span>
+                <span className="text-xs text-foreground">Randomize between min and max</span>
               </label>
 
               {randomize && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     Max delay (ms)
                   </label>
                   <DelaySlider value={delayMaxMs} onChange={setDelayMaxMs} />
@@ -251,7 +251,7 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 border border-input text-foreground rounded-lg text-sm font-medium hover:bg-muted transition-colors"
         >
           Cancel
         </button>
@@ -259,7 +259,7 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
           type="submit"
           disabled={isPending}
           className={cn(
-            'px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+            'px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
           )}
         >
           {isPending

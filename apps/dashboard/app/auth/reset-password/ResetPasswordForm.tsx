@@ -3,7 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { CircleCheck } from 'lucide-react';
 import { useResetPassword } from '@/query/auth';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert } from '@/components/ui/alert';
 
 export default function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -33,93 +39,81 @@ export default function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="bg-white rounded-2xl border shadow-sm p-10 w-full max-w-md text-center">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Reset link is missing</h1>
-          <p className="text-sm text-gray-500 mb-4">
+      <div className="bg-muted flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md p-6 text-center sm:p-8">
+          <h1 className="text-foreground mb-2 text-xl font-bold">Reset link is missing</h1>
+          <p className="text-muted-foreground mb-4 text-sm">
             This page needs a reset token. Please use the link from your email.
           </p>
-          <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:underline">
+          <Link href="/auth/forgot-password" className="text-primary text-sm hover:underline">
             Request a new reset link
           </Link>
-        </div>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl border shadow-sm p-10 w-full max-w-md">
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Choose a new password</h1>
-        <p className="text-sm text-gray-500 mb-6">
-          Pick something at least 8 characters long. You'll use it next time you sign in.
+    <div className="bg-muted flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-md p-6 sm:p-8">
+        <h1 className="text-foreground text-xl font-bold">Choose a new password</h1>
+        <p className="text-muted-foreground mt-1 mb-6 text-sm">
+          Pick something at least 8 characters long. You&apos;ll use it next time you sign in.
         </p>
 
         {isSuccess ? (
           <div className="text-center">
-            <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-6 h-6 text-green-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+            <div className="bg-success/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+              <CircleCheck className="text-success size-6" />
             </div>
-            <p className="text-sm font-medium text-gray-900 mb-1">Password updated</p>
-            <p className="text-xs text-gray-500">Taking you to sign in…</p>
+            <p className="text-foreground mb-1 text-sm font-medium">Password updated</p>
+            <p className="text-muted-foreground text-xs">Taking you to sign in…</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">New password</label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="newPassword">New password</Label>
+              <Input
+                id="newPassword"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                aria-invalid={!!pwError}
                 required
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              {pwError && <p className="text-xs text-red-500 mt-1">{pwError}</p>}
+              {pwError && <p className="text-destructive text-xs">{pwError}</p>}
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Confirm new password
-              </label>
-              <input
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm">Confirm new password</Label>
+              <Input
+                id="confirm"
                 type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
+                aria-invalid={!!confirmError}
                 required
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              {confirmError && <p className="text-xs text-red-500 mt-1">{confirmError}</p>}
+              {confirmError && <p className="text-destructive text-xs">{confirmError}</p>}
             </div>
 
             {error && (
-              <p className="text-xs text-red-500">
+              <Alert variant="destructive">
                 {(error as any)?.response?.data?.message ??
                   "We couldn't update your password. Try again."}
-              </p>
+              </Alert>
             )}
 
-            <button
+            <Button
               type="submit"
+              className="w-full"
               disabled={isPending || !newPassword || !!pwError || !!confirmError}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isPending ? 'Saving…' : 'Save new password'}
-            </button>
+            </Button>
           </form>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

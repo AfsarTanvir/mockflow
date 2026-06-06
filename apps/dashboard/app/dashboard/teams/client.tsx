@@ -19,20 +19,20 @@ interface Props {
 function VisibilityBadge({ visibility }: { visibility: TeamVisibility }) {
   if (visibility === 'public') {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-success/10 text-success px-1.5 py-0.5 rounded">
         <Globe className="h-2.5 w-2.5" /> Public
       </span>
     );
   }
   if (visibility === 'company_member_only') {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
         <Building2 className="h-2.5 w-2.5" /> Company members
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
       <Lock className="h-2.5 w-2.5" /> Private
     </span>
   );
@@ -60,7 +60,7 @@ export default function TeamsListClient({ initialUser }: Props) {
   if (companiesLoading || !active) {
     return (
       <main className="max-w-5xl mx-auto mt-8 px-6 pb-12">
-        <p className="text-sm text-gray-400">Loading…</p>
+        <p className="text-sm text-muted-foreground">Loading…</p>
       </main>
     );
   }
@@ -69,8 +69,8 @@ export default function TeamsListClient({ initialUser }: Props) {
     <main className="max-w-5xl mx-auto mt-8 px-6 pb-12">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Teams</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-xl font-bold text-foreground">Teams</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Organise <span className="font-medium">{active.company.name}</span> profiles into teams.
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function TeamsListClient({ initialUser }: Props) {
           <button
             type="button"
             onClick={() => setShowCreate((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             <Plus className="h-4 w-4" />
             {showCreate ? 'Cancel' : 'New team'}
@@ -95,15 +95,15 @@ export default function TeamsListClient({ initialUser }: Props) {
       )}
 
       {isLoading ? (
-        <p className="text-sm text-gray-400 text-center py-12">Loading teams…</p>
+        <p className="text-sm text-muted-foreground text-center py-12">Loading teams…</p>
       ) : teams.length === 0 ? (
-        <div className="bg-white border rounded-xl p-12 text-center">
-          <Users className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm text-gray-500">No teams yet.</p>
+        <div className="bg-card border rounded-xl p-12 text-center">
+          <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">No teams yet.</p>
           {canCreate && (
             <button
               onClick={() => setShowCreate(true)}
-              className="mt-3 text-sm text-blue-600 hover:underline font-medium"
+              className="mt-3 text-sm text-primary hover:underline font-medium"
             >
               Create the first team
             </button>
@@ -115,7 +115,7 @@ export default function TeamsListClient({ initialUser }: Props) {
             <Link
               key={t.id}
               href={`/dashboard/teams/${t.id}`}
-              className="block bg-white border rounded-xl p-4 hover:border-blue-300 hover:shadow-sm transition-all"
+              className="block bg-card border rounded-xl p-4 hover:border-ring hover:shadow-sm transition-all"
             >
               <div className="flex items-start gap-3">
                 <div
@@ -131,13 +131,15 @@ export default function TeamsListClient({ initialUser }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-semibold text-gray-900 truncate">{t.name}</h3>
+                    <h3 className="text-sm font-semibold text-foreground truncate">{t.name}</h3>
                     <VisibilityBadge visibility={t.visibility} />
                   </div>
                   {t.description && (
-                    <p className="text-xs text-gray-500 line-clamp-2 mb-2">{t.description}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                      {t.description}
+                    </p>
                   )}
-                  <div className="flex items-center gap-3 text-[11px] text-gray-400">
+                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                       <Users className="h-3 w-3" /> {t.totalMember}
                     </span>
@@ -184,45 +186,45 @@ function CreateTeamForm({
   return (
     <form
       onSubmit={handleSubmit(handle)}
-      className="bg-white border rounded-xl p-5 mb-5 space-y-4"
+      className="bg-card border rounded-xl p-5 mb-5 space-y-4"
       noValidate
     >
       {error && (
-        <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+        <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-lg">
           {(error as Error).message}
         </div>
       )}
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Team name</label>
+        <label className="block text-xs font-medium text-foreground mb-1">Team name</label>
         <input
           type="text"
           {...register('name')}
           placeholder="e.g. Backend, Design, Customer Success"
-          className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            errors.name ? 'border-red-400' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
+            errors.name ? 'border-destructive' : 'border-input'
           }`}
         />
-        {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
+        {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name.message}</p>}
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">
+        <label className="block text-xs font-medium text-foreground mb-1">
           Description (optional)
         </label>
         <input
           type="text"
           {...register('description')}
           placeholder="What does this team work on?"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Visibility</label>
+        <label className="block text-xs font-medium text-foreground mb-1">Visibility</label>
         <select
           {...register('visibility')}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <option value="private">Private — only team members can see</option>
           <option value="company_member_only">Company members can see the team exists</option>
@@ -234,14 +236,14 @@ function CreateTeamForm({
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 py-1.5 text-xs font-medium border rounded-lg hover:bg-gray-50 transition-colors"
+          className="px-3 py-1.5 text-xs font-medium border rounded-lg hover:bg-muted transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isPending}
-          className="px-4 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="px-4 py-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
           {isPending ? 'Creating…' : 'Create team'}
         </button>

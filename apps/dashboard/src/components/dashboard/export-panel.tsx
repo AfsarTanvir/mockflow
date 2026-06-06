@@ -54,25 +54,25 @@ export function ExportPanel({ projectId }: Props) {
   ];
 
   return (
-    <div className="bg-white rounded-xl border p-6 space-y-4">
-      <h2 className="text-sm font-semibold text-gray-900">Export</h2>
-      <p className="text-xs text-gray-400">
+    <div className="bg-card rounded-xl border p-6 space-y-4">
+      <h2 className="text-sm font-semibold text-foreground">Export</h2>
+      <p className="text-xs text-muted-foreground">
         Download your project as a standard API spec file.{' '}
-        <span className="text-gray-500 font-medium">Raw</span> keeps faker templates as-is;{' '}
-        <span className="text-gray-500 font-medium">Evaluated</span> replaces them with sample
-        values.
+        <span className="text-muted-foreground font-medium">Raw</span> keeps faker templates as-is;{' '}
+        <span className="text-muted-foreground font-medium">Evaluated</span> replaces them with
+        sample values.
       </p>
 
       <div className="space-y-3">
         {rows.map((row) => (
           <div key={row.label} className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-700">{row.label}</span>
+            <span className="text-xs font-medium text-foreground">{row.label}</span>
             <div className="flex gap-2">
               <button
                 type="button"
                 disabled={loading !== null}
                 onClick={() => trigger(row.rawKey, row.rawFn)}
-                className="px-3 py-1.5 text-xs font-medium border rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs font-medium border rounded-lg hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {loading === row.rawKey ? 'Downloading…' : 'Raw'}
               </button>
@@ -80,7 +80,7 @@ export function ExportPanel({ projectId }: Props) {
                 type="button"
                 disabled={loading !== null}
                 onClick={() => trigger(row.evalKey, row.evalFn)}
-                className="px-3 py-1.5 text-xs font-medium border rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs font-medium border rounded-lg hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {loading === row.evalKey ? 'Downloading…' : 'Evaluated'}
               </button>
@@ -89,7 +89,7 @@ export function ExportPanel({ projectId }: Props) {
         ))}
       </div>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

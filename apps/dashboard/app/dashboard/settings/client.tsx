@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 import { useUser, useUpdateProfile, useResendVerification } from '@/query/auth';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { User } from '@/types';
 
 export default function ProfileSettingsClient({ initialUser }: { initialUser: User }) {
@@ -62,152 +67,152 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
   }
 
   return (
-    <main className="max-w-2xl mx-auto mt-8 px-6 pb-12 space-y-6">
-      <h1 className="text-base font-semibold text-gray-900">Profile settings</h1>
+    <main className="mx-auto w-full max-w-2xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+      <h1 className="text-foreground text-base font-semibold">Profile settings</h1>
 
       {/* Name */}
-      <form onSubmit={handleNameSubmit} className="bg-white rounded-xl border p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">Display name</h2>
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setNameDirty(true);
-              setNameSuccess(false);
-            }}
-            maxLength={100}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {nameError && nameDirty && <p className="text-xs text-red-500 mt-1">{nameError}</p>}
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">{user?.email}</span>
-          <div className="flex items-center gap-3">
-            {nameSuccess && <span className="text-xs text-green-600">Saved.</span>}
-            <button
-              type="submit"
-              disabled={isPending || !nameDirty || !!nameError}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {isPending ? 'Saving…' : 'Save name'}
-            </button>
-          </div>
-        </div>
-      </form>
+      <Card>
+        <CardHeader>
+          <CardTitle>Display name</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleNameSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setNameDirty(true);
+                  setNameSuccess(false);
+                }}
+                maxLength={100}
+                aria-invalid={!!nameError && nameDirty}
+              />
+              {nameError && nameDirty && <p className="text-destructive text-xs">{nameError}</p>}
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground text-xs">{user?.email}</span>
+              <div className="flex items-center gap-3">
+                {nameSuccess && <span className="text-success text-xs">Saved.</span>}
+                <Button type="submit" disabled={isPending || !nameDirty || !!nameError}>
+                  {isPending ? 'Saving…' : 'Save name'}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Email verification */}
-      <div className="bg-white rounded-xl border p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-900">Email verification</h2>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle>Email verification</CardTitle>
           {user?.emailVerified ? (
-            <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium">
-              Verified
-            </span>
+            <Badge variant="success">Verified</Badge>
           ) : (
-            <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-medium">
-              Not verified
-            </span>
+            <Badge variant="warning">Not verified</Badge>
           )}
-        </div>
-
-        {user?.emailVerified ? (
-          <p className="text-xs text-gray-500">
-            Your email <span className="font-medium text-gray-700">{user.email}</span> is verified.
-          </p>
-        ) : (
-          <>
-            <p className="text-xs text-gray-500">
-              Verify your email to confirm{' '}
-              <span className="font-medium text-gray-700">{user?.email}</span>. Verification is
-              optional — you can keep using MockFlow either way.
+        </CardHeader>
+        <CardContent>
+          {user?.emailVerified ? (
+            <p className="text-muted-foreground text-xs">
+              Your email <span className="text-foreground font-medium">{user.email}</span> is
+              verified.
             </p>
-            <div className="flex items-center justify-end gap-3">
-              {verifySent && (
-                <span className="text-xs text-green-600">
-                  Verification email sent. Check your inbox.
-                </span>
-              )}
-              {verifyError && (
-                <span className="text-xs text-red-500">
-                  {(verifyError as any)?.response?.data?.message ?? 'Failed to send'}
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => resendVerify()}
-                disabled={resendingVerify}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {resendingVerify ? 'Sending…' : 'Send verification email'}
-              </button>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-muted-foreground text-xs">
+                Verify your email to confirm{' '}
+                <span className="text-foreground font-medium">{user?.email}</span>. Verification is
+                optional — you can keep using MockFlow either way.
+              </p>
+              <div className="flex items-center justify-end gap-3">
+                {verifySent && (
+                  <span className="text-success text-xs">
+                    Verification email sent. Check your inbox.
+                  </span>
+                )}
+                {verifyError && (
+                  <span className="text-destructive text-xs">
+                    {(verifyError as any)?.response?.data?.message ?? 'Failed to send'}
+                  </span>
+                )}
+                <Button type="button" onClick={() => resendVerify()} disabled={resendingVerify}>
+                  {resendingVerify ? 'Sending…' : 'Send verification email'}
+                </Button>
+              </div>
             </div>
-          </>
-        )}
-      </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Password */}
-      <form onSubmit={handlePasswordSubmit} className="bg-white rounded-xl border p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">Change password</h2>
+      <Card>
+        <CardHeader>
+          <CardTitle>Change password</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="currentPassword">Current password</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => {
+                  setCurrentPassword(e.target.value);
+                  setPwSuccess(false);
+                }}
+              />
+            </div>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">Current password</label>
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => {
-              setCurrentPassword(e.target.value);
-              setPwSuccess(false);
-            }}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="newPassword">New password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  setPwSuccess(false);
+                }}
+                aria-invalid={!!newPwError}
+              />
+              {newPwError && <p className="text-destructive text-xs">{newPwError}</p>}
+            </div>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">New password</label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => {
-              setNewPassword(e.target.value);
-              setPwSuccess(false);
-            }}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {newPwError && <p className="text-xs text-red-500 mt-1">{newPwError}</p>}
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword">Confirm new password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setPwSuccess(false);
+                }}
+                aria-invalid={!!confirmError}
+              />
+              {confirmError && <p className="text-destructive text-xs">{confirmError}</p>}
+            </div>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5">
-            Confirm new password
-          </label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => {
-              setConfirmPassword(e.target.value);
-              setPwSuccess(false);
-            }}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {confirmError && <p className="text-xs text-red-500 mt-1">{confirmError}</p>}
-        </div>
-
-        <div className="flex items-center justify-end gap-3">
-          {pwSuccess && <span className="text-xs text-green-600">Password updated.</span>}
-          <button
-            type="submit"
-            disabled={
-              isPending || !currentPassword || !newPassword || !!confirmError || !!newPwError
-            }
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {isPending ? 'Saving…' : 'Update password'}
-          </button>
-        </div>
-      </form>
+            <div className="flex items-center justify-end gap-3">
+              {pwSuccess && <span className="text-success text-xs">Password updated.</span>}
+              <Button
+                type="submit"
+                disabled={
+                  isPending || !currentPassword || !newPassword || !!confirmError || !!newPwError
+                }
+              >
+                {isPending ? 'Saving…' : 'Update password'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }

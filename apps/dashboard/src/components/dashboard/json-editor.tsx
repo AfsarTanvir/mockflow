@@ -10,7 +10,7 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
       className="flex items-center justify-center bg-[#1e1e1e] rounded-lg"
       style={{ height: 240 }}
     >
-      <span className="text-xs text-gray-400">Loading editor…</span>
+      <span className="text-xs text-muted-foreground">Loading editor…</span>
     </div>
   ),
 });
@@ -37,7 +37,7 @@ export function JsonEditor({ value, onChange, height = 240, readOnly = false }: 
 
   return (
     <div>
-      <div className="overflow-hidden rounded-lg border border-gray-200">
+      <div className="overflow-hidden rounded-lg border border-input">
         <MonacoEditor
           height={height}
           language="json"
@@ -60,7 +60,7 @@ export function JsonEditor({ value, onChange, height = 240, readOnly = false }: 
           }}
         />
       </div>
-      <p className={`mt-1 text-xs font-medium ${valid ? 'text-green-600' : 'text-red-500'}`}>
+      <p className={`mt-1 text-xs font-medium ${valid ? 'text-success' : 'text-destructive'}`}>
         {valid ? '✓ Valid JSON' : '✗ Invalid JSON'}
       </p>
     </div>

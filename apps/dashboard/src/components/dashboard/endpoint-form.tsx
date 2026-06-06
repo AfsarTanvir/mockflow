@@ -102,7 +102,7 @@ export function EndpointForm({
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} noValidate className="space-y-5">
       {(error || localError) && (
-        <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+        <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
           {localError ?? error?.message}
         </div>
       )}
@@ -110,10 +110,10 @@ export function EndpointForm({
       {/* Row 1: Method + Path + Status */}
       <div className="flex gap-3">
         <div className="w-32">
-          <label className="block text-xs font-medium text-gray-600 mb-1">Method</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1">Method</label>
           <select
             {...register('method')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {HTTP_METHODS.map((m) => (
               <option key={m} value={m}>
@@ -124,24 +124,24 @@ export function EndpointForm({
         </div>
 
         <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-600 mb-1">Path</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1">Path</label>
           <input
             type="text"
             {...register('path')}
             className={cn(
-              'w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500',
-              errors.path ? 'border-red-400' : 'border-gray-300'
+              'w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring',
+              errors.path ? 'border-destructive' : 'border-input'
             )}
             placeholder="/users/:id"
           />
-          {errors.path && <p className="mt-1 text-xs text-red-500">{errors.path.message}</p>}
+          {errors.path && <p className="mt-1 text-xs text-destructive">{errors.path.message}</p>}
         </div>
 
         <div className="w-24">
-          <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1">Status</label>
           <select
             {...register('statusCode')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
@@ -154,7 +154,7 @@ export function EndpointForm({
 
       {/* Row 2: Delay Slider */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-2">
+        <label className="block text-xs font-medium text-muted-foreground mb-2">
           {randomize ? 'Min delay' : 'Delay'}
         </label>
         <Controller
@@ -168,14 +168,16 @@ export function EndpointForm({
             type="checkbox"
             checked={randomize}
             onChange={(e) => setRandomize(e.target.checked)}
-            className="w-4 h-4 text-blue-600 rounded"
+            className="w-4 h-4 text-primary rounded"
           />
-          <span className="text-xs text-gray-700">Randomize between min and max</span>
+          <span className="text-xs text-foreground">Randomize between min and max</span>
         </label>
 
         {randomize && (
           <div className="mt-3">
-            <label className="block text-xs font-medium text-gray-600 mb-2">Max delay</label>
+            <label className="block text-xs font-medium text-muted-foreground mb-2">
+              Max delay
+            </label>
             <DelaySlider value={delayMaxMs} onChange={setDelayMaxMs} />
           </div>
         )}
@@ -183,7 +185,9 @@ export function EndpointForm({
 
       {/* Row 3: Response Body */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-2">Response Body</label>
+        <label className="block text-xs font-medium text-muted-foreground mb-2">
+          Response Body
+        </label>
         <JsonEditor value={responseBodyText} onChange={setResponseBodyText} />
       </div>
 
@@ -192,14 +196,14 @@ export function EndpointForm({
         <button
           type="button"
           onClick={() => setShowHeaders((v) => !v)}
-          className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900"
+          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
         >
           <ChevronDown
             className={cn('h-3.5 w-3.5 transition-transform', showHeaders && 'rotate-180')}
           />
           Response Headers
           {Object.keys(responseHeaders).length > 0 && (
-            <span className="ml-1 bg-blue-100 text-blue-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+            <span className="ml-1 bg-primary/10 text-primary text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
               {Object.keys(responseHeaders).length}
             </span>
           )}
@@ -218,23 +222,23 @@ export function EndpointForm({
           <input
             type="checkbox"
             {...register('isActive')}
-            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+            className="w-4 h-4 text-primary rounded border-input focus:ring-ring"
           />
-          <span className="text-sm text-gray-700">Active</span>
+          <span className="text-sm text-foreground">Active</span>
         </label>
 
         <div className="flex gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 border border-input text-foreground rounded-lg text-sm font-medium hover:bg-muted transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isPending}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isPending
               ? mode === 'create'
