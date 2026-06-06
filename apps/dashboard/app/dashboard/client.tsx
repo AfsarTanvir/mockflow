@@ -24,34 +24,19 @@ export default function DashboardClient({ initialUser }: { initialUser: User }) 
         </Link>
       </div>
 
-      <div className="bg-card rounded-xl border p-6">
-        <h2 className="text-base font-semibold text-foreground mb-4">My Profile</h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2 border-b">
-            <span className="text-sm text-muted-foreground">Name</span>
-            <span className="text-sm font-medium text-foreground">{user.name}</span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b">
-            <span className="text-sm text-muted-foreground">Email</span>
-            <span className="text-sm font-medium text-foreground">{user.email}</span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b">
-            <span className="text-sm text-muted-foreground">Email verified</span>
-            <span
-              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                user.emailVerified ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
-              }`}
-            >
-              {user.emailVerified ? 'Verified' : 'Not verified'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-muted-foreground">Member since</span>
-            <span className="text-sm text-foreground">
-              {new Date(user.createdAt).toLocaleDateString()}
-            </span>
-          </div>
+      <div className="bg-card flex items-center justify-between rounded-xl border p-5">
+        <div>
+          <h3 className="text-foreground text-sm font-semibold">Profile</h3>
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            Update your avatar, display name and password
+          </p>
         </div>
+        <Link
+          href="/dashboard/settings"
+          className="hover:bg-muted rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+        >
+          Edit profile
+        </Link>
       </div>
     </main>
   );
