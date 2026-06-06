@@ -35,7 +35,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="flex min-h-screen w-full flex-col">
         <DashboardHeader user={user} />
         <div className="flex flex-1">
-          <DashboardSidebar />
+          <DashboardSidebar showAdmin={!!user.isSuperAdmin} />
           <SidebarInset className="bg-muted/30">{children}</SidebarInset>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Shield } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -14,12 +14,18 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { dashboardNavGroups } from '@/constants/nav-items';
+import { dashboardNavGroups, type NavGroup } from '@/constants/nav-items';
 import { cn } from '@/lib/utils';
 
-export function DashboardSidebar() {
+/** Super-admins get an extra "Admin" entry that opens the master agency console. */
+const ADMIN_GROUP: NavGroup = {
+  items: [{ label: 'Admin', icon: Shield, href: '/admin' }],
+};
+
+export function DashboardSidebar({ showAdmin = false }: { showAdmin?: boolean }) {
   const pathname = usePathname();
   const { open, toggleSidebar } = useSidebar();
+  const navGroups = showAdmin ? [...dashboardNavGroups, ADMIN_GROUP] : dashboardNavGroups;
 
   function handleToggle() {
     const next = !open;
@@ -40,7 +46,7 @@ export function DashboardSidebar() {
       </button>
 
       <SidebarContent className="pt-2">
-        {dashboardNavGroups.map((group, groupIdx, arr) => (
+        {navGroups.map((group, groupIdx, arr) => (
           <div key={groupIdx}>
             <SidebarGroup>
               <SidebarMenu>

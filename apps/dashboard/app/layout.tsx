@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import TanstackProvider from '@/providers/TanstackProvider';
 import { ThemeProvider, THEME_STORAGE_KEY } from '@/providers/ThemeProvider';
 import { ConfirmProvider } from '@/providers/ConfirmProvider';
+import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import '../styles/globals.css';
 import { Geist } from 'next/font/google';
@@ -28,7 +29,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider>
           <TanstackProvider>
             <TooltipProvider>
-              <ConfirmProvider>{children}</ConfirmProvider>
+              <ConfirmProvider>
+                {/* Renders nothing unless an impersonation session is active.
+                    Mounted at the root so the exit affordance is available on
+                    every page the impersonated session can land on (incl. onboarding). */}
+                <ImpersonationBanner />
+                {children}
+              </ConfirmProvider>
             </TooltipProvider>
           </TanstackProvider>
         </ThemeProvider>

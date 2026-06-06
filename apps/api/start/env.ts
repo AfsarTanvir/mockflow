@@ -25,4 +25,14 @@ export default await Env.create(new URL('../', import.meta.url), {
   SMTP_PASS: Env.schema.string.optional(),
   SMTP_FROM: Env.schema.string.optional(),
   MAILTRAP_TOKEN: Env.schema.string.optional(),
+
+  // Platform "master agency": the company whose active members are super-admins.
+  // Unset => the super-admin feature is dormant (every /api/admin route 403s).
+  MASTER_COMPANY_SLUG: Env.schema.string.optional(),
+  MASTER_COMPANY_MIN_ROLE: Env.schema.enum.optional([
+    'owner',
+    'admin',
+    'member',
+    'viewer',
+  ] as const),
 });

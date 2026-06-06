@@ -17,6 +17,7 @@ const CompaniesController = () => import('../app/controllers/companies_controlle
 const ProfilesController = () => import('../app/controllers/profiles_controller.js');
 const TeamsController = () => import('../app/controllers/teams_controller.js');
 const TeamMembershipsController = () => import('../app/controllers/team_memberships_controller.js');
+const AdminController = () => import('../app/controllers/admin_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -231,6 +232,37 @@ router
 router.get('/api/invites/pending', [InviteController, 'pending']).use(middleware.auth());
 router.get('/api/invites/:token', [InviteController, 'show']);
 router.post('/api/invites/:token/accept', [InviteController, 'accept']).use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| Platform Admin — /api/admin/* (super-admin only: master-company members)
+|--------------------------------------------------------------------------
+*/
+router
+  .group(() => {
+    // reads (unscoped, paginated)
+    router.get('/stats', [AdminController, 'stats']);
+    router.get('/users', [AdminController, 'users']);
+    router.get('/companies', [AdminController, 'companies']);
+    router.get('/profiles', [AdminController, 'profiles']);
+    router.get('/teams', [AdminController, 'teams']);
+    router.get('/projects', [AdminController, 'projects']);
+    router.get('/endpoints', [AdminController, 'endpoints']);
+    router.get('/request-logs', [AdminController, 'requestLogs']);
+    // company management (reuses actor-agnostic CompanyService)
+    router.put('/companies/:id', [AdminController, 'updateCompany']);
+    router.delete('/companies/:id', [AdminController, 'deleteCompany']);
+    router.post('/companies/:id/transfer-ownership', [AdminController, 'transferOwnership']);
+    // profile management (admin-bypass variants)
+    router.post('/profiles/:id/suspend', [AdminController, 'suspendProfile']);
+    router.post('/profiles/:id/reactivate', [AdminController, 'reactivateProfile']);
+    router.patch('/profiles/:id/role', [AdminController, 'changeProfileRole']);
+    router.delete('/profiles/:id', [AdminController, 'deleteProfile']);
+    // impersonation
+    router.post('/impersonate/:userId', [AdminController, 'impersonate']);
+  })
+  .prefix('/api/admin')
+  .use([middleware.auth(), middleware.superAdmin()]);
 
 /*
 |--------------------------------------------------------------------------
