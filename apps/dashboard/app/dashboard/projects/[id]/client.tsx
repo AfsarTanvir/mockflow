@@ -19,6 +19,7 @@ import { LogsPanel } from '@/components/dashboard/logs-panel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useConfirm } from '@/providers/ConfirmProvider';
 import { useTeam } from '@/query/teams';
 import type { User, Project, Endpoint } from '@/types';
 
@@ -52,6 +53,7 @@ export default function ProjectDetailClient({
   const { mutate: toggleEndpoint } = useToggleEndpoint(initialProject.id);
 
   const { data: team } = useTeam(initialProject.id);
+  const confirm = useConfirm();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('endpoints');
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -83,8 +85,14 @@ export default function ProjectDetailClient({
     setScenariosOpenId((prev) => (prev === id ? null : id));
   }
 
-  function handleDelete(endpoint: Endpoint) {
-    if (confirm(`Delete ${endpoint.method} ${endpoint.path}?`)) deleteEndpoint(endpoint.id);
+  async function handleDelete(endpoint: Endpoint) {
+    const ok = await confirm({
+      title: 'Delete endpoint?',
+      description: `${endpoint.method} ${endpoint.path} will be permanently removed.`,
+      confirmText: 'Delete',
+      destructive: true,
+    });
+    if (ok) deleteEndpoint(endpoint.id);
   }
 
   function handleTabChange(tab: ActiveTab) {

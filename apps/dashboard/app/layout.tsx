@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import TanstackProvider from '@/providers/TanstackProvider';
 import { ThemeProvider, THEME_STORAGE_KEY } from '@/providers/ThemeProvider';
+import { ConfirmProvider } from '@/providers/ConfirmProvider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import '../styles/globals.css';
 import { Geist } from 'next/font/google';
@@ -26,7 +27,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <ThemeProvider>
           <TanstackProvider>
-            <TooltipProvider>{children}</TooltipProvider>
+            <TooltipProvider>
+              <ConfirmProvider>{children}</ConfirmProvider>
+            </TooltipProvider>
           </TanstackProvider>
         </ThemeProvider>
       </body>

@@ -13,6 +13,7 @@ import {
   useChangeTeamMemberRole,
   useRemoveTeamMember,
 } from '@/query/team-memberships';
+import { useConfirm } from '@/providers/ConfirmProvider';
 import type { User, WorkspaceTeamRole } from '@/types';
 
 interface Props {
@@ -44,9 +45,16 @@ export default function TeamDetailClient({ initialUser, teamId }: Props) {
   const canManage = isCompanyAdmin || isTeamAdmin;
 
   const { mutate: deleteTeam, isPending: deleting } = useDeleteWorkspaceTeam(companyId);
+  const confirm = useConfirm();
 
-  function handleDelete() {
-    if (!confirm(`Delete team "${team?.name}"? This cannot be undone.`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: 'Delete team?',
+      description: `"${team?.name}" will be permanently deleted. This cannot be undone.`,
+      confirmText: 'Delete',
+      destructive: true,
+    });
+    if (!ok) return;
     deleteTeam(teamId, {
       onSuccess: () => router.push('/dashboard/teams'),
     });
@@ -237,6 +245,7 @@ function MemberRow({
 }) {
   const { mutate: changeRole, isPending: changing } = useChangeTeamMemberRole(teamId, companyId);
   const { mutate: removeMember, isPending: removing } = useRemoveTeamMember(teamId, companyId);
+  const confirm = useConfirm();
 
   return (
     <li className="flex items-center gap-3 py-2.5">
@@ -282,10 +291,14 @@ function MemberRow({
             </button>
           )}
           <button
-            onClick={() => {
-              if (confirm('Remove this member from the team?')) {
-                removeMember(membership.profileId);
-              }
+            onClick={async () => {
+              const ok = await confirm({
+                title: 'Remove member?',
+                description: 'They will be removed from this team.',
+                confirmText: 'Remove',
+                destructive: true,
+              });
+              if (ok) removeMember(membership.profileId);
             }}
             disabled={removing}
             className="text-muted-foreground hover:text-destructive transition-colors"

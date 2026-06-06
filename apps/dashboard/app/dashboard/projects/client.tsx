@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useConfirm } from '@/providers/ConfirmProvider';
 import type { User } from '@/types';
 
 export default function ProjectsClient({ initialUser }: { initialUser: User }) {
@@ -20,6 +21,7 @@ export default function ProjectsClient({ initialUser }: { initialUser: User }) {
   const { data: projects = [], isLoading } = useProjects();
   const { mutate: createProject, isPending: creating, error: createError } = useCreateProject();
   const { mutate: deleteProject } = useDeleteProject();
+  const confirm = useConfirm();
   const [showForm, setShowForm] = useState(false);
 
   const {
@@ -147,8 +149,14 @@ export default function ProjectsClient({ initialUser }: { initialUser: User }) {
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground hover:text-destructive ml-4 shrink-0"
-                    onClick={() => {
-                      if (confirm(`Delete "${project.name}"?`)) deleteProject(project.id);
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: 'Delete project?',
+                        description: `"${project.name}" and all its endpoints will be permanently removed.`,
+                        confirmText: 'Delete',
+                        destructive: true,
+                      });
+                      if (ok) deleteProject(project.id);
                     }}
                   >
                     Delete

@@ -11,6 +11,7 @@ import {
 } from '@/query/scenarios';
 import { ScenarioForm } from './scenario-form';
 import { RulesEditor } from './rules-editor';
+import { useConfirm } from '@/providers/ConfirmProvider';
 import type { Scenario, ScenarioInput } from '@/types';
 
 type Props = {
@@ -54,6 +55,7 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
   const { mutate: deleteScenario } = useDeleteScenario(endpointId);
   const { mutate: activateScenario, isPending: activating } = useActivateScenario(endpointId);
   const { mutate: deactivateAll, isPending: deactivating } = useDeactivateAllScenarios(endpointId);
+  const confirm = useConfirm();
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -167,8 +169,14 @@ export function ScenariosManager({ endpointId, canWrite }: Props) {
                       {editingId === s.id ? 'Close' : 'Edit'}
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm(`Delete scenario "${s.name}"?`)) deleteScenario(s.id);
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: 'Delete scenario?',
+                          description: `"${s.name}" will be permanently removed.`,
+                          confirmText: 'Delete',
+                          destructive: true,
+                        });
+                        if (ok) deleteScenario(s.id);
                       }}
                       className="text-xs text-muted-foreground hover:text-destructive transition-colors shrink-0"
                     >

@@ -12,6 +12,7 @@ import {
   useRevokeInvite,
 } from '@/query/teams';
 import { inviteMemberSchema, type InviteMemberInput } from '@/schema/teams';
+import { useConfirm } from '@/providers/ConfirmProvider';
 import type { TeamRole } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -70,6 +71,7 @@ export function TeamPanel({ projectId, currentUserId }: TeamPanelProps) {
   const { mutate: updateRole } = useUpdateMemberRole(projectId);
   const { mutate: removeMember } = useRemoveMember(projectId);
   const { mutate: revokeInvite } = useRevokeInvite(projectId);
+  const confirm = useConfirm();
 
   const {
     register,
@@ -192,10 +194,14 @@ export function TeamPanel({ projectId, currentUserId }: TeamPanelProps) {
                     {team.currentUserRole === 'owner' && <option value="admin">Admin</option>}
                   </select>
                   <button
-                    onClick={() => {
-                      if (confirm(`Remove ${member.user.name} from this project?`)) {
-                        removeMember(member.id);
-                      }
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: 'Remove member?',
+                        description: `${member.user.name} will lose access to this project.`,
+                        confirmText: 'Remove',
+                        destructive: true,
+                      });
+                      if (ok) removeMember(member.id);
                     }}
                     className="text-muted-foreground hover:text-destructive transition-colors"
                     title="Remove member"
@@ -233,10 +239,14 @@ export function TeamPanel({ projectId, currentUserId }: TeamPanelProps) {
               <CopyButton text={getInviteUrl(invite.token)} />
               {canManage && (
                 <button
-                  onClick={() => {
-                    if (confirm(`Revoke invite for ${invite.email}?`)) {
-                      revokeInvite(invite.id);
-                    }
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: 'Revoke invite?',
+                      description: `The invite for ${invite.email} will be cancelled.`,
+                      confirmText: 'Revoke',
+                      destructive: true,
+                    });
+                    if (ok) revokeInvite(invite.id);
                   }}
                   className="text-muted-foreground hover:text-destructive transition-colors ml-1"
                   title="Revoke invite"

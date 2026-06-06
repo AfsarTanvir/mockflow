@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Clock, RotateCcw, ChevronDown, ChevronUp, Loader2, Save } from 'lucide-react';
 import { useVersions, useCreateVersion, useRestoreVersion, useVersion } from '@/query/versions';
+import { useConfirm } from '@/providers/ConfirmProvider';
 import type { TeamRole } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -89,6 +90,7 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
 
   const [message, setMessage] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   function handleSave() {
     createVersion(message.trim() || null, {
@@ -96,8 +98,13 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
     });
   }
 
-  function handleRestore(versionId: string, label: string) {
-    if (confirm(`Restore to "${label}"? This will replace all current endpoints.`)) {
+  async function handleRestore(versionId: string, label: string) {
+    const ok = await confirm({
+      title: 'Restore this version?',
+      description: `Restoring "${label}" will replace all current endpoints with the snapshot.`,
+      confirmText: 'Restore',
+    });
+    if (ok) {
       restoreVersion(versionId);
     }
   }
