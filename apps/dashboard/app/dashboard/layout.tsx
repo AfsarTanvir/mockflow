@@ -3,6 +3,7 @@ import { getAuthUser } from '@/services/auth';
 import { getMyCompanies } from '@/services/companies';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { cookies } from 'next/headers';
 
@@ -33,9 +34,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <SidebarProvider defaultOpen={sidebarOpen}>
       <div className="flex min-h-screen w-full flex-col">
+        <ImpersonationBanner />
         <DashboardHeader user={user} />
         <div className="flex flex-1">
-          <DashboardSidebar />
+          <DashboardSidebar showAdmin={!!user.isSuperAdmin} />
           <SidebarInset className="bg-muted/30">{children}</SidebarInset>
         </div>
       </div>
