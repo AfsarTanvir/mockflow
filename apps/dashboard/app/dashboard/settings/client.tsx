@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser, useUpdateProfile, useResendVerification } from '@/query/auth';
+import { useUser, useUpdateProfile, useUploadAvatar, useResendVerification } from '@/query/auth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AvatarUploader } from '@/components/dashboard/avatar-uploader';
 import type { User } from '@/types';
 
 export default function ProfileSettingsClient({ initialUser }: { initialUser: User }) {
@@ -22,6 +23,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
   const [pwSuccess, setPwSuccess] = useState(false);
 
   const { mutate: updateProfile, isPending } = useUpdateProfile();
+  const { mutate: uploadAvatar, isPending: uploadingAvatar } = useUploadAvatar();
   const {
     mutate: resendVerify,
     isPending: resendingVerify,
@@ -69,6 +71,23 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
   return (
     <main className="mx-auto w-full max-w-2xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       <h1 className="text-foreground text-base font-semibold">Profile settings</h1>
+
+      {/* Avatar */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Avatar</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AvatarUploader
+            currentUrl={user?.avatarUrl ?? null}
+            name={user?.name ?? ''}
+            isPending={uploadingAvatar || isPending}
+            onUploadFile={(file) => uploadAvatar(file)}
+            onSetUrl={(url) => updateProfile({ avatarUrl: url })}
+            onRemove={() => updateProfile({ avatarUrl: null })}
+          />
+        </CardContent>
+      </Card>
 
       {/* Name */}
       <Card>

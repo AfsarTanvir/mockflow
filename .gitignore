@@ -62,3 +62,6 @@ tmp/
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# Uploaded files (avatars, etc.) — served from local disk in dev
+apps/api/uploads/

@@ -1,7 +1,9 @@
 import type { HttpContext } from '@adonisjs/core/http';
+import { Exception } from '@adonisjs/core/exceptions';
 import { respondError } from '#app/exceptions/respond_error';
 import * as AuthService from '#services/auth_service';
 import * as AdminAccessService from '#services/admin_access_service';
+import { AVATAR_EXTNAMES, AVATAR_MAX_SIZE } from '#services/avatar_service';
 import type User from '#models/user';
 import {
   registerValidator,
@@ -108,6 +110,21 @@ export default class AuthController {
     const data = await request.validateUsing(updateProfileValidator);
     try {
       const user = await AuthService.updateProfile(auth.user!, data);
+      return response.ok(accountUser(user));
+    } catch (error) {
+      return respondError(error, response);
+    }
+  }
+
+  /** POST /api/auth/avatar (protected) — multipart image upload. */
+  async uploadAvatar({ auth, request, response }: HttpContext) {
+    const file = request.file('avatar', { size: AVATAR_MAX_SIZE, extnames: AVATAR_EXTNAMES });
+    try {
+      if (!file) {
+        throw new Exception('No image file provided', { status: 422, code: 'E_NO_FILE' });
+      }
+      const baseUrl = `${request.protocol()}://${request.host()}`;
+      const user = await AuthService.setAvatarFromUpload(auth.user!, file, baseUrl);
       return response.ok(accountUser(user));
     } catch (error) {
       return respondError(error, response);
