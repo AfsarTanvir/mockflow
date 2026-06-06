@@ -4,6 +4,7 @@ import {
   getMyProfile,
   getProfile,
   updateProfile,
+  uploadProfileAvatar,
   changeProfileRole,
   suspendProfile,
   reactivateProfile,
@@ -56,6 +57,15 @@ export const useUpdateProfile = (id: string, companyId: string) => {
 
   return useMutation({
     mutationFn: (body: UpdateProfileBody) => updateProfile(id, body),
+    onSuccess: () => invalidateProfileCaches(queryClient, companyId, id),
+  });
+};
+
+export const useUploadProfileAvatar = (id: string, companyId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => uploadProfileAvatar(id, file),
     onSuccess: () => invalidateProfileCaches(queryClient, companyId, id),
   });
 };

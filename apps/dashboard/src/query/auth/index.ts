@@ -6,6 +6,7 @@ import {
   signOut,
   signUp,
   updateProfile,
+  uploadUserAvatar,
   verifyEmail,
   resendVerification,
   forgotPassword,
@@ -95,6 +96,17 @@ export const useUpdateProfile = () => {
 
   return useMutation({
     mutationFn: updateProfile,
+    onSuccess: (updated) => {
+      queryClient.setQueryData([QueryKey.AUTH_USER], updated);
+    },
+  });
+};
+
+export const useUploadAvatar = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: uploadUserAvatar,
     onSuccess: (updated) => {
       queryClient.setQueryData([QueryKey.AUTH_USER], updated);
     },

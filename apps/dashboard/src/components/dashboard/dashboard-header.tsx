@@ -82,7 +82,7 @@ export function DashboardHeader({ user }: { user: UserType }) {
               </div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/dashboard')}>
+            <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>

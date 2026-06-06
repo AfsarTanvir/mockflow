@@ -23,10 +23,22 @@ export async function signOut(): Promise<void> {
 
 export async function updateProfile(body: {
   name?: string;
+  /** A URL sets an externally-hosted avatar; null clears it. */
+  avatarUrl?: string | null;
   currentPassword?: string;
   newPassword?: string;
 }): Promise<User> {
   const { data } = await httpClient.patch<User>('/api/auth/profile', body);
+  return data;
+}
+
+/** Upload an image file as the user's avatar (multipart). */
+export async function uploadUserAvatar(file: File): Promise<User> {
+  const form = new FormData();
+  form.append('avatar', file);
+  const { data } = await httpClient.post<User>('/api/auth/avatar', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return data;
 }
 

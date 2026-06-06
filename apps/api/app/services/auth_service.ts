@@ -8,6 +8,8 @@ import UserToken from '#models/user_token';
 import * as UserQueries from '#queries/user_queries';
 import * as UserTokenQueries from '#queries/user_token_queries';
 import { sendVerificationEmail, sendPasswordResetEmail } from '#services/email_service';
+import * as AvatarService from '#services/avatar_service';
+import type { MultipartFile } from '@adonisjs/core/bodyparser';
 import type { registerValidator, updateProfileValidator } from '#validators/auth_validator';
 
 export type RegisterInput = Infer<typeof registerValidator>;
@@ -201,6 +203,29 @@ export async function updateProfile(user: User, input: UpdateProfileInput): Prom
     user.name = input.name;
   }
 
+  // avatarUrl present (string=set external URL, null=clear). Clean up the prior
+  // upload if it was stored locally and is being replaced/removed.
+  let previousAvatar: string | null = null;
+  if (input.avatarUrl !== undefined && input.avatarUrl !== user.avatarUrl) {
+    previousAvatar = user.avatarUrl;
+    user.avatarUrl = input.avatarUrl;
+  }
+
   await user.save();
+  if (previousAvatar) await AvatarService.deleteIfLocal(previousAvatar);
+  return user;
+}
+
+/** Replace the user's avatar with a freshly uploaded image. */
+export async function setAvatarFromUpload(
+  user: User,
+  file: MultipartFile,
+  baseUrl: string
+): Promise<User> {
+  const url = await AvatarService.storeUpload(file, baseUrl);
+  const previous = user.avatarUrl;
+  user.avatarUrl = url;
+  await user.save();
+  await AvatarService.deleteIfLocal(previous);
   return user;
 }

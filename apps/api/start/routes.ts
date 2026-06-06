@@ -18,6 +18,14 @@ const ProfilesController = () => import('../app/controllers/profiles_controller.
 const TeamsController = () => import('../app/controllers/teams_controller.js');
 const TeamMembershipsController = () => import('../app/controllers/team_memberships_controller.js');
 const AdminController = () => import('../app/controllers/admin_controller.js');
+const UploadsController = () => import('../app/controllers/uploads_controller.js');
+
+/*
+|--------------------------------------------------------------------------
+| Uploads (Public) — serves stored avatar images
+|--------------------------------------------------------------------------
+*/
+router.get('/uploads/avatars/:file', [UploadsController, 'avatar']);
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +52,7 @@ router
   .group(() => {
     router.get('/me', [AuthController, 'me']);
     router.patch('/profile', [AuthController, 'updateProfile']);
+    router.post('/avatar', [AuthController, 'uploadAvatar']);
     router.post('/resend-verification', [AuthController, 'resendVerification']);
     router.post('/logout', [AuthController, 'logout']);
   })
@@ -215,6 +224,7 @@ router.get('/api/profiles/:id', [ProfilesController, 'show']);
 router
   .group(() => {
     router.patch('/:id', [ProfilesController, 'update']);
+    router.post('/:id/avatar', [ProfilesController, 'uploadAvatar']);
     router.patch('/:id/role', [ProfilesController, 'updateRole']);
     router.post('/:id/suspend', [ProfilesController, 'suspend']);
     router.post('/:id/reactivate', [ProfilesController, 'reactivate']);

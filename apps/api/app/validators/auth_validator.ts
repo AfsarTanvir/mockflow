@@ -12,6 +12,8 @@ export const registerValidator = vine.compile(
 export const updateProfileValidator = vine.compile(
   vine.object({
     name: vine.string().trim().minLength(2).maxLength(100).optional(),
+    // null clears the avatar; a URL sets an externally-hosted image.
+    avatarUrl: vine.string().trim().url().maxLength(500).nullable().optional(),
     currentPassword: vine.string().minLength(6).maxLength(64).optional(),
     newPassword: vine.string().minLength(8).maxLength(64).optional(),
   })
