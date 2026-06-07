@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, ChevronsUpDown, Plus, Building2 } from 'lucide-react';
+import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useMyCompanies } from '@/query/companies';
 import { getActiveCompanyClient, setActiveCompanyClient } from '@/lib/active-company';
 import {
@@ -21,6 +21,18 @@ function initials(name: string): string {
     .join('')
     .toUpperCase()
     .slice(0, 2);
+}
+
+/**
+ * Image shown for a membership in the switcher: prefer the member's own profile
+ * avatar (set in Settings → "Company profile"), then the company logo/avatar,
+ * else fall back to the company initials.
+ */
+function membershipImage(m: {
+  company: { logoUrl: string | null; avatarUrl: string | null };
+  profile: { avatarUrl: string | null };
+}): string | undefined {
+  return m.profile.avatarUrl ?? m.company.logoUrl ?? m.company.avatarUrl ?? undefined;
 }
 
 export function CompanySwitcher() {
@@ -74,7 +86,7 @@ export function CompanySwitcher() {
         }
       >
         <Avatar className="h-7 w-7 rounded-md">
-          <AvatarImage src={active.company.avatarUrl ?? undefined} />
+          <AvatarImage src={membershipImage(active)} />
           <AvatarFallback className="rounded-md bg-primary/10 text-primary text-[10px] font-semibold">
             {initials(active.company.name)}
           </AvatarFallback>
@@ -101,7 +113,7 @@ export function CompanySwitcher() {
             className="flex items-center gap-2"
           >
             <Avatar className="h-6 w-6 rounded-md shrink-0">
-              <AvatarImage src={m.company.avatarUrl ?? undefined} />
+              <AvatarImage src={membershipImage(m)} />
               <AvatarFallback className="rounded-md bg-muted text-muted-foreground text-[10px] font-semibold">
                 {initials(m.company.name)}
               </AvatarFallback>
