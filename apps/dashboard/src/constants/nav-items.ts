@@ -55,7 +55,7 @@ export const dashboardNavGroups: NavGroup[] = [
       {
         label: 'Settings',
         icon: Settings,
-        href: '/dashboard/settings',
+        href: '/dashboard/me',
       },
     ],
   },

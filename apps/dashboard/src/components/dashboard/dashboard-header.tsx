@@ -1,11 +1,12 @@
 'use client';
 
-import { LogOut, User } from 'lucide-react';
+import { Building2, LogOut, User } from 'lucide-react';
 import { NotificationBell } from './notification-bell';
 import { CompanySwitcher } from './company-switcher';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSignOut } from '@/query/auth';
+import { getActiveCompanyClient } from '@/lib/active-company';
 import type { User as UserType } from '@/types';
 import {
   DropdownMenu,
@@ -82,9 +83,18 @@ export function DashboardHeader({ user }: { user: UserType }) {
               </div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
+            <DropdownMenuItem onClick={() => router.push('/dashboard/me')}>
               <User className="mr-2 h-4 w-4" />
-              Profile
+              Account
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                const slug = getActiveCompanyClient();
+                router.push(slug ? `/company/${slug}/profile` : '/dashboard');
+              }}
+            >
+              <Building2 className="mr-2 h-4 w-4" />
+              Company profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
