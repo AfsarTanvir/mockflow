@@ -1,10 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useUser, useUpdateProfile, useUploadAvatar, useResendVerification } from '@/query/auth';
-import { useMyCompanies } from '@/query/companies';
-import { useUpdateProfile as useEditProfile, useUploadProfileAvatar } from '@/query/profiles';
-import { getActiveCompanyClient } from '@/lib/active-company';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +10,11 @@ import { Label } from '@/components/ui/label';
 import { AvatarUploader } from '@/components/dashboard/avatar-uploader';
 import type { User } from '@/types';
 
-export default function ProfileSettingsClient({ initialUser }: { initialUser: User }) {
+/**
+ * Account (user) settings — name, password, account avatar, email verification.
+ * Company-scoped profile editing lives at /company/[slug]/profile.
+ */
+export default function AccountClient({ initialUser }: { initialUser: User }) {
   const { data: user } = useUser({ initialData: initialUser });
 
   const [name, setName] = useState(user?.name ?? '');
@@ -27,20 +28,6 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
 
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const { mutate: uploadAvatar, isPending: uploadingAvatar } = useUploadAvatar();
-
-  // Company profile (per-company display name + avatar) for the active company.
-  const { data: memberships = [] } = useMyCompanies();
-  const [activeSlug, setActiveSlug] = useState<string | null>(null);
-  useEffect(() => setActiveSlug(getActiveCompanyClient()), []);
-  const activeMembership = memberships.find((m) => m.company.slug === activeSlug) ?? memberships[0];
-  const profileId = activeMembership?.profile.id ?? '';
-  const companyId = activeMembership?.company.id ?? '';
-  const { mutate: editProfile, isPending: savingProfile } = useEditProfile(profileId, companyId);
-  const { mutate: uploadProfileAvatar, isPending: uploadingProfileAvatar } = useUploadProfileAvatar(
-    profileId,
-    companyId
-  );
-
   const {
     mutate: resendVerify,
     isPending: resendingVerify,
@@ -87,7 +74,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
 
   return (
     <main className="mx-auto w-full max-w-2xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
-      <h1 className="text-foreground text-base font-semibold">Profile settings</h1>
+      <h1 className="text-foreground text-base font-semibold">Account</h1>
 
       {/* Avatar */}
       <Card>
@@ -105,29 +92,6 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
           />
         </CardContent>
       </Card>
-
-      {/* Company profile avatar (active company) */}
-      {activeMembership && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Company profile — {activeMembership.company.name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AvatarUploader
-              currentUrl={activeMembership.profile.avatarUrl ?? null}
-              name={activeMembership.profile.displayName || user?.name || ''}
-              isPending={uploadingProfileAvatar || savingProfile}
-              onUploadFile={(file) => uploadProfileAvatar(file)}
-              onSetUrl={(url) => editProfile({ avatarUrl: url })}
-              onRemove={() => editProfile({ avatarUrl: null })}
-            />
-            <p className="text-muted-foreground mt-3 text-xs">
-              This avatar is shown to members of {activeMembership.company.name}. Switch companies
-              in the top bar to edit a different profile.
-            </p>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Name */}
       <Card>
@@ -196,7 +160,7 @@ export default function ProfileSettingsClient({ initialUser }: { initialUser: Us
                 )}
                 {verifyError && (
                   <span className="text-destructive text-xs">
-                    {(verifyError as any)?.response?.data?.message ?? 'Failed to send'}
+                    {(verifyError as Error)?.message ?? 'Failed to send'}
                   </span>
                 )}
                 <Button type="button" onClick={() => resendVerify()} disabled={resendingVerify}>
