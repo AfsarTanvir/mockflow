@@ -25,7 +25,7 @@ export default function DashboardClient({ initialUser }: { initialUser: User }) 
       </div>
 
       <div className="bg-card flex items-center justify-between rounded-xl border p-5">
-        <div>
+        <div className="px-2">
           <h3 className="text-foreground text-sm font-semibold">Account</h3>
           <p className="text-muted-foreground mt-0.5 text-xs">
             Update your avatar, display name and password
