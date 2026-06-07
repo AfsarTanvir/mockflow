@@ -1,7 +1,6 @@
-import { getAuthUser } from '@/services/auth';
-import ProfileSettingsClient from './client';
+import { redirect } from 'next/navigation';
 
-export default async function ProfileSettingsPage() {
-  const user = await getAuthUser();
-  return <ProfileSettingsClient initialUser={user} />;
+/** Account settings moved to /dashboard/me. Keep this path working for old links. */
+export default function SettingsRedirect() {
+  redirect('/dashboard/me');
 }
