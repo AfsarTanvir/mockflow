@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { IdCard, Settings, Users, UsersRound, type LucideIcon } from 'lucide-react';
+import { Settings, Users, UsersRound, type LucideIcon } from 'lucide-react';
 
 import { useMyCompanies } from '@/query/companies';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -29,8 +29,9 @@ export default function CompanyOverviewClient({ slug }: { slug: string }) {
     return (
       <main className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-6">
         <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-20 w-full" />
         <div className="grid gap-3 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-20 w-full" />
           ))}
         </div>
@@ -39,13 +40,6 @@ export default function CompanyOverviewClient({ slug }: { slug: string }) {
   }
 
   const tiles: { label: string; desc: string; href: string; icon: LucideIcon; show: boolean }[] = [
-    {
-      label: 'Your profile',
-      desc: 'Edit your profile in this company',
-      href: `/companies/${slug}/me`,
-      icon: IdCard,
-      show: true,
-    },
     {
       label: 'Members',
       desc: 'Browse company members',
@@ -71,6 +65,7 @@ export default function CompanyOverviewClient({ slug }: { slug: string }) {
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-6">
+      {/* Company header — the COMPANY logo */}
       <div className="flex items-center gap-3">
         <Avatar className="size-12 rounded-lg">
           <AvatarImage
@@ -85,6 +80,29 @@ export default function CompanyOverviewClient({ slug }: { slug: string }) {
           <p className="text-muted-foreground text-sm capitalize">You are {role}</p>
         </div>
       </div>
+
+      {/* Your profile in this company — the PROFILE avatar */}
+      <Link href={`/companies/${slug}/me`} className="block">
+        <Card className="hover:border-primary/40 transition-colors">
+          <CardContent className="flex items-center gap-4">
+            <Avatar className="size-14">
+              <AvatarImage src={membership?.profile.avatarUrl ?? undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary text-base font-semibold">
+                {initials(membership?.profile.displayName ?? '?')}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="text-foreground text-sm font-medium">
+                {membership?.profile.displayName}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                Your profile in this company — tap to edit
+              </p>
+            </div>
+            <span className="text-primary shrink-0 text-sm font-medium">Edit →</span>
+          </CardContent>
+        </Card>
+      </Link>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {tiles

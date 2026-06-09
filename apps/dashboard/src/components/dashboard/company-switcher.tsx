@@ -24,15 +24,14 @@ function initials(name: string): string {
 }
 
 /**
- * Image shown for a membership in the switcher: prefer the member's own profile
- * avatar (set in Settings → "Company profile"), then the company logo/avatar,
- * else fall back to the company initials.
+ * The switcher represents the COMPANY, so it shows the company logo/avatar
+ * (set in Company settings), falling back to the company initials. The member's
+ * personal profile avatar is shown on the company pages, not here.
  */
-function membershipImage(m: {
+function companyImage(m: {
   company: { logoUrl: string | null; avatarUrl: string | null };
-  profile: { avatarUrl: string | null };
 }): string | undefined {
-  return m.profile.avatarUrl ?? m.company.logoUrl ?? m.company.avatarUrl ?? undefined;
+  return m.company.logoUrl ?? m.company.avatarUrl ?? undefined;
 }
 
 export function CompanySwitcher() {
@@ -93,7 +92,7 @@ export function CompanySwitcher() {
         }
       >
         <Avatar className="h-7 w-7 rounded-md">
-          <AvatarImage src={membershipImage(active)} />
+          <AvatarImage src={companyImage(active)} />
           <AvatarFallback className="rounded-md bg-primary/10 text-primary text-[10px] font-semibold">
             {initials(active.company.name)}
           </AvatarFallback>
@@ -120,7 +119,7 @@ export function CompanySwitcher() {
             className="flex items-center gap-2"
           >
             <Avatar className="h-6 w-6 rounded-md shrink-0">
-              <AvatarImage src={membershipImage(m)} />
+              <AvatarImage src={companyImage(m)} />
               <AvatarFallback className="rounded-md bg-muted text-muted-foreground text-[10px] font-semibold">
                 {initials(m.company.name)}
               </AvatarFallback>

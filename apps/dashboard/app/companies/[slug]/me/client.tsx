@@ -104,7 +104,7 @@ export default function CompanyProfileClient({ slug }: { slug: string }) {
       {/* Avatar */}
       <Card>
         <CardHeader>
-          <CardTitle>Avatar</CardTitle>
+          <CardTitle>Profile picture</CardTitle>
         </CardHeader>
         <CardContent>
           <AvatarUploader
@@ -115,6 +115,10 @@ export default function CompanyProfileClient({ slug }: { slug: string }) {
             onSetUrl={(url) => save({ avatarUrl: url })}
             onRemove={() => save({ avatarUrl: null })}
           />
+          <p className="text-muted-foreground mt-3 text-xs">
+            Shown to members of {membership?.company.name ?? 'this company'}. This is your personal
+            picture here — not the company logo.
+          </p>
         </CardContent>
       </Card>
 
