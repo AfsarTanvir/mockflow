@@ -1,5 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http';
+import { Exception } from '@adonisjs/core/exceptions';
 import { respondError } from '#app/exceptions/respond_error';
+import { AVATAR_EXTNAMES, AVATAR_MAX_SIZE } from '#services/avatar_service';
 import type Company from '#models/company';
 import type CompanyMetadata from '#models/company_metadata';
 import type Profile from '#models/profile';
@@ -135,6 +137,30 @@ export default class CompaniesController {
     const data = await request.validateUsing(updateCompanyValidator);
     try {
       const updated = await CompanyService.updateCompany(company.id, data);
+      const metadata = await CompanyQueries.findMetadata(company.id);
+      return response.ok(memberView(updated, metadata, actor));
+    } catch (error) {
+      return respondError(error, response);
+    }
+  }
+
+  /** POST /api/companies/:id/avatar — owner/admin; multipart logo/avatar upload. */
+  async uploadAvatar({ auth, params, request, response }: HttpContext) {
+    const company = await CompanyQueries.findById(params.id);
+    if (!company) return response.notFound({ message: 'Company not found' });
+
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, company.id);
+    if (!actor || ROLE_RANK[actor.role] < ROLE_RANK.admin) {
+      return response.forbidden({ message: 'Only admin or owner can change the company logo' });
+    }
+
+    const file = request.file('avatar', { size: AVATAR_MAX_SIZE, extnames: AVATAR_EXTNAMES });
+    try {
+      if (!file) {
+        throw new Exception('No image file provided', { status: 422, code: 'E_NO_FILE' });
+      }
+      const baseUrl = `${request.protocol()}://${request.host()}`;
+      const updated = await CompanyService.setAvatarFromUpload(company.id, file, baseUrl);
       const metadata = await CompanyQueries.findMetadata(company.id);
       return response.ok(memberView(updated, metadata, actor));
     } catch (error) {
