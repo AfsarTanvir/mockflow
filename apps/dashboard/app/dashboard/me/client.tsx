@@ -79,7 +79,7 @@ export default function AccountClient({ initialUser }: { initialUser: User }) {
       {/* Avatar */}
       <Card>
         <CardHeader>
-          <CardTitle>Avatar</CardTitle>
+          <CardTitle>Account avatar</CardTitle>
         </CardHeader>
         <CardContent>
           <AvatarUploader
@@ -90,6 +90,10 @@ export default function AccountClient({ initialUser }: { initialUser: User }) {
             onSetUrl={(url) => updateProfile({ avatarUrl: url })}
             onRemove={() => updateProfile({ avatarUrl: null })}
           />
+          <p className="text-muted-foreground mt-3 text-xs">
+            Your personal avatar across MockFlow (top-right menu). Each company profile can have its
+            own picture.
+          </p>
         </CardContent>
       </Card>
 
