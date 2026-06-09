@@ -172,6 +172,7 @@ router
     router.get('/', [CompaniesController, 'index']);
     router.post('/', [CompaniesController, 'store']);
     router.put('/:id', [CompaniesController, 'update']);
+    router.post('/:id/avatar', [CompaniesController, 'uploadAvatar']);
     router.delete('/:id', [CompaniesController, 'destroy']);
     router.post('/:id/transfer-ownership', [CompaniesController, 'transferOwnership']);
 

@@ -1,22 +1,38 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { getAuthUser } from '@/services/auth';
+import { getMyCompanies } from '@/services/companies';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 /**
- * Top-level company section (e.g. /company/:slug/profile). Auth-gated and uses
- * the same app shell as /dashboard so the chrome stays consistent. Membership
- * for the specific slug is checked inside the page.
+ * Company workspace shell (/companies/:slug/…). Auth-gated, and gated on
+ * membership of this specific company (non-members are bounced to /dashboard).
+ * Reuses the same app shell as the personal area for consistent chrome.
  */
-export default async function CompanyLayout({ children }: { children: React.ReactNode }) {
-  let user = null;
+export default async function CompanyLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
+  let user = null;
   try {
     user = await getAuthUser();
   } catch {
     redirect('/auth/login');
+  }
+
+  try {
+    const memberships = await getMyCompanies();
+    if (!memberships.some((m) => m.company.slug === slug)) redirect('/dashboard');
+  } catch (e) {
+    // rethrow redirect; tolerate a transient fetch failure (page re-checks)
+    if (e instanceof Error && e.message.includes('NEXT_REDIRECT')) throw e;
   }
 
   const cookieStore = await cookies();

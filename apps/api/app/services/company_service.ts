@@ -9,6 +9,8 @@ import ProfileMetadata from '../models/profile_metadata.js';
 import type { CompanyVisibility } from '../models/company.js';
 import type { BillingAddress, CompanySettings } from '../models/company_metadata.js';
 import { slugify } from './slug_helper.js';
+import * as AvatarService from './avatar_service.js';
+import type { MultipartFile } from '@adonisjs/core/bodyparser';
 
 export interface CreateCompanyInput {
   name: string;
@@ -137,6 +139,23 @@ export async function updateCompany(
 
     return company;
   });
+}
+
+/** Replace a company's logo/avatar with a freshly uploaded image. Caller checks owner/admin. */
+export async function setAvatarFromUpload(
+  companyId: string,
+  file: MultipartFile,
+  baseUrl: string
+): Promise<Company> {
+  const company = await Company.find(companyId);
+  if (!company) throw new Exception('Company not found', { status: 404 });
+
+  const url = await AvatarService.storeUpload(file, baseUrl);
+  const previous = company.avatarUrl;
+  company.avatarUrl = url;
+  await company.save();
+  await AvatarService.deleteIfLocal(previous);
+  return company;
 }
 
 /**
