@@ -90,7 +90,7 @@ export function DashboardHeader({ user }: { user: UserType }) {
             <DropdownMenuItem
               onClick={() => {
                 const slug = getActiveCompanyClient();
-                router.push(slug ? `/company/${slug}/profile` : '/dashboard');
+                router.push(slug ? `/companies/${slug}/me` : '/dashboard');
               }}
             >
               <Building2 className="mr-2 h-4 w-4" />

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useMyCompanies } from '@/query/companies';
 import { getActiveCompanyClient, setActiveCompanyClient } from '@/lib/active-company';
@@ -37,13 +37,20 @@ function membershipImage(m: {
 
 export function CompanySwitcher() {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: memberships = [], isLoading } = useMyCompanies();
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
 
-  // Hydrate the active slug from the cookie on mount.
+  // The URL is the source of truth on company routes; else fall back to the cookie.
   useEffect(() => {
-    setActiveSlug(getActiveCompanyClient());
-  }, []);
+    const fromUrl = pathname.match(/^\/companies\/([^/]+)/)?.[1];
+    if (fromUrl) {
+      setActiveSlug(decodeURIComponent(fromUrl));
+      setActiveCompanyClient(decodeURIComponent(fromUrl));
+    } else {
+      setActiveSlug(getActiveCompanyClient());
+    }
+  }, [pathname]);
 
   // If we have memberships but no active slug (or it points at a company the
   // user no longer belongs to), fall back to the first membership.
@@ -60,7 +67,7 @@ export function CompanySwitcher() {
   function handlePick(slug: string) {
     setActiveSlug(slug);
     setActiveCompanyClient(slug);
-    router.refresh();
+    router.push(`/companies/${slug}`);
   }
 
   function handleCreate() {
