@@ -41,3 +41,13 @@ export async function deleteCompany(id: string): Promise<void> {
 export async function transferOwnership(id: string, body: TransferOwnershipInput): Promise<void> {
   await httpClient.post(`/api/companies/${id}/transfer-ownership`, body);
 }
+
+/** Upload an image as the company logo/avatar (multipart, owner/admin only). */
+export async function uploadCompanyAvatar(id: string, file: File): Promise<Company> {
+  const form = new FormData();
+  form.append('avatar', file);
+  const { data } = await httpClient.post<Company>(`/api/companies/${id}/avatar`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}

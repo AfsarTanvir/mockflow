@@ -4,6 +4,7 @@ import {
   getCompany,
   createCompany,
   updateCompany,
+  uploadCompanyAvatar,
   deleteCompany,
   transferOwnership,
 } from '@/services/companies';
@@ -47,6 +48,18 @@ export const useUpdateCompany = (id: string, slug?: string) => {
 
   return useMutation({
     mutationFn: (body: UpdateCompanyInput) => updateCompany(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QueryKey.MY_COMPANIES] });
+      if (slug) queryClient.invalidateQueries({ queryKey: [QueryKey.COMPANY, slug] });
+    },
+  });
+};
+
+export const useUploadCompanyAvatar = (id: string, slug?: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => uploadCompanyAvatar(id, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QueryKey.MY_COMPANIES] });
       if (slug) queryClient.invalidateQueries({ queryKey: [QueryKey.COMPANY, slug] });
