@@ -52,6 +52,7 @@ function teamView(team: Team, metadata: TeamMetadata | null) {
     externalLinks: metadata?.externalLinks ?? [],
     settings: metadata?.settings ?? {},
     totalMember: metadata?.totalMember ?? 0,
+    totalProject: metadata?.totalProject ?? 0,
     createdByProfileId: team.createdByProfileId,
     createdAt: team.createdAt,
     updatedAt: team.updatedAt,
