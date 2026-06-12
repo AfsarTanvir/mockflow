@@ -40,7 +40,9 @@ export default function CompanyTeamsClient({ slug }: { slug: string }) {
               {t.description && (
                 <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">{t.description}</p>
               )}
-              <p className="text-muted-foreground mt-2 text-xs">{t.totalMember} members</p>
+              <p className="text-muted-foreground mt-2 text-xs">
+                {t.totalMember} members · {t.totalProject} projects
+              </p>
             </Link>
           ))}
         </div>
