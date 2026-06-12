@@ -5,6 +5,8 @@ export enum QueryKey {
   // Projects
   PROJECTS = 'PROJECTS',
   PROJECT = 'PROJECT',
+  TEAM_PROJECTS = 'TEAM_PROJECTS',
+  COMPANY_PROJECTS = 'COMPANY_PROJECTS',
 
   // Endpoints
   ENDPOINTS = 'ENDPOINTS',

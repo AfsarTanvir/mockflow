@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Settings, Users, UsersRound, type LucideIcon } from 'lucide-react';
+import { FolderGit2, Settings, Users, UsersRound, type LucideIcon } from 'lucide-react';
 
 import { useMyCompanies } from '@/query/companies';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -53,6 +53,13 @@ export default function CompanyOverviewClient({ slug }: { slug: string }) {
       href: `/companies/${slug}/teams`,
       icon: UsersRound,
       show: true,
+    },
+    {
+      label: 'Projects',
+      desc: 'All team projects (owner/admin)',
+      href: `/companies/${slug}/projects`,
+      icon: FolderGit2,
+      show: isAdmin,
     },
     {
       label: 'Company settings',
