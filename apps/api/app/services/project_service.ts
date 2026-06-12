@@ -23,11 +23,13 @@ const DEFAULT_SETTINGS = { cors: true, log_requests: false, global_headers: {} }
  */
 export async function listForUser(userId: string) {
   const memberships = await TeamMemberQueries.listForUser(userId);
-  const seenIds = memberships.map((m) => m.projectId);
+  // Personal projects only — team-owned projects show under their team.
+  const personal = memberships.filter((m) => m.project.teamId === null);
+  const seenIds = personal.map((m) => m.projectId);
   const legacyOwned = await ProjectQueries.listOwnedByUser(userId, seenIds);
 
   return [
-    ...memberships.map((m) => ({ ...m.project.serialize(), userRole: m.role })),
+    ...personal.map((m) => ({ ...m.project.serialize(), userRole: m.role })),
     ...legacyOwned.map((p) => ({ ...p.serialize(), userRole: 'owner' as const })),
   ];
 }

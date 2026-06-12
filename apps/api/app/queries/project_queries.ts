@@ -27,9 +27,27 @@ export function listOwnedByUser(
   excludeIds: string[] = [],
   client?: TransactionClientContract
 ) {
-  const query = Project.query({ client }).where('owner_id', userId);
+  // Personal projects only — team-owned projects live under their team.
+  const query = Project.query({ client }).where('owner_id', userId).whereNull('team_id');
   if (excludeIds.length > 0) {
     query.whereNotIn('id', excludeIds);
   }
   return query.orderBy('created_at', 'desc');
+}
+
+/** Projects owned by a workspace team (newest first), owner preloaded. */
+export function listForTeam(teamId: string, client?: TransactionClientContract) {
+  return Project.query({ client })
+    .where('team_id', teamId)
+    .preload('owner')
+    .orderBy('created_at', 'desc');
+}
+
+/** Every team-owned project across a company, with team + owner preloaded. */
+export function listForCompany(companyId: string, client?: TransactionClientContract) {
+  return Project.query({ client })
+    .whereIn('team_id', (sub) => sub.from('teams').select('id').where('company_id', companyId))
+    .preload('team')
+    .preload('owner')
+    .orderBy('created_at', 'desc');
 }

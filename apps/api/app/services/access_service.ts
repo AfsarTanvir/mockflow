@@ -1,6 +1,9 @@
 import { Exception } from '@adonisjs/core/exceptions';
 import * as ProjectQueries from '#queries/project_queries';
 import * as TeamMemberQueries from '#queries/team_member_queries';
+import * as TeamQueries from '#queries/team_queries';
+import * as ProfileQueries from '#queries/profile_queries';
+import * as TeamMembershipQueries from '#queries/team_membership_queries';
 import * as EndpointQueries from '#queries/endpoint_queries';
 import * as ScenarioQueries from '#queries/scenario_queries';
 import * as RuleQueries from '#queries/rule_queries';
@@ -37,6 +40,12 @@ export function hasRank(role: ProjectRole, min: ProjectRole): boolean {
   return ROLE_RANK[role] >= ROLE_RANK[min];
 }
 
+/** The higher of two roles (null = no role yet). */
+function maxRole(a: ProjectRole | null, b: ProjectRole): ProjectRole {
+  if (!a) return b;
+  return ROLE_RANK[a] >= ROLE_RANK[b] ? a : b;
+}
+
 export type AccessError = 'not_found' | 'forbidden';
 
 export interface ProjectAccess {
@@ -58,8 +67,39 @@ export async function resolveProjectRole(
   if (project.ownerId === userId) {
     return 'owner';
   }
+
+  // Per-project collaborators (personal projects + explicit invites).
   const membership = await TeamMemberQueries.findForProjectUser(project.id, userId, client);
-  return membership ? membership.role : null;
+  let role: ProjectRole | null = membership ? membership.role : null;
+
+  // Team-owned project: access flows from the workspace team + company role.
+  if (project.teamId) {
+    const team = await TeamQueries.findById(project.teamId, client);
+    if (team) {
+      const profile = await ProfileQueries.findActiveByUserAndCompany(
+        userId,
+        team.companyId,
+        client
+      );
+      if (profile) {
+        // Company owner/admin get manage-level oversight of every team project.
+        if (profile.role === 'owner' || profile.role === 'admin') {
+          role = maxRole(role, 'admin');
+        }
+        // Team membership: team admin → manage, team member → edit.
+        const teamMembership = await TeamMembershipQueries.findForProfileTeam(
+          profile.id,
+          project.teamId,
+          client
+        );
+        if (teamMembership) {
+          role = maxRole(role, teamMembership.role === 'admin' ? 'admin' : 'member');
+        }
+      }
+    }
+  }
+
+  return role;
 }
 
 /**
