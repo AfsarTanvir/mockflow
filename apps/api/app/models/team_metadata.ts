@@ -41,6 +41,9 @@ export default class TeamMetadata extends BaseModel {
   @column()
   declare totalMember: number;
 
+  @column()
+  declare totalProject: number;
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime;
 

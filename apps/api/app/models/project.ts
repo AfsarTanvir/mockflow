@@ -2,6 +2,7 @@ import { DateTime } from 'luxon';
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm';
 import type { BelongsTo } from '@adonisjs/lucid/types/relations';
 import User from './user.js';
+import Team from './team.js';
 
 export default class Project extends BaseModel {
   @column({ isPrimary: true })
@@ -18,6 +19,10 @@ export default class Project extends BaseModel {
 
   @column()
   declare ownerId: string;
+
+  /** Null = personal project. Set = owned by this workspace team. */
+  @column()
+  declare teamId: string | null;
 
   @column()
   declare isPublic: boolean;
@@ -40,4 +45,7 @@ export default class Project extends BaseModel {
 
   @belongsTo(() => User, { foreignKey: 'ownerId' })
   declare owner: BelongsTo<typeof User>;
+
+  @belongsTo(() => Team, { foreignKey: 'teamId' })
+  declare team: BelongsTo<typeof Team>;
 }
