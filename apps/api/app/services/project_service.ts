@@ -112,7 +112,11 @@ export async function listCompanyProjects(userId: string, companyId: string) {
     });
   }
   const projects = await ProjectQueries.listForCompany(companyId);
-  return projects.map((p) => p.serialize());
+  // Expose only a thin {id,name,slug} for the owning team — not the full Team row.
+  return projects.map((p) => ({
+    ...p.serialize(),
+    team: p.team ? { id: p.team.id, name: p.team.name, slug: p.team.slug } : null,
+  }));
 }
 
 /** Create a project owned by a team (company owner/admin or team admin only). */

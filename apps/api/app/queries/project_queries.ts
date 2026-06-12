@@ -35,19 +35,15 @@ export function listOwnedByUser(
   return query.orderBy('created_at', 'desc');
 }
 
-/** Projects owned by a workspace team (newest first), owner preloaded. */
+/** Projects owned by a workspace team (newest first). */
 export function listForTeam(teamId: string, client?: TransactionClientContract) {
-  return Project.query({ client })
-    .where('team_id', teamId)
-    .preload('owner')
-    .orderBy('created_at', 'desc');
+  return Project.query({ client }).where('team_id', teamId).orderBy('created_at', 'desc');
 }
 
-/** Every team-owned project across a company, with team + owner preloaded. */
+/** Every team-owned project across a company, with the owning team preloaded. */
 export function listForCompany(companyId: string, client?: TransactionClientContract) {
   return Project.query({ client })
     .whereIn('team_id', (sub) => sub.from('teams').select('id').where('company_id', companyId))
     .preload('team')
-    .preload('owner')
     .orderBy('created_at', 'desc');
 }
