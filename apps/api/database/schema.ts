@@ -224,7 +224,7 @@ export class ProjectInviteSchema extends BaseModel {
 }
 
 export class ProjectSchema extends BaseModel {
-  static $columns = ['basePath', 'createdAt', 'id', 'isPublic', 'name', 'ownerId', 'settings', 'slug', 'updatedAt'] as const
+  static $columns = ['basePath', 'createdAt', 'id', 'isPublic', 'name', 'ownerId', 'settings', 'slug', 'teamId', 'updatedAt'] as const
   $columns = ProjectSchema.$columns
   @column()
   declare basePath: string | null
@@ -242,6 +242,8 @@ export class ProjectSchema extends BaseModel {
   declare settings: any | null
   @column()
   declare slug: string
+  @column()
+  declare teamId: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }
@@ -325,7 +327,7 @@ export class TeamMembershipSchema extends BaseModel {
 }
 
 export class TeamMetadatumSchema extends BaseModel {
-  static $columns = ['avatarUrl', 'color', 'createdAt', 'externalLinks', 'settings', 'teamId', 'totalMember', 'updatedAt'] as const
+  static $columns = ['avatarUrl', 'color', 'createdAt', 'externalLinks', 'settings', 'teamId', 'totalMember', 'totalProject', 'updatedAt'] as const
   $columns = TeamMetadatumSchema.$columns
   @column()
   declare avatarUrl: string | null
@@ -341,6 +343,8 @@ export class TeamMetadatumSchema extends BaseModel {
   declare teamId: string
   @column()
   declare totalMember: number
+  @column()
+  declare totalProject: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }
