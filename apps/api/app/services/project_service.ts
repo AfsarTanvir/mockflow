@@ -204,9 +204,15 @@ export async function deleteProject(projectId: string, userId: string): Promise<
     });
   }
 
+  // Delete + counter decrement must be atomic so total_project can't drift.
   const { teamId } = project;
-  await project.delete();
-  if (teamId) {
-    await TeamMetadata.query().where('team_id', teamId).decrement('total_project', 1);
-  }
+  await db.transaction(async (trx) => {
+    project.useTransaction(trx);
+    await project.delete();
+    if (teamId) {
+      await TeamMetadata.query({ client: trx })
+        .where('team_id', teamId)
+        .decrement('total_project', 1);
+    }
+  });
 }
