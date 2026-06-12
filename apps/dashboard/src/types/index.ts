@@ -146,6 +146,7 @@ export type Team = {
   externalLinks: TeamExternalLink[];
   settings: TeamSettings;
   totalMember: number;
+  totalProject: number;
   createdByProfileId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -202,11 +203,14 @@ export type Project = {
   slug: string;
   basePath: string;
   ownerId: string;
+  teamId?: string | null;
   isPublic: boolean;
   settings: ProjectSettings;
   createdAt: string;
   updatedAt: string;
   userRole?: TeamRole;
+  /** Preloaded on the company-wide project list (which team owns it). */
+  team?: { id: string; name: string; slug: string } | null;
 };
 
 export type TeamRole = 'owner' | 'admin' | 'member' | 'viewer';
