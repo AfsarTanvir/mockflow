@@ -31,6 +31,24 @@ async function canManageTeam(actor: Profile, team: Team): Promise<boolean> {
 }
 
 /**
+ * A team must always keep at least one admin. Throws 422 if `membership` is the
+ * team's last admin (used before removing or demoting it).
+ */
+async function assertNotLastAdmin(teamId: string, membership: TeamMembership): Promise<void> {
+  if (membership.role !== 'admin') return;
+  const rows = await TeamMembership.query()
+    .where('team_id', teamId)
+    .where('role', 'admin')
+    .count('* as total');
+  if (Number(rows[0].$extras.total) <= 1) {
+    throw new Exception('A team must keep at least one admin — promote another member first.', {
+      status: 422,
+      code: 'E_LAST_TEAM_ADMIN',
+    });
+  }
+}
+
+/**
  * Add a profile to a team. Permission rules:
  *   - Actor must be active in the team's company
  *   - Actor must be team admin OR company admin/owner
@@ -105,6 +123,9 @@ export async function removeMember(
     .first();
   if (!membership) throw new Exception('Membership not found', { status: 404 });
 
+  // Never strip a team of its last admin (applies to self-leave too).
+  await assertNotLastAdmin(team.id, membership);
+
   await db.transaction(async (trx) => {
     membership.useTransaction(trx);
     await membership.delete();
@@ -136,6 +157,11 @@ export async function changeRole(
     .where('profile_id', targetProfileId)
     .first();
   if (!membership) throw new Exception('Membership not found', { status: 404 });
+
+  // Demoting the team's last admin would leave it adminless — block it.
+  if (newRole !== 'admin') {
+    await assertNotLastAdmin(team.id, membership);
+  }
 
   membership.role = newRole;
   await membership.save();

@@ -17,6 +17,35 @@ export default class ProjectsController {
     return response.created(project);
   }
 
+  /** GET /api/teams/:teamId/projects — team members or company owner/admin. */
+  async teamProjects({ auth, params, response }: HttpContext) {
+    try {
+      return response.ok(await ProjectService.listTeamProjects(auth.user!.id, params.teamId));
+    } catch (error) {
+      return respondError(error, response);
+    }
+  }
+
+  /** POST /api/teams/:teamId/projects — company owner/admin or team admin. */
+  async createTeamProject({ auth, params, request, response }: HttpContext) {
+    const data = await request.validateUsing(createProjectValidator);
+    try {
+      const project = await ProjectService.createTeamProject(auth.user!.id, params.teamId, data);
+      return response.created(project);
+    } catch (error) {
+      return respondError(error, response);
+    }
+  }
+
+  /** GET /api/companies/:companyId/projects — company owner/admin (portfolio). */
+  async companyProjects({ auth, params, response }: HttpContext) {
+    try {
+      return response.ok(await ProjectService.listCompanyProjects(auth.user!.id, params.companyId));
+    } catch (error) {
+      return respondError(error, response);
+    }
+  }
+
   /** GET /api/projects/:id — any team member (viewer+). */
   async show({ auth, params, response }: HttpContext) {
     try {

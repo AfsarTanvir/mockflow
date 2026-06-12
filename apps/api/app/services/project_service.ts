@@ -4,10 +4,14 @@ import { Exception } from '@adonisjs/core/exceptions';
 import type { Infer } from '@vinejs/vine/types';
 import Project from '#models/project';
 import TeamMember from '#models/team_member';
+import TeamMetadata from '#models/team_metadata';
 import { slugify } from '#services/slug_helper';
 import * as AccessService from '#services/access_service';
 import * as ProjectQueries from '#queries/project_queries';
 import * as TeamMemberQueries from '#queries/team_member_queries';
+import * as TeamQueries from '#queries/team_queries';
+import * as ProfileQueries from '#queries/profile_queries';
+import * as TeamMembershipQueries from '#queries/team_membership_queries';
 import type { createProjectValidator, updateProjectValidator } from '#validators/project_validator';
 
 export type CreateProjectInput = Infer<typeof createProjectValidator>;
@@ -23,11 +27,13 @@ const DEFAULT_SETTINGS = { cors: true, log_requests: false, global_headers: {} }
  */
 export async function listForUser(userId: string) {
   const memberships = await TeamMemberQueries.listForUser(userId);
-  const seenIds = memberships.map((m) => m.projectId);
+  // Personal projects only — team-owned projects show under their team.
+  const personal = memberships.filter((m) => m.project.teamId === null);
+  const seenIds = personal.map((m) => m.projectId);
   const legacyOwned = await ProjectQueries.listOwnedByUser(userId, seenIds);
 
   return [
-    ...memberships.map((m) => ({ ...m.project.serialize(), userRole: m.role })),
+    ...personal.map((m) => ({ ...m.project.serialize(), userRole: m.role })),
     ...legacyOwned.map((p) => ({ ...p.serialize(), userRole: 'owner' as const })),
   ];
 }
@@ -64,6 +70,92 @@ export async function createProject(userId: string, input: CreateProjectInput): 
   });
 }
 
+/**
+ * Can this user manage a team's projects (create/delete)? True for company
+ * owner/admin or a team admin. Returns the team's companyId for convenience.
+ */
+async function resolveTeamManage(
+  userId: string,
+  teamId: string
+): Promise<{ companyId: string } | null> {
+  const team = await TeamQueries.findById(teamId);
+  if (!team) throw new Exception('Team not found', { status: 404, code: 'E_TEAM_NOT_FOUND' });
+  const profile = await ProfileQueries.findActiveByUserAndCompany(userId, team.companyId);
+  if (!profile) return null;
+  if (profile.role === 'owner' || profile.role === 'admin') return { companyId: team.companyId };
+  const membership = await TeamMembershipQueries.findForProfileTeam(profile.id, teamId);
+  return membership?.role === 'admin' ? { companyId: team.companyId } : null;
+}
+
+/** List a team's projects. Visible to company owner/admin or members of the team. */
+export async function listTeamProjects(userId: string, teamId: string) {
+  const team = await TeamQueries.findById(teamId);
+  if (!team) throw new Exception('Team not found', { status: 404, code: 'E_TEAM_NOT_FOUND' });
+  const profile = await ProfileQueries.findActiveByUserAndCompany(userId, team.companyId);
+  if (!profile) throw new Exception('Access denied', { status: 403, code: 'E_FORBIDDEN' });
+  const isCompanyAdmin = profile.role === 'owner' || profile.role === 'admin';
+  if (!isCompanyAdmin) {
+    const membership = await TeamMembershipQueries.findForProfileTeam(profile.id, teamId);
+    if (!membership) throw new Exception('Access denied', { status: 403, code: 'E_FORBIDDEN' });
+  }
+  const projects = await ProjectQueries.listForTeam(teamId);
+  return projects.map((p) => p.serialize());
+}
+
+/** Company-wide project portfolio across all teams. Owner/admin only. */
+export async function listCompanyProjects(userId: string, companyId: string) {
+  const profile = await ProfileQueries.findActiveByUserAndCompany(userId, companyId);
+  if (!profile || (profile.role !== 'owner' && profile.role !== 'admin')) {
+    throw new Exception('Only company owner/admin can view all company projects', {
+      status: 403,
+      code: 'E_FORBIDDEN',
+    });
+  }
+  const projects = await ProjectQueries.listForCompany(companyId);
+  return projects.map((p) => p.serialize());
+}
+
+/** Create a project owned by a team (company owner/admin or team admin only). */
+export async function createTeamProject(
+  userId: string,
+  teamId: string,
+  input: CreateProjectInput
+): Promise<Project> {
+  const manage = await resolveTeamManage(userId, teamId);
+  if (!manage) {
+    throw new Exception('Only company owner/admin or a team admin can create team projects', {
+      status: 403,
+      code: 'E_FORBIDDEN',
+    });
+  }
+
+  return db.transaction(async (trx) => {
+    const project = await Project.create(
+      {
+        name: input.name,
+        slug: slugify(input.name),
+        basePath: input.basePath ?? '/',
+        ownerId: userId,
+        teamId,
+        isPublic: input.isPublic ?? false,
+        settings: input.settings ?? DEFAULT_SETTINGS,
+      },
+      { client: trx }
+    );
+
+    await TeamMember.create(
+      { projectId: project.id, userId, role: 'owner', invitedAt: DateTime.now() },
+      { client: trx }
+    );
+
+    await TeamMetadata.query({ client: trx })
+      .where('team_id', teamId)
+      .increment('total_project', 1);
+
+    return project;
+  });
+}
+
 /** A single project plus the requester's role. Any team member (viewer+) may read. */
 export async function getForUser(projectId: string, userId: string) {
   const { project, role } = await AccessService.assertProjectAccess(projectId, userId, 'viewer');
@@ -95,11 +187,22 @@ export async function deleteProject(projectId: string, userId: string): Promise<
   if (!project) {
     throw new Exception('Project not found', { status: 404, code: 'E_PROJECT_NOT_FOUND' });
   }
-  if (project.ownerId !== userId) {
-    throw new Exception('Only the owner can delete this project', {
+
+  // Personal: owner only. Team: owner OR team admin / company owner-admin.
+  let allowed = project.ownerId === userId;
+  if (!allowed && project.teamId) {
+    allowed = (await resolveTeamManage(userId, project.teamId)) !== null;
+  }
+  if (!allowed) {
+    throw new Exception('You do not have permission to delete this project', {
       status: 403,
       code: 'E_FORBIDDEN',
     });
   }
+
+  const { teamId } = project;
   await project.delete();
+  if (teamId) {
+    await TeamMetadata.query().where('team_id', teamId).decrement('total_project', 1);
+  }
 }

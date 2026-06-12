@@ -182,6 +182,9 @@ router
     // Teams nested under a company
     router.get('/:companyId/teams', [TeamsController, 'index']);
     router.post('/:companyId/teams', [TeamsController, 'store']);
+
+    // Company-wide project portfolio (owner/admin)
+    router.get('/:companyId/projects', [ProjectsController, 'companyProjects']);
   })
   .prefix('/api/companies')
   .use(middleware.auth());
@@ -205,6 +208,10 @@ router
     router.post('/:teamId/members', [TeamMembershipsController, 'store']);
     router.patch('/:teamId/members/:profileId', [TeamMembershipsController, 'updateRole']);
     router.delete('/:teamId/members/:profileId', [TeamMembershipsController, 'destroy']);
+
+    // Projects owned by a team
+    router.get('/:teamId/projects', [ProjectsController, 'teamProjects']);
+    router.post('/:teamId/projects', [ProjectsController, 'createTeamProject']);
   })
   .prefix('/api/teams')
   .use(middleware.auth());
