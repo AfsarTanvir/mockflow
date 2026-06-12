@@ -7,6 +7,7 @@ import { useMyCompanies } from '@/query/companies';
 import { useWorkspaceTeams } from '@/query/teams';
 import { useTeamMembers } from '@/query/team-memberships';
 import { MemberGrid } from '@/components/dashboard/member-grid';
+import { TeamSubnav } from '@/components/dashboard/team-subnav';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TeamMembersClient({ slug, teamSlug }: { slug: string; teamSlug: string }) {
@@ -27,6 +28,8 @@ export default function TeamMembersClient({ slug, teamSlug }: { slug: string; te
       <h1 className="text-foreground text-base font-semibold">
         {team?.name ?? 'Team'} <span className="text-muted-foreground font-normal">· members</span>
       </h1>
+
+      <TeamSubnav slug={slug} teamSlug={teamSlug} />
 
       {isLoading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
