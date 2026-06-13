@@ -7,6 +7,10 @@ import { AdminSidebar } from '@/components/admin/admin-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import type { User } from '@/types';
 
+// Reads the auth cookie on every render → must not be statically prerendered.
+// Cascades to all /admin/* routes.
+export const dynamic = 'force-dynamic';
+
 /**
  * Platform-admin (master agency) section. SSR-gated: only users flagged
  * `isSuperAdmin` by `/auth/me` may enter — everyone else is bounced back to

@@ -3,6 +3,9 @@ import { getAuthUser } from '@/services/auth';
 import { getMyCompanies } from '@/services/companies';
 import OnboardingClient from './client';
 
+// Reads the auth cookie on every render → must not be statically prerendered.
+export const dynamic = 'force-dynamic';
+
 export default async function OnboardingPage() {
   // Require auth — otherwise back to login
   try {

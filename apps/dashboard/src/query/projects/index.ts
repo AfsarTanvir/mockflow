@@ -101,9 +101,11 @@ export const useCreateTeamProject = (teamId: string) => {
         newProject,
         ...old,
       ]);
-      // Refresh team cards (total_project) and the company-wide list.
-      queryClient.invalidateQueries({ queryKey: [QueryKey.TEAMS_IN_COMPANY] });
-      queryClient.invalidateQueries({ queryKey: [QueryKey.COMPANY_PROJECTS] });
+      // Drop the team-card counts and company-wide list so they refetch fresh
+      // on next view. reset (not invalidate) is required because the global
+      // refetchOnMount:false would otherwise serve the stale cache on remount.
+      queryClient.resetQueries({ queryKey: [QueryKey.TEAMS_IN_COMPANY] });
+      queryClient.resetQueries({ queryKey: [QueryKey.COMPANY_PROJECTS] });
     },
   });
 };
@@ -118,8 +120,9 @@ export const useDeleteTeamProject = (teamId: string) => {
         old.filter((p) => p.id !== id)
       );
       queryClient.removeQueries({ queryKey: [QueryKey.PROJECT, id] });
-      queryClient.invalidateQueries({ queryKey: [QueryKey.TEAMS_IN_COMPANY] });
-      queryClient.invalidateQueries({ queryKey: [QueryKey.COMPANY_PROJECTS] });
+      // reset (not invalidate) so refetchOnMount:false doesn't keep stale counts.
+      queryClient.resetQueries({ queryKey: [QueryKey.TEAMS_IN_COMPANY] });
+      queryClient.resetQueries({ queryKey: [QueryKey.COMPANY_PROJECTS] });
     },
   });
 };

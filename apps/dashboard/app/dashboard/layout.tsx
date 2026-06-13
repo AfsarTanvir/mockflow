@@ -6,6 +6,10 @@ import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { cookies } from 'next/headers';
 
+// Reads the auth cookie on every render → must not be statically prerendered.
+// Cascades to all /dashboard/* routes.
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   let user = null;
 
