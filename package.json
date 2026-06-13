@@ -5,8 +5,7 @@
   "private": true,
   "workspaces": [
     "apps/api",
-    "apps/dashboard",
-    "packages/shared"
+    "apps/dashboard"
   ],
   "scripts": {
     "dev:api": "cd apps/api && npm run dev",
