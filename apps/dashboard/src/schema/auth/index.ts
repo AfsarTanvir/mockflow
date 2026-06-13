@@ -2,7 +2,10 @@ import { z } from 'zod';
 
 export const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  // Login only checks presence — the server verifies the password. Enforcing a
+  // min length here would lock out valid accounts whose password predates the
+  // current policy (and the API only requires 6).
+  password: z.string().min(1, 'Password is required'),
 });
 
 export const registerSchema = z
