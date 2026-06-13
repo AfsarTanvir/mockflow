@@ -20,7 +20,12 @@ export default function ProjectsClient({ initialUser }: { initialUser: User }) {
   const { data: user } = useUser({ initialData: initialUser });
   const { data: projects = [], isLoading } = useProjects();
   const { mutate: createProject, isPending: creating, error: createError } = useCreateProject();
-  const { mutate: deleteProject } = useDeleteProject();
+  const {
+    mutate: deleteProject,
+    isPending: deleting,
+    variables: deletingId,
+    error: deleteError,
+  } = useDeleteProject();
   const confirm = useConfirm();
   const [showForm, setShowForm] = useState(false);
 
@@ -126,6 +131,11 @@ export default function ProjectsClient({ initialUser }: { initialUser: User }) {
         </Card>
       ) : (
         <div className="grid gap-3">
+          {deleteError && (
+            <div className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
+              {deleteError instanceof Error ? deleteError.message : 'Failed to delete project'}
+            </div>
+          )}
           {projects.map((project) => {
             const isOwner = !project.userRole || project.userRole === 'owner';
             return (
@@ -148,6 +158,7 @@ export default function ProjectsClient({ initialUser }: { initialUser: User }) {
                   <Button
                     variant="ghost"
                     size="sm"
+                    disabled={deleting}
                     className="text-muted-foreground hover:text-destructive ml-4 shrink-0"
                     onClick={async () => {
                       const ok = await confirm({
@@ -159,7 +170,7 @@ export default function ProjectsClient({ initialUser }: { initialUser: User }) {
                       if (ok) deleteProject(project.id);
                     }}
                   >
-                    Delete
+                    {deleting && deletingId === project.id ? 'Deleting…' : 'Delete'}
                   </Button>
                 )}
               </Card>

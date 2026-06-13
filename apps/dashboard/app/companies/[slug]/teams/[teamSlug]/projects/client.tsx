@@ -40,7 +40,12 @@ export default function TeamProjectsClient({ slug, teamSlug }: { slug: string; t
     isPending: creating,
     error: createError,
   } = useCreateTeamProject(teamId);
-  const { mutate: deleteProject } = useDeleteTeamProject(teamId);
+  const {
+    mutate: deleteProject,
+    isPending: deleting,
+    variables: deletingId,
+    error: deleteError,
+  } = useDeleteTeamProject(teamId);
   const confirm = useConfirm();
   const [showForm, setShowForm] = useState(false);
 
@@ -164,6 +169,11 @@ export default function TeamProjectsClient({ slug, teamSlug }: { slug: string; t
         />
       ) : (
         <div className="grid gap-3">
+          {deleteError && (
+            <div className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
+              {deleteError instanceof Error ? deleteError.message : 'Failed to delete project'}
+            </div>
+          )}
           {projects.map((project) => (
             <Card key={project.id} className="flex-row items-center justify-between p-5">
               <Link
@@ -182,6 +192,7 @@ export default function TeamProjectsClient({ slug, teamSlug }: { slug: string; t
                 <Button
                   variant="ghost"
                   size="sm"
+                  disabled={deleting}
                   className="text-muted-foreground hover:text-destructive ml-4 shrink-0"
                   onClick={async () => {
                     const ok = await confirm({
@@ -193,7 +204,7 @@ export default function TeamProjectsClient({ slug, teamSlug }: { slug: string; t
                     if (ok) deleteProject(project.id);
                   }}
                 >
-                  Delete
+                  {deleting && deletingId === project.id ? 'Deleting…' : 'Delete'}
                 </Button>
               )}
             </Card>

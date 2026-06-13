@@ -69,8 +69,10 @@ export function ImportPanel({ projectId }: Props) {
         defaultResolutions[`${c.method} ${c.path}`] = 'skip';
       }
       setResolutions(defaultResolutions);
-    } catch (e: any) {
-      setError(e?.response?.data?.message ?? 'Failed to parse the file. Please check the format.');
+    } catch (e: unknown) {
+      setError(
+        e instanceof Error ? e.message : 'Failed to parse the file. Please check the format.'
+      );
     } finally {
       setPreviewing(false);
     }
@@ -92,8 +94,8 @@ export function ImportPanel({ projectId }: Props) {
       setPreview(null);
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
-    } catch (e: any) {
-      setError(e?.response?.data?.message ?? 'Import failed. Please try again.');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Import failed. Please try again.');
     } finally {
       setApplying(false);
     }
