@@ -4,11 +4,21 @@ import * as MockService from '#services/mock_service';
 
 export default class MockController {
   /** ANY /mock/:projectSlug/* — serve a configured mock response. */
-  async execute({ request, response, params }: HttpContext) {
+  async execute({ request, response, params, auth }: HttpContext) {
     const start = Date.now();
     const wildcard = params['*'];
     const incomingPath = '/' + (Array.isArray(wildcard) ? wildcard.join('/') : (wildcard ?? ''));
     const method = request.method().toUpperCase();
+
+    // Best-effort identity so members can reach their own private mocks; the
+    // route is public, so an absent/invalid token just means "anonymous".
+    let userId: string | undefined;
+    try {
+      await auth.check();
+      userId = auth.user?.id;
+    } catch {
+      userId = undefined;
+    }
 
     try {
       const { statusCode, body, headers } = await MockService.resolveMock(
@@ -16,7 +26,8 @@ export default class MockController {
         method,
         incomingPath,
         request,
-        start
+        start,
+        userId
       );
       for (const [key, value] of Object.entries(headers)) {
         response.header(key, value);
