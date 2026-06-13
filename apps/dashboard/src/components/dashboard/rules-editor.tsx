@@ -54,8 +54,8 @@ export function RulesEditor({ scenarioId, canWrite }: Props) {
         setField('');
         setValue('');
       },
-      onError: (err: any) => {
-        setLocalError(err?.response?.data?.message ?? err?.message ?? 'Failed to add rule');
+      onError: (err: unknown) => {
+        setLocalError(err instanceof Error ? err.message : 'Failed to add rule');
       },
     });
   }

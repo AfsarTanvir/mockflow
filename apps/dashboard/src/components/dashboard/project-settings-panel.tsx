@@ -217,7 +217,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
         <div>
           {error && (
             <p className="text-xs text-destructive">
-              {(error as any)?.response?.data?.message ?? 'Failed to save settings'}
+              {error instanceof Error ? error.message : 'Failed to save settings'}
             </p>
           )}
           {isSuccess && !dirty && <p className="text-xs text-success">Settings saved.</p>}
