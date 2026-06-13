@@ -13,11 +13,28 @@ import * as TeamQueries from '#queries/team_queries';
 import * as ProfileQueries from '#queries/profile_queries';
 import * as TeamMembershipQueries from '#queries/team_membership_queries';
 import type { createProjectValidator, updateProjectValidator } from '#validators/project_validator';
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database';
 
 export type CreateProjectInput = Infer<typeof createProjectValidator>;
 export type UpdateProjectInput = Infer<typeof updateProjectValidator>;
 
 const DEFAULT_SETTINGS = { cors: true, log_requests: false, global_headers: {} };
+
+/**
+ * A globally-unique project slug. projects.slug is unique, so two projects
+ * named the same would collide (a 500 on the second create); append -2, -3, …
+ * until a free slug is found.
+ */
+async function uniqueProjectSlug(name: string, trx: TransactionClientContract): Promise<string> {
+  const base = slugify(name);
+  let slug = base;
+  let n = 2;
+  while (await ProjectQueries.findBySlug(slug, trx)) {
+    slug = `${base}-${n}`;
+    n += 1;
+  }
+  return slug;
+}
 
 /**
  * All projects the user can see, newest first: every project they're a member
@@ -47,7 +64,7 @@ export async function createProject(userId: string, input: CreateProjectInput): 
     const project = await Project.create(
       {
         name: input.name,
-        slug: slugify(input.name),
+        slug: await uniqueProjectSlug(input.name, trx),
         basePath: input.basePath ?? '/',
         ownerId: userId,
         isPublic: input.isPublic ?? false,
@@ -137,7 +154,7 @@ export async function createTeamProject(
     const project = await Project.create(
       {
         name: input.name,
-        slug: slugify(input.name),
+        slug: await uniqueProjectSlug(input.name, trx),
         basePath: input.basePath ?? '/',
         ownerId: userId,
         teamId,

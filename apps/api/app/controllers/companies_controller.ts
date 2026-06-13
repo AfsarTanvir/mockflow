@@ -13,9 +13,7 @@ import {
   updateCompanyValidator,
   transferOwnershipValidator,
 } from '#validators/company_validator';
-
-type ProfileRole = 'owner' | 'admin' | 'member' | 'viewer';
-const ROLE_RANK: Record<ProfileRole, number> = { viewer: 0, member: 1, admin: 2, owner: 3 };
+import { ROLE_RANK } from '#services/role_rank';
 
 /** Public-facing landing view — safe for unauthenticated visitors of protected/public companies. */
 function landingView(company: Company, metadata: CompanyMetadata | null) {

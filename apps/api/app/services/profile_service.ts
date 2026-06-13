@@ -8,6 +8,7 @@ import type { ProfileRole, ProfileVisibility } from '../models/profile.js';
 import type { ProfileLink, ProfilePreferences } from '../models/profile_metadata.js';
 import { cleanupForInactiveProfile } from './team_membership_service.js';
 import * as AvatarService from './avatar_service.js';
+import { ROLE_RANK } from './role_rank.js';
 import type { MultipartFile } from '@adonisjs/core/bodyparser';
 
 export interface UpdateProfileInput {
@@ -21,13 +22,6 @@ export interface UpdateProfileInput {
   links?: ProfileLink[];
   preferences?: ProfilePreferences;
 }
-
-const ROLE_RANK: Record<ProfileRole, number> = {
-  viewer: 0,
-  member: 1,
-  admin: 2,
-  owner: 3,
-};
 
 /**
  * Edit profile core fields + metadata in one tx.

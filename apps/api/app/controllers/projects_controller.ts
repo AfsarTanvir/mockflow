@@ -6,15 +6,23 @@ import { createProjectValidator, updateProjectValidator } from '#validators/proj
 export default class ProjectsController {
   /** GET /api/projects — projects the current user can see. */
   async index({ auth, response }: HttpContext) {
-    const projects = await ProjectService.listForUser(auth.user!.id);
-    return response.ok(projects);
+    try {
+      const projects = await ProjectService.listForUser(auth.user!.id);
+      return response.ok(projects);
+    } catch (error) {
+      return respondError(error, response);
+    }
   }
 
   /** POST /api/projects */
   async store({ auth, request, response }: HttpContext) {
     const data = await request.validateUsing(createProjectValidator);
-    const project = await ProjectService.createProject(auth.user!.id, data);
-    return response.created(project);
+    try {
+      const project = await ProjectService.createProject(auth.user!.id, data);
+      return response.created(project);
+    } catch (error) {
+      return respondError(error, response);
+    }
   }
 
   /** GET /api/teams/:teamId/projects — team members or company owner/admin. */
