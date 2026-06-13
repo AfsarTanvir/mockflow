@@ -3,6 +3,7 @@ import db from '@adonisjs/lucid/services/db';
 import { Exception } from '@adonisjs/core/exceptions';
 import Profile from '../models/profile.js';
 import ProfileMetadata from '../models/profile_metadata.js';
+import CompanyMetadata from '../models/company_metadata.js';
 import type { ProfileRole, ProfileVisibility } from '../models/profile.js';
 import type { ProfileLink, ProfilePreferences } from '../models/profile_metadata.js';
 import { cleanupForInactiveProfile } from './team_membership_service.js';
@@ -169,10 +170,23 @@ export async function reactivateProfile(targetProfileId: string, actor: Profile)
   // Reactivation flips status to 'active'.
   // Profile.displayName + avatarUrl are NOT re-snapshotted — prior customisation
   // is preserved. See COMPANY-WORKSPACE-MODEL.md "Policy decisions".
-  target.status = 'active';
-  target.leftAt = null;
-  if (!target.joinedAt) target.joinedAt = DateTime.now();
-  await target.save();
+  const wasInactive = target.status === 'inactive';
+  await db.transaction(async (trx) => {
+    target.useTransaction(trx);
+    target.status = 'active';
+    target.leftAt = null;
+    if (!target.joinedAt) target.joinedAt = DateTime.now();
+    await target.save();
+
+    // total_member counts current members (anyone not 'inactive'). Only a
+    // rejoin from 'inactive' grows the roster; reactivating a suspended member
+    // doesn't (they were already counted).
+    if (wasInactive) {
+      await CompanyMetadata.query({ client: trx })
+        .where('company_id', target.companyId)
+        .increment('total_member', 1);
+    }
+  });
   return target;
 }
 
@@ -213,6 +227,9 @@ export async function setInactive(
     }
   }
 
+  // Only decrement the company roster if they were still a member (guards
+  // against a repeated remove double-counting).
+  const wasMember = target.status !== 'inactive';
   await db.transaction(async (trx) => {
     target.useTransaction(trx);
     target.status = 'inactive';
@@ -221,6 +238,12 @@ export async function setInactive(
 
     // Cascade: drop every team_membership and decrement each affected team's counter
     await cleanupForInactiveProfile(target.id, trx);
+
+    if (wasMember) {
+      await CompanyMetadata.query({ client: trx })
+        .where('company_id', target.companyId)
+        .decrement('total_member', 1);
+    }
   });
 
   return target;
