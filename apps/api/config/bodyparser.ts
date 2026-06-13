@@ -10,6 +10,9 @@ const bodyParserConfig = defineConfig({
 
   json: {
     convertEmptyStringsToNull: true,
+    // Cap JSON bodies so a single request can't store/serve a huge mock payload
+    // (the public mock endpoint re-emits responseBody and walks it for faker).
+    limit: '1mb',
     types: [
       'application/json',
       'application/json-patch+json',
