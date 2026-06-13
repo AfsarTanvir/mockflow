@@ -7,6 +7,7 @@ import * as TeamMembershipQueries from '#queries/team_membership_queries';
 import * as EndpointQueries from '#queries/endpoint_queries';
 import * as ScenarioQueries from '#queries/scenario_queries';
 import * as RuleQueries from '#queries/rule_queries';
+import { ROLE_RANK, hasRank } from '#services/role_rank';
 import type Project from '#models/project';
 import type Endpoint from '#models/endpoint';
 import type EndpointScenario from '#models/endpoint_scenario';
@@ -28,17 +29,9 @@ import type { TransactionClientContract } from '@adonisjs/lucid/types/database';
 
 export type ProjectRole = 'owner' | 'admin' | 'member' | 'viewer';
 
-export const ROLE_RANK: Record<ProjectRole, number> = {
-  viewer: 0,
-  member: 1,
-  admin: 2,
-  owner: 3,
-};
-
-/** Does `role` meet or exceed the `min` required role? */
-export function hasRank(role: ProjectRole, min: ProjectRole): boolean {
-  return ROLE_RANK[role] >= ROLE_RANK[min];
-}
+// Canonical rank map + helper now live in #services/role_rank; re-export so
+// existing `import { ROLE_RANK, hasRank } from '#services/access_service'` works.
+export { ROLE_RANK, hasRank };
 
 /** The higher of two roles (null = no role yet). */
 function maxRole(a: ProjectRole | null, b: ProjectRole): ProjectRole {

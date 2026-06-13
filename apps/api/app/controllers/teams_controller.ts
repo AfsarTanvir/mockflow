@@ -10,19 +10,17 @@ import * as TeamQueries from '#queries/team_queries';
 import * as TeamMembershipQueries from '#queries/team_membership_queries';
 import * as TeamService from '#services/team_service';
 import { canSeeTeam } from '#services/permission_resolver';
+import { ROLE_RANK } from '#services/role_rank';
 import { createTeamValidator, updateTeamValidator } from '#validators/team_validator';
 
-type CompanyRole = 'owner' | 'admin' | 'member' | 'viewer';
-const COMPANY_ROLE_RANK: Record<CompanyRole, number> = { viewer: 0, member: 1, admin: 2, owner: 3 };
-
 function canCreateTeam(actor: Profile, settings: { members_can_create_teams?: boolean }): boolean {
-  if (COMPANY_ROLE_RANK[actor.role] >= COMPANY_ROLE_RANK.admin) return true;
+  if (ROLE_RANK[actor.role] >= ROLE_RANK.admin) return true;
   if (actor.role === 'member' && settings?.members_can_create_teams === true) return true;
   return false;
 }
 
 async function canManageTeam(actor: Profile, team: Team): Promise<boolean> {
-  if (COMPANY_ROLE_RANK[actor.role] >= COMPANY_ROLE_RANK.admin) return true;
+  if (ROLE_RANK[actor.role] >= ROLE_RANK.admin) return true;
   const tm = await TeamMembershipQueries.findForProfileTeam(actor.id, team.id);
   return tm?.role === 'admin';
 }

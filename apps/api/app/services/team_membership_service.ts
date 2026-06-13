@@ -7,14 +7,7 @@ import Team from '../models/team.js';
 import TeamMembership from '../models/team_membership.js';
 import TeamMetadata from '../models/team_metadata.js';
 import type { TeamRole } from '../models/team_membership.js';
-
-type CompanyRole = 'owner' | 'admin' | 'member' | 'viewer';
-const COMPANY_ROLE_RANK: Record<CompanyRole, number> = {
-  viewer: 0,
-  member: 1,
-  admin: 2,
-  owner: 3,
-};
+import { ROLE_RANK } from './role_rank.js';
 
 /**
  * Returns true if actor can manage this team:
@@ -22,7 +15,7 @@ const COMPANY_ROLE_RANK: Record<CompanyRole, number> = {
  *   - OR has a team_membership with role='admin' on this team
  */
 async function canManageTeam(actor: Profile, team: Team): Promise<boolean> {
-  if (COMPANY_ROLE_RANK[actor.role] >= COMPANY_ROLE_RANK.admin) return true;
+  if (ROLE_RANK[actor.role] >= ROLE_RANK.admin) return true;
   const tm = await TeamMembership.query()
     .where('profile_id', actor.id)
     .where('team_id', team.id)
