@@ -112,7 +112,11 @@ export async function listCompanyProjects(userId: string, companyId: string) {
     });
   }
   const projects = await ProjectQueries.listForCompany(companyId);
-  return projects.map((p) => p.serialize());
+  // Expose only a thin {id,name,slug} for the owning team — not the full Team row.
+  return projects.map((p) => ({
+    ...p.serialize(),
+    team: p.team ? { id: p.team.id, name: p.team.name, slug: p.team.slug } : null,
+  }));
 }
 
 /** Create a project owned by a team (company owner/admin or team admin only). */
@@ -200,9 +204,15 @@ export async function deleteProject(projectId: string, userId: string): Promise<
     });
   }
 
+  // Delete + counter decrement must be atomic so total_project can't drift.
   const { teamId } = project;
-  await project.delete();
-  if (teamId) {
-    await TeamMetadata.query().where('team_id', teamId).decrement('total_project', 1);
-  }
+  await db.transaction(async (trx) => {
+    project.useTransaction(trx);
+    await project.delete();
+    if (teamId) {
+      await TeamMetadata.query({ client: trx })
+        .where('team_id', teamId)
+        .decrement('total_project', 1);
+    }
+  });
 }
