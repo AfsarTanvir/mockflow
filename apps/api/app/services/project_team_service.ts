@@ -1,5 +1,6 @@
 import { Exception } from '@adonisjs/core/exceptions';
 import type { Infer } from '@vinejs/vine/types';
+import type Project from '#models/project';
 import ProjectInvite from '#models/project_invite';
 import * as AccessService from '#services/access_service';
 import * as TeamMemberQueries from '#queries/team_member_queries';
@@ -10,6 +11,21 @@ import type { inviteValidator, updateRoleValidator } from '#validators/team_vali
 
 export type InviteInput = Infer<typeof inviteValidator>;
 export type UpdateRoleInput = Infer<typeof updateRoleValidator>;
+
+/**
+ * The legacy per-project collaborator flow (invites + project-scoped roles) does
+ * not apply to team-owned projects — their access derives from team membership
+ * and company role. Allowing it here would let a team admin add outsiders with
+ * no company profile directly into team_members, bypassing the team model.
+ */
+function assertNotTeamOwned(project: Project): void {
+  if (project.teamId) {
+    throw new Exception(
+      'This project belongs to a team — manage access through the team’s members, not project invites.',
+      { status: 409, code: 'E_TEAM_OWNED_PROJECT' }
+    );
+  }
+}
 
 /** Members + pending invites for a project, plus the requester's role. Viewer+. */
 export async function listTeam(projectId: string, userId: string) {
@@ -50,6 +66,7 @@ export async function invite(
   input: InviteInput
 ): Promise<ProjectInvite> {
   const { project } = await AccessService.assertProjectAccess(projectId, userId, 'admin');
+  assertNotTeamOwned(project);
 
   const existingUser = await UserQueries.findByEmail(input.email);
   if (existingUser) {
@@ -102,6 +119,7 @@ export async function changeRole(
     userId,
     'admin'
   );
+  assertNotTeamOwned(project);
 
   const target = await TeamMemberQueries.findInProjectById(project.id, memberId);
   if (!target) {
@@ -125,6 +143,7 @@ export async function changeRole(
 /** Remove a member. Owner/admin only. The owner cannot be removed. */
 export async function removeMember(projectId: string, userId: string, memberId: string) {
   const { project } = await AccessService.assertProjectAccess(projectId, userId, 'admin');
+  assertNotTeamOwned(project);
 
   const target = await TeamMemberQueries.findInProjectById(project.id, memberId);
   if (!target) {
@@ -140,6 +159,7 @@ export async function removeMember(projectId: string, userId: string, memberId: 
 /** Revoke a pending invite. Owner/admin only. */
 export async function revokeInvite(projectId: string, userId: string, inviteId: string) {
   const { project } = await AccessService.assertProjectAccess(projectId, userId, 'admin');
+  assertNotTeamOwned(project);
 
   const invite = await ProjectInviteQueries.findPendingByIdInProject(project.id, inviteId);
   if (!invite) {
