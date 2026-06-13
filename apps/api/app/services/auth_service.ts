@@ -114,12 +114,9 @@ export async function resendVerification(user: User): Promise<void> {
 /** Start a password reset: issue a reset token and email it. */
 export async function forgotPassword(email: string): Promise<void> {
   const user = await UserQueries.findByEmail(email);
-  if (!user) {
-    throw new Exception('No account exists with that email. Please sign up first.', {
-      status: 404,
-      code: 'E_USER_NOT_FOUND',
-    });
-  }
+  // Never reveal whether an account exists — the controller returns the same
+  // "check your email" response either way. Silently no-op for unknown emails.
+  if (!user) return;
 
   await UserTokenQueries.deleteForUserAndType(user.id, 'reset_password');
 

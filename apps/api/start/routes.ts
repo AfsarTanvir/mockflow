@@ -34,11 +34,19 @@ router.get('/uploads/avatars/:file', [UploadsController, 'avatar']);
 */
 router
   .group(() => {
-    router.post('/register', [AuthController, 'register']);
-    router.post('/login', [AuthController, 'login']);
+    // Throttle the unauthenticated, abuse-prone endpoints (per IP + route):
+    // brute-force on login, account/mail flooding on register + forgot-password.
+    router
+      .post('/register', [AuthController, 'register'])
+      .use(middleware.throttle({ max: 5, windowMs: 60_000 }));
+    router
+      .post('/login', [AuthController, 'login'])
+      .use(middleware.throttle({ max: 10, windowMs: 60_000 }));
     router.post('/refresh', [AuthController, 'refresh']);
     router.post('/verify/:token', [AuthController, 'verifyEmail']);
-    router.post('/forgot-password', [AuthController, 'forgotPassword']);
+    router
+      .post('/forgot-password', [AuthController, 'forgotPassword'])
+      .use(middleware.throttle({ max: 5, windowMs: 60_000 }));
     router.post('/reset-password/:token', [AuthController, 'resetPassword']);
   })
   .prefix('/api/auth');

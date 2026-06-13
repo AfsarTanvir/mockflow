@@ -33,14 +33,23 @@ async function canManageTeam(actor: Profile, team: Team): Promise<boolean> {
 /**
  * A team must always keep at least one admin. Throws 422 if `membership` is the
  * team's last admin (used before removing or demoting it).
+ *
+ * Must run inside the same transaction as the remove/demote and locks the admin
+ * rows with FOR UPDATE: without the lock, two concurrent requests each removing
+ * a different one of the last two admins would both pass the count check and
+ * leave the team with zero admins (TOCTOU).
  */
-async function assertNotLastAdmin(teamId: string, membership: TeamMembership): Promise<void> {
+async function assertNotLastAdmin(
+  teamId: string,
+  membership: TeamMembership,
+  trx: TransactionClientContract
+): Promise<void> {
   if (membership.role !== 'admin') return;
-  const rows = await TeamMembership.query()
+  const admins = await TeamMembership.query({ client: trx })
     .where('team_id', teamId)
     .where('role', 'admin')
-    .count('* as total');
-  if (Number(rows[0].$extras.total) <= 1) {
+    .forUpdate();
+  if (admins.length <= 1) {
     throw new Exception('A team must keep at least one admin — promote another member first.', {
       status: 422,
       code: 'E_LAST_TEAM_ADMIN',
@@ -117,17 +126,16 @@ export async function removeMember(
     throw new Exception('Only team admins or company admins can remove members', { status: 403 });
   }
 
-  const membership = await TeamMembership.query()
-    .where('team_id', team.id)
-    .where('profile_id', targetProfileId)
-    .first();
-  if (!membership) throw new Exception('Membership not found', { status: 404 });
-
-  // Never strip a team of its last admin (applies to self-leave too).
-  await assertNotLastAdmin(team.id, membership);
-
   await db.transaction(async (trx) => {
-    membership.useTransaction(trx);
+    const membership = await TeamMembership.query({ client: trx })
+      .where('team_id', team.id)
+      .where('profile_id', targetProfileId)
+      .first();
+    if (!membership) throw new Exception('Membership not found', { status: 404 });
+
+    // Never strip a team of its last admin (applies to self-leave too).
+    await assertNotLastAdmin(team.id, membership, trx);
+
     await membership.delete();
 
     await TeamMetadata.query({ client: trx })
@@ -152,20 +160,22 @@ export async function changeRole(
     throw new Exception('You cannot change your own team role', { status: 403 });
   }
 
-  const membership = await TeamMembership.query()
-    .where('team_id', team.id)
-    .where('profile_id', targetProfileId)
-    .first();
-  if (!membership) throw new Exception('Membership not found', { status: 404 });
+  return db.transaction(async (trx) => {
+    const membership = await TeamMembership.query({ client: trx })
+      .where('team_id', team.id)
+      .where('profile_id', targetProfileId)
+      .first();
+    if (!membership) throw new Exception('Membership not found', { status: 404 });
 
-  // Demoting the team's last admin would leave it adminless — block it.
-  if (newRole !== 'admin') {
-    await assertNotLastAdmin(team.id, membership);
-  }
+    // Demoting the team's last admin would leave it adminless — block it.
+    if (newRole !== 'admin') {
+      await assertNotLastAdmin(team.id, membership, trx);
+    }
 
-  membership.role = newRole;
-  await membership.save();
-  return membership;
+    membership.role = newRole;
+    await membership.save();
+    return membership;
+  });
 }
 
 /**

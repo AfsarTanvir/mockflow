@@ -5,6 +5,7 @@ import Endpoint from '#models/endpoint';
 import RequestLog from '#models/request_log';
 import * as ProjectQueries from '#queries/project_queries';
 import * as EndpointQueries from '#queries/endpoint_queries';
+import * as AccessService from '#services/access_service';
 import { evaluateBody } from '#services/faker_evaluator';
 import { resolveScenario } from '#services/scenario_resolver';
 
@@ -37,7 +38,8 @@ export async function resolveMock(
   method: string,
   incomingPath: string,
   request: HttpContext['request'],
-  now: number
+  now: number,
+  userId?: string
 ): Promise<MockResponse> {
   const project = await ProjectQueries.findBySlug(projectSlug);
   if (!project) {
@@ -45,6 +47,18 @@ export async function resolveMock(
       status: 404,
       code: 'E_PROJECT_NOT_FOUND',
     });
+  }
+
+  // Private projects are only servable to members. Return 404 (not 403) for
+  // everyone else so the project's existence isn't revealed by the slug.
+  if (!project.isPublic) {
+    const role = userId ? await AccessService.resolveProjectRole(project, userId) : null;
+    if (!role) {
+      throw new Exception(`No project with slug "${projectSlug}"`, {
+        status: 404,
+        code: 'E_PROJECT_NOT_FOUND',
+      });
+    }
   }
 
   const endpoints = await EndpointQueries.listActiveByMethod(project.id, method);
