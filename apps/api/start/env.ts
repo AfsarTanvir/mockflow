@@ -15,6 +15,12 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   REDIS_HOST: Env.schema.string.optional(),
   REDIS_PORT: Env.schema.number.optional(),
+  REDIS_PASSWORD: Env.schema.string.optional(),
+  // Caching. CACHE_ENABLED defaults to true when unset (global kill switch).
+  // TTLs are in seconds; defaults applied in the cache service when unset.
+  CACHE_ENABLED: Env.schema.boolean.optional(),
+  CACHE_TTL_MOCK: Env.schema.number.optional(),
+  CACHE_TTL_ENTITY: Env.schema.number.optional(),
 
   API_URL: Env.schema.string.optional(),
   APP_URL: Env.schema.string.optional(),

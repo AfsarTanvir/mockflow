@@ -30,6 +30,7 @@
     "#services/*": "./app/services/*.js",
     "#queries/*": "./app/queries/*.js",
     "#validators/*": "./app/validators/*.js",
+    "#providers/*": "./providers/*.js",
     "#start/*": "./start/*.js"
   },
   "devDependencies": {
@@ -54,6 +55,7 @@
     "@adonisjs/cors": "^3.0.0",
     "@adonisjs/hash": "^7.0.0",
     "@adonisjs/lucid": "^22.4.2",
+    "@adonisjs/redis": "^10.0.0",
     "@adonisjs/tsconfig": "^2.0.0",
     "@faker-js/faker": "^8.3.0",
     "@poppinss/ts-exec": "^1.4.4",
