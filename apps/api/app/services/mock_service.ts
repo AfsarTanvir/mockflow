@@ -17,11 +17,6 @@ export interface MockResponse {
   headers: Record<string, string>;
 }
 
-interface SlugInfo {
-  projectId: string;
-  isPublic: boolean;
-}
-
 function pickDelay(min: number, max: number | null): number {
   if (max == null || max <= min) return min;
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -50,36 +45,39 @@ export async function resolveMock(
   now: number,
   userId?: string
 ): Promise<MockResponse> {
-  // 1. Resolve slug → { projectId, isPublic } (cached; loader returns null when absent).
-  const slugInfo = await cache.remember<SlugInfo | null>(
+  // 1. Resolve slug → projectId (cached; loader returns null when absent). The
+  //    slug→id mapping is immutable for a project's lifetime, so it never needs
+  //    invalidation except on delete.
+  const projectId = await cache.remember<string | null>(
     cacheKeys.mockSlug(projectSlug),
     CACHE_TTL.mock,
     async () => {
       const p = await ProjectQueries.findBySlug(projectSlug);
-      return p ? { projectId: p.id, isPublic: p.isPublic } : null;
+      return p ? p.id : null;
     }
   );
-  if (!slugInfo) throw notFound(projectSlug);
+  if (!projectId) throw notFound(projectSlug);
 
-  // 2. Private projects: members only. Return 404 (not 403) so existence stays hidden.
-  if (!slugInfo.isPublic) {
-    const project = userId ? await ProjectQueries.findById(slugInfo.projectId) : null;
-    const role = project && userId ? await AccessService.resolveProjectRole(project, userId) : null;
-    if (!role) throw notFound(projectSlug);
-  }
-
-  // 3. Per-project blueprint (cached). The loader only runs on a miss, which we
+  // 2. Per-project blueprint (cached). The loader only runs on a miss, which we
   //    use to report cache hit/miss back to the client.
   let cacheStatus: 'hit' | 'miss' = 'hit';
   const blueprint = await cache.remember(
-    cacheKeys.mockBlueprint(slugInfo.projectId),
+    cacheKeys.mockBlueprint(projectId),
     CACHE_TTL.mock,
     async () => {
       cacheStatus = 'miss';
-      return buildBlueprint(slugInfo.projectId);
+      return buildBlueprint(projectId);
     }
   );
   if (!blueprint) throw notFound(projectSlug);
+
+  // 3. Private projects: members only. Return 404 (not 403) so existence stays
+  //    hidden. isPublic lives in the blueprint, so it stays in sync on update.
+  if (!blueprint.isPublic) {
+    const project = userId ? await ProjectQueries.findById(projectId) : null;
+    const role = project && userId ? await AccessService.resolveProjectRole(project, userId) : null;
+    if (!role) throw notFound(projectSlug);
+  }
 
   // 4. Match an active endpoint by method + path (in memory).
   let matched: BlueprintEndpoint | null = null;
@@ -139,7 +137,7 @@ export async function resolveMock(
 
   if (blueprint.settings.log_requests) {
     RequestLog.create({
-      projectId: slugInfo.projectId,
+      projectId,
       endpointId: matched.id,
       method,
       path: incomingPath,

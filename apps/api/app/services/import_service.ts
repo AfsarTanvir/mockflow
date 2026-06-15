@@ -3,6 +3,7 @@ import { Exception } from '@adonisjs/core/exceptions';
 import type { Infer } from '@vinejs/vine/types';
 import Endpoint from '#models/endpoint';
 import * as AccessService from '#services/access_service';
+import * as cache from '#services/cache_service';
 import * as EndpointQueries from '#queries/endpoint_queries';
 import { parseOpenApiSpec } from '#services/openapi_importer';
 import { parsePostmanCollection } from '#services/postman_importer';
@@ -96,6 +97,11 @@ export async function apply(projectId: string, userId: string, data: ApplyImport
       }
     }
   });
+
+  // Bulk endpoint changes → rebuild the project's mock blueprint.
+  if (created > 0 || overwritten > 0) {
+    await cache.invalidateMock(project.id);
+  }
 
   return { created, overwritten, skipped, errors: [] as string[] };
 }

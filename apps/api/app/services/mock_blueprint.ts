@@ -42,6 +42,7 @@ export interface BlueprintEndpoint {
 }
 
 export interface MockBlueprint {
+  isPublic: boolean;
   settings: { cors: boolean; log_requests: boolean; global_headers?: Record<string, string> };
   endpoints: BlueprintEndpoint[];
 }
@@ -92,6 +93,7 @@ export async function buildBlueprint(projectId: string): Promise<MockBlueprint |
   }
 
   return {
+    isPublic: project.isPublic,
     settings: project.settings,
     endpoints: endpoints.map((e) => ({
       id: e.id,

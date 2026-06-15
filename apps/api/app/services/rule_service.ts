@@ -2,6 +2,7 @@ import { Exception } from '@adonisjs/core/exceptions';
 import type { Infer } from '@vinejs/vine/types';
 import ScenarioRule from '#models/scenario_rule';
 import * as AccessService from '#services/access_service';
+import * as cache from '#services/cache_service';
 import * as RuleQueries from '#queries/rule_queries';
 import { validateRuleCombination } from '#validators/rule_validator';
 import type { createRuleValidator, updateRuleValidator } from '#validators/rule_validator';
@@ -21,20 +22,26 @@ export async function createRule(
   userId: string,
   input: CreateRuleInput
 ): Promise<ScenarioRule> {
-  const { scenario } = await AccessService.assertScenarioAccess(scenarioId, userId, 'member');
+  const { scenario, project } = await AccessService.assertScenarioAccess(
+    scenarioId,
+    userId,
+    'member'
+  );
 
   const combinationError = validateRuleCombination(input.operator, input.value);
   if (combinationError) {
     throw new Exception(combinationError, { status: 422, code: 'E_RULE_COMBINATION' });
   }
 
-  return ScenarioRule.create({
+  const rule = await ScenarioRule.create({
     scenarioId: scenario.id,
     source: input.source,
     field: input.field,
     operator: input.operator,
     value: input.operator === 'exists' ? null : (input.value ?? null),
   });
+  await cache.invalidateMock(project.id);
+  return rule;
 }
 
 /** Update a rule. Member+. Re-validates the operator/value combination. */
@@ -43,7 +50,7 @@ export async function updateRule(
   userId: string,
   input: UpdateRuleInput
 ): Promise<ScenarioRule> {
-  const { rule } = await AccessService.assertRuleAccess(ruleId, userId, 'member');
+  const { rule, project } = await AccessService.assertRuleAccess(ruleId, userId, 'member');
 
   const finalOperator = input.operator ?? rule.operator;
   const finalValue = input.value !== undefined ? input.value : rule.value;
@@ -64,12 +71,14 @@ export async function updateRule(
     rule.value = null;
   }
   await rule.save();
+  await cache.invalidateMock(project.id);
 
   return rule;
 }
 
 /** Delete a rule. Member+. */
 export async function deleteRule(ruleId: string, userId: string): Promise<void> {
-  const { rule } = await AccessService.assertRuleAccess(ruleId, userId, 'member');
+  const { rule, project } = await AccessService.assertRuleAccess(ruleId, userId, 'member');
   await rule.delete();
+  await cache.invalidateMock(project.id);
 }
