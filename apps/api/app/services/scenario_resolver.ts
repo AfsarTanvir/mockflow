@@ -1,6 +1,14 @@
 import type { HttpContext } from '@adonisjs/core/http';
-import EndpointScenario from '../models/endpoint_scenario.js';
-import ScenarioRule from '../models/scenario_rule.js';
+import type { RuleSource, RuleOperator } from '#models/scenario_rule';
+import type { BlueprintScenario } from '#services/mock_blueprint';
+
+/** Structural rule shape — satisfied by both ScenarioRule models and blueprint rules. */
+export interface RuleLike {
+  source: RuleSource;
+  field: string;
+  operator: RuleOperator;
+  value: string | null;
+}
 
 /**
  * Walk a body object using dot-notation path (e.g. "user.email" → body.user.email).
@@ -17,7 +25,7 @@ export function getByPath(obj: unknown, path: string): unknown {
   return current;
 }
 
-export function evalRule(rule: ScenarioRule, request: HttpContext['request']): boolean {
+export function evalRule(rule: RuleLike, request: HttpContext['request']): boolean {
   let value: unknown;
 
   switch (rule.source) {
@@ -42,32 +50,22 @@ export function evalRule(rule: ScenarioRule, request: HttpContext['request']): b
 }
 
 /**
- * Picks the scenario that should drive a given request, if any.
+ * Pick the scenario that should drive a request, from a blueprint's in-memory
+ * scenario list (already ordered priority-asc, created-asc).
  *
  * Resolution order:
- *   1. Rule-based — first scenario (lowest priority first) whose rules ALL match.
- *      Scenarios with zero rules are skipped here.
+ *   1. Rule-based — first scenario whose rules ALL match (zero-rule scenarios skipped).
  *   2. The scenario manually marked is_active = true.
  *   3. null — fall back to the endpoint's default response.
  */
-export async function resolveScenario(
-  endpointId: string,
+export function pickScenario(
+  scenarios: BlueprintScenario[],
   request: HttpContext['request']
-): Promise<EndpointScenario | null> {
-  const scenarios = await EndpointScenario.query()
-    .where('endpoint_id', endpointId)
-    .preload('rules' as any)
-    .orderBy('priority', 'asc')
-    .orderBy('created_at', 'asc');
-
-  // 1. Rule-based — first scenario whose rules ALL pass
+): BlueprintScenario | null {
   for (const s of scenarios) {
-    const rules = (s as unknown as { rules: ScenarioRule[] }).rules ?? [];
-    if (rules.length > 0 && rules.every((r) => evalRule(r, request))) {
+    if (s.rules.length > 0 && s.rules.every((r) => evalRule(r, request))) {
       return s;
     }
   }
-
-  // 2. Manually activated fallback
   return scenarios.find((s) => s.isActive) ?? null;
 }

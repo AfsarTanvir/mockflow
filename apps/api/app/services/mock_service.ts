@@ -1,18 +1,25 @@
 import { match } from 'path-to-regexp';
 import { Exception } from '@adonisjs/core/exceptions';
 import type { HttpContext } from '@adonisjs/core/http';
-import Endpoint from '#models/endpoint';
 import RequestLog from '#models/request_log';
 import * as ProjectQueries from '#queries/project_queries';
-import * as EndpointQueries from '#queries/endpoint_queries';
 import * as AccessService from '#services/access_service';
+import * as cache from '#services/cache_service';
+import { cacheKeys } from '#services/cache_keys';
+import { CACHE_TTL } from '#services/cache_service';
+import { buildBlueprint, type BlueprintEndpoint } from '#services/mock_blueprint';
+import { pickScenario } from '#services/scenario_resolver';
 import { evaluateBody } from '#services/faker_evaluator';
-import { resolveScenario } from '#services/scenario_resolver';
 
 export interface MockResponse {
   statusCode: number;
   body: unknown;
   headers: Record<string, string>;
+}
+
+interface SlugInfo {
+  projectId: string;
+  isPublic: boolean;
 }
 
 function pickDelay(min: number, max: number | null): number {
@@ -24,14 +31,16 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const notFound = (slug: string) =>
+  new Exception(`No project with slug "${slug}"`, { status: 404, code: 'E_PROJECT_NOT_FOUND' });
+
 /**
- * Resolve a mock request to a concrete response: match an active endpoint by
- * method + path, apply the winning scenario's overrides, merge headers
- * (project globals → endpoint/scenario → CORS → diagnostics), evaluate the
- * faker body, and (optionally) log the request. Throws 404 when nothing matches.
+ * Resolve a mock request to a concrete response. Reads are served from a cached
+ * per-project "blueprint" (settings + active endpoints + scenarios + rules);
+ * matching and scenario selection happen entirely in memory. Falls back to
+ * Postgres transparently when the cache misses or Redis is unavailable.
  *
- * `now` is the request-start timestamp (ms) supplied by the controller so the
- * X-MockFlow-Elapsed header can be computed.
+ * `now` is the request-start timestamp (ms) for the X-MockFlow-Elapsed header.
  */
 export async function resolveMock(
   projectSlug: string,
@@ -41,40 +50,49 @@ export async function resolveMock(
   now: number,
   userId?: string
 ): Promise<MockResponse> {
-  const project = await ProjectQueries.findBySlug(projectSlug);
-  if (!project) {
-    throw new Exception(`No project with slug "${projectSlug}"`, {
-      status: 404,
-      code: 'E_PROJECT_NOT_FOUND',
-    });
-  }
-
-  // Private projects are only servable to members. Return 404 (not 403) for
-  // everyone else so the project's existence isn't revealed by the slug.
-  if (!project.isPublic) {
-    const role = userId ? await AccessService.resolveProjectRole(project, userId) : null;
-    if (!role) {
-      throw new Exception(`No project with slug "${projectSlug}"`, {
-        status: 404,
-        code: 'E_PROJECT_NOT_FOUND',
-      });
+  // 1. Resolve slug → { projectId, isPublic } (cached; loader returns null when absent).
+  const slugInfo = await cache.remember<SlugInfo | null>(
+    cacheKeys.mockSlug(projectSlug),
+    CACHE_TTL.mock,
+    async () => {
+      const p = await ProjectQueries.findBySlug(projectSlug);
+      return p ? { projectId: p.id, isPublic: p.isPublic } : null;
     }
+  );
+  if (!slugInfo) throw notFound(projectSlug);
+
+  // 2. Private projects: members only. Return 404 (not 403) so existence stays hidden.
+  if (!slugInfo.isPublic) {
+    const project = userId ? await ProjectQueries.findById(slugInfo.projectId) : null;
+    const role = project && userId ? await AccessService.resolveProjectRole(project, userId) : null;
+    if (!role) throw notFound(projectSlug);
   }
 
-  const endpoints = await EndpointQueries.listActiveByMethod(project.id, method);
+  // 3. Per-project blueprint (cached). The loader only runs on a miss, which we
+  //    use to report cache hit/miss back to the client.
+  let cacheStatus: 'hit' | 'miss' = 'hit';
+  const blueprint = await cache.remember(
+    cacheKeys.mockBlueprint(slugInfo.projectId),
+    CACHE_TTL.mock,
+    async () => {
+      cacheStatus = 'miss';
+      return buildBlueprint(slugInfo.projectId);
+    }
+  );
+  if (!blueprint) throw notFound(projectSlug);
 
-  let matched: Endpoint | null = null;
+  // 4. Match an active endpoint by method + path (in memory).
+  let matched: BlueprintEndpoint | null = null;
   let pathParams: Record<string, string> = {};
-  for (const endpoint of endpoints) {
-    const fn = match(endpoint.path, { decode: decodeURIComponent });
-    const result = fn(incomingPath);
+  for (const endpoint of blueprint.endpoints) {
+    if (endpoint.method !== method) continue;
+    const result = match(endpoint.path, { decode: decodeURIComponent })(incomingPath);
     if (result) {
       matched = endpoint;
       pathParams = result.params as Record<string, string>;
       break;
     }
   }
-
   if (!matched) {
     throw new Exception(`No active ${method} endpoint matching "${incomingPath}"`, {
       status: 404,
@@ -82,8 +100,8 @@ export async function resolveMock(
     });
   }
 
-  // Rule-based scenario first, then a manually activated one, else endpoint defaults.
-  const scenario = await resolveScenario(matched.id, request);
+  // 5. Scenario selection (rule-based, then manual active, else endpoint default).
+  const scenario = pickScenario(matched.scenarios, request);
 
   const statusCode = scenario?.statusCode ?? matched.statusCode;
   const responseBody = scenario?.responseBody ?? matched.responseBody;
@@ -99,28 +117,29 @@ export async function resolveMock(
   const elapsed = Date.now() - now;
 
   // project globals first; endpoint/scenario headers win on collision.
-  const globalHeaders = project.settings.global_headers ?? {};
+  const globalHeaders = blueprint.settings.global_headers ?? {};
   const headers: Record<string, string> = { ...globalHeaders, ...(responseHeaders ?? {}) };
 
-  if (project.settings.cors) {
+  if (blueprint.settings.cors) {
     headers['Access-Control-Allow-Origin'] = '*';
     headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,PATCH,DELETE,OPTIONS';
     headers['Access-Control-Allow-Headers'] = '*';
   }
 
-  headers['X-MockFlow-Project'] = project.slug;
+  headers['X-MockFlow-Project'] = projectSlug;
   headers['X-MockFlow-Endpoint'] = `${matched.method} ${matched.path}`;
   headers['X-MockFlow-Delay'] = `${finalDelay}ms`;
   headers['X-MockFlow-Elapsed'] = `${elapsed}ms`;
+  headers['X-MockFlow-Cache'] = cacheStatus;
   if (scenario) {
     headers['X-MockFlow-Scenario'] = scenario.name;
   }
 
   const body = evaluateBody(responseBody, pathParams);
 
-  if (project.settings.log_requests) {
+  if (blueprint.settings.log_requests) {
     RequestLog.create({
-      projectId: project.id,
+      projectId: slugInfo.projectId,
       endpointId: matched.id,
       method,
       path: incomingPath,
