@@ -1,5 +1,6 @@
 import {
   Building2,
+  Database,
   FolderOpen,
   IdCard,
   LayoutDashboard,
@@ -33,6 +34,7 @@ export const adminNavGroups: NavGroup[] = [
     items: [
       { label: 'Endpoints', icon: Zap, href: '/admin/endpoints' },
       { label: 'Request Logs', icon: ScrollText, href: '/admin/request-logs' },
+      { label: 'Cache', icon: Database, href: '/admin/cache' },
     ],
   },
   {

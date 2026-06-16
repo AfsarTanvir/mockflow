@@ -133,3 +133,46 @@ export interface ImpersonationResult {
   user: AdminUser;
   expiresAt: string | null;
 }
+
+/* ------------------------------------------------------------------ */
+/* Redis cache console                                                 */
+/* ------------------------------------------------------------------ */
+
+export interface CacheSectionStat {
+  name: string;
+  keys: number;
+  memory: number;
+}
+
+export interface CacheOverview {
+  connected: boolean;
+  totalKeys: number;
+  totalMemory: number;
+  hitRate: number;
+  hits: number;
+  misses: number;
+  sections: CacheSectionStat[];
+}
+
+export interface CacheKeyInfo {
+  key: string;
+  ttl: number;
+  type: string;
+  size: number;
+}
+
+export interface CacheEntry extends CacheKeyInfo {
+  value: string | null;
+}
+
+export interface CacheKeyListParams {
+  section?: string;
+  search?: string;
+  page?: number;
+  perPage?: number;
+}
+
+export type CacheKeyList = {
+  data: CacheKeyInfo[];
+  meta: PageMeta & { truncated: boolean };
+};
