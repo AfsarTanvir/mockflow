@@ -3,6 +3,7 @@ import { Exception } from '@adonisjs/core/exceptions';
 import Endpoint from '#models/endpoint';
 import VersionHistory from '#models/version_history';
 import * as AccessService from '#services/access_service';
+import * as cache from '#services/cache_service';
 import * as EndpointQueries from '#queries/endpoint_queries';
 import * as VersionQueries from '#queries/version_queries';
 
@@ -118,6 +119,9 @@ export async function restoreVersion(projectId: string, userId: string, versionI
       );
     }
   });
+
+  // Restore rewrites settings + all endpoints → rebuild the mock blueprint.
+  await cache.invalidateMock(project.id);
 
   return {
     message: 'Project restored to selected version',

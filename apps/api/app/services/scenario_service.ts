@@ -3,6 +3,7 @@ import { Exception } from '@adonisjs/core/exceptions';
 import type { Infer } from '@vinejs/vine/types';
 import EndpointScenario from '#models/endpoint_scenario';
 import * as AccessService from '#services/access_service';
+import * as cache from '#services/cache_service';
 import * as ScenarioQueries from '#queries/scenario_queries';
 import { hasAtLeastOneOverride, validateDelayRange } from '#validators/scenario_validator';
 import type {
@@ -25,7 +26,7 @@ export async function createScenario(
   userId: string,
   input: CreateScenarioInput
 ): Promise<EndpointScenario> {
-  await AccessService.assertEndpointAccess(endpointId, userId, 'member');
+  const { project } = await AccessService.assertEndpointAccess(endpointId, userId, 'member');
 
   if (!hasAtLeastOneOverride(input as Record<string, unknown>)) {
     throw new Exception(
@@ -47,7 +48,7 @@ export async function createScenario(
     });
   }
 
-  return EndpointScenario.create({
+  const scenario = await EndpointScenario.create({
     endpointId,
     name: input.name,
     description: input.description ?? null,
@@ -59,6 +60,8 @@ export async function createScenario(
     priority: input.priority ?? 0,
     isActive: false,
   });
+  await cache.invalidateMock(project.id);
+  return scenario;
 }
 
 /** A single scenario. Viewer+. */
@@ -73,7 +76,11 @@ export async function updateScenario(
   userId: string,
   input: UpdateScenarioInput
 ): Promise<EndpointScenario> {
-  const { scenario } = await AccessService.assertScenarioAccess(scenarioId, userId, 'member');
+  const { scenario, project } = await AccessService.assertScenarioAccess(
+    scenarioId,
+    userId,
+    'member'
+  );
 
   const finalDelayMs = input.delayMs !== undefined ? input.delayMs : scenario.delayMs;
   const finalDelayMaxMs = input.delayMaxMs !== undefined ? input.delayMaxMs : scenario.delayMaxMs;
@@ -107,14 +114,20 @@ export async function updateScenario(
     ...(input.priority !== undefined && { priority: input.priority }),
   });
   await scenario.save();
+  await cache.invalidateMock(project.id);
 
   return scenario;
 }
 
 /** Delete a scenario. Member+. */
 export async function deleteScenario(scenarioId: string, userId: string): Promise<void> {
-  const { scenario } = await AccessService.assertScenarioAccess(scenarioId, userId, 'member');
+  const { scenario, project } = await AccessService.assertScenarioAccess(
+    scenarioId,
+    userId,
+    'member'
+  );
   await scenario.delete();
+  await cache.invalidateMock(project.id);
 }
 
 /**
@@ -125,7 +138,11 @@ export async function activateScenario(
   scenarioId: string,
   userId: string
 ): Promise<EndpointScenario> {
-  const { scenario } = await AccessService.assertScenarioAccess(scenarioId, userId, 'member');
+  const { scenario, project } = await AccessService.assertScenarioAccess(
+    scenarioId,
+    userId,
+    'member'
+  );
 
   await db.transaction(async (trx) => {
     await ScenarioQueries.deactivateSiblings(scenario.endpointId, scenario.id, trx);
@@ -133,6 +150,7 @@ export async function activateScenario(
     scenario.isActive = true;
     await scenario.save();
   });
+  await cache.invalidateMock(project.id);
 
   return scenario;
 }
@@ -142,7 +160,8 @@ export async function deactivateAllForEndpoint(
   endpointId: string,
   userId: string
 ): Promise<number> {
-  await AccessService.assertEndpointAccess(endpointId, userId, 'member');
+  const { project } = await AccessService.assertEndpointAccess(endpointId, userId, 'member');
   const affected = await ScenarioQueries.deactivateAllActive(endpointId);
+  await cache.invalidateMock(project.id);
   return Array.isArray(affected) ? affected.length : affected;
 }

@@ -2,6 +2,7 @@ import { Exception } from '@adonisjs/core/exceptions';
 import type { Infer } from '@vinejs/vine/types';
 import Endpoint from '#models/endpoint';
 import * as AccessService from '#services/access_service';
+import * as cache from '#services/cache_service';
 import * as EndpointQueries from '#queries/endpoint_queries';
 import { validateEndpointDelayRange } from '#validators/endpoint_validator';
 import type {
@@ -39,7 +40,7 @@ export async function createEndpoint(
     });
   }
 
-  return Endpoint.create({
+  const endpoint = await Endpoint.create({
     projectId,
     method: input.method,
     path: input.path,
@@ -51,6 +52,8 @@ export async function createEndpoint(
     isActive: input.isActive ?? true,
     createdBy: userId,
   });
+  await cache.invalidateMock(projectId);
+  return endpoint;
 }
 
 /** A single endpoint. Any team member (viewer+). */
@@ -105,6 +108,7 @@ export async function updateEndpoint(
     ...(input.isActive !== undefined && { isActive: input.isActive }),
   });
   await endpoint.save();
+  await cache.invalidateMock(endpoint.projectId);
 
   return endpoint;
 }
@@ -113,6 +117,7 @@ export async function updateEndpoint(
 export async function deleteEndpoint(endpointId: string, userId: string): Promise<void> {
   const { endpoint } = await AccessService.assertEndpointAccess(endpointId, userId, 'member');
   await endpoint.delete();
+  await cache.invalidateMock(endpoint.projectId);
 }
 
 /** Flip an endpoint's active flag. Member+. */
@@ -120,5 +125,6 @@ export async function toggleEndpoint(endpointId: string, userId: string): Promis
   const { endpoint } = await AccessService.assertEndpointAccess(endpointId, userId, 'member');
   endpoint.isActive = !endpoint.isActive;
   await endpoint.save();
+  await cache.invalidateMock(endpoint.projectId);
   return endpoint;
 }

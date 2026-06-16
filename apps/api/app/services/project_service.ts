@@ -7,6 +7,7 @@ import TeamMember from '#models/team_member';
 import TeamMetadata from '#models/team_metadata';
 import { slugify } from '#services/slug_helper';
 import * as AccessService from '#services/access_service';
+import * as cache from '#services/cache_service';
 import * as ProjectQueries from '#queries/project_queries';
 import * as TeamMemberQueries from '#queries/team_member_queries';
 import * as TeamQueries from '#queries/team_queries';
@@ -198,6 +199,9 @@ export async function updateProject(
     ...(input.settings !== undefined && { settings: input.settings }),
   });
   await project.save();
+  // Settings / isPublic feed the mock blueprint; refresh it + the project entity.
+  await cache.invalidateMock(project.id);
+  await cache.invalidateProjectEntity(project.id);
 
   return project;
 }
@@ -222,7 +226,7 @@ export async function deleteProject(projectId: string, userId: string): Promise<
   }
 
   // Delete + counter decrement must be atomic so total_project can't drift.
-  const { teamId } = project;
+  const { teamId, slug } = project;
   await db.transaction(async (trx) => {
     project.useTransaction(trx);
     await project.delete();
@@ -232,4 +236,6 @@ export async function deleteProject(projectId: string, userId: string): Promise<
         .decrement('total_project', 1);
     }
   });
+  // Drop the mock blueprint, the slug→id mapping and the project entity cache.
+  await cache.invalidateProjectFull(projectId, slug);
 }
