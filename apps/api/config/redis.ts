@@ -20,8 +20,15 @@ const redisConfig = defineConfig({
       password: env.get('REDIS_PASSWORD', ''),
       db: 0,
       keyPrefix: '',
-      // Bound the reconnect attempts so a missing Redis degrades to "no cache"
-      // instead of hammering forever; the cache service falls back to Postgres.
+      // Fail fast when Redis is unreachable so the cache degrades to "miss"
+      // instead of hanging the request: don't queue commands while offline, and
+      // give up a command after one retry. The cache service catches the error
+      // and falls back to Postgres.
+      enableOfflineQueue: false,
+      maxRetriesPerRequest: 1,
+      connectTimeout: 1000,
+      // Bound reconnect attempts so a missing Redis degrades to "no cache"
+      // instead of hammering forever.
       retryStrategy(times) {
         return times > 10 ? null : Math.min(times * 50, 2000);
       },
