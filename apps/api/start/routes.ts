@@ -18,6 +18,7 @@ const ProfilesController = () => import('../app/controllers/profiles_controller.
 const TeamsController = () => import('../app/controllers/teams_controller.js');
 const TeamMembershipsController = () => import('../app/controllers/team_memberships_controller.js');
 const AdminController = () => import('../app/controllers/admin_controller.js');
+const AdminCacheController = () => import('../app/controllers/admin_cache_controller.js');
 const UploadsController = () => import('../app/controllers/uploads_controller.js');
 
 /*
@@ -286,6 +287,13 @@ router
     router.delete('/profiles/:id', [AdminController, 'deleteProfile']);
     // impersonation
     router.post('/impersonate/:userId', [AdminController, 'impersonate']);
+    // redis cache console
+    router.get('/cache', [AdminCacheController, 'overview']);
+    router.get('/cache/keys', [AdminCacheController, 'keys']);
+    router.get('/cache/entry', [AdminCacheController, 'entry']);
+    router.delete('/cache/entry', [AdminCacheController, 'deleteEntry']);
+    router.delete('/cache/section/:section', [AdminCacheController, 'deleteSection']);
+    router.delete('/cache', [AdminCacheController, 'flush']);
   })
   .prefix('/api/admin')
   .use([middleware.auth(), middleware.superAdmin()]);

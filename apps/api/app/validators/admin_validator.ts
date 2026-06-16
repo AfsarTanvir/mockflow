@@ -1,4 +1,5 @@
 import vine from '@vinejs/vine';
+import { CACHE_SECTIONS } from '#services/cache_keys';
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 
@@ -41,4 +42,21 @@ export const adminRequestLogListValidator = vine.compile(
 
 export const adminChangeRoleValidator = vine.compile(
   vine.object({ role: vine.enum(['admin', 'member', 'viewer'] as const) })
+);
+
+/* ----------------------------------------------------------------- */
+/* Cache console                                                     */
+/* ----------------------------------------------------------------- */
+
+export const cacheKeyListValidator = vine.compile(
+  vine.object({
+    section: vine.enum(CACHE_SECTIONS).optional(),
+    search: vine.string().trim().maxLength(200).optional(),
+    page: vine.number().min(1).optional(),
+    perPage: vine.number().min(1).max(100).optional(),
+  })
+);
+
+export const cacheKeyValidator = vine.compile(
+  vine.object({ key: vine.string().trim().minLength(1).maxLength(512) })
 );
