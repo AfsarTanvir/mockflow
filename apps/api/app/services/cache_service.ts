@@ -21,6 +21,12 @@ export const CACHE_TTL = {
   entity: env.get('CACHE_TTL_ENTITY', 600),
 };
 const SCAN_COUNT = 500;
+// Don't cache values larger than this (e.g. a pathologically large mock
+// blueprint): they bloat Redis and cost CPU to JSON.parse on every hit.
+const MAX_VALUE_BYTES = 512 * 1024;
+// Marks a cached "not found" so unknown lookups (e.g. bad/guessed slugs) don't
+// hit Postgres on every request. A bare token can never equal a JSON value.
+const NEGATIVE_SENTINEL = '__cache_miss__';
 
 const full = (key: string) => ROOT + key;
 const strip = (fullKey: string) =>
@@ -39,6 +45,31 @@ function onOk(): void {
   if (degraded) {
     degraded = false;
     logger.info('[cache] Redis recovered — caching resumed');
+  }
+}
+
+/** ±10% TTL jitter so values written together don't all expire at once (stampede waves). */
+function jitter(ttlSeconds: number): number {
+  return Math.max(1, Math.round(ttlSeconds * (0.9 + Math.random() * 0.2)));
+}
+
+const oversizeWarned = new Set<string>();
+/** Best-effort SET with jittered TTL, skipping values over the size cap. */
+async function writeCache(key: string, serialized: string, ttlSeconds: number): Promise<void> {
+  if (serialized.length > MAX_VALUE_BYTES) {
+    if (!oversizeWarned.has(key)) {
+      oversizeWarned.add(key);
+      logger.warn(
+        `[cache] not caching "${key}": ${serialized.length}B exceeds ${MAX_VALUE_BYTES}B cap`
+      );
+    }
+    return;
+  }
+  try {
+    await redis.setex(full(key), jitter(ttlSeconds), serialized);
+    onOk();
+  } catch (err) {
+    onError('setex', err);
   }
 }
 
@@ -62,11 +93,16 @@ async function bumpStat(kind: 'hits' | 'misses'): Promise<void> {
 // Per-process by design; entries are removed as soon as the load settles.
 const inflight = new Map<string, Promise<unknown>>();
 
-/** Cache-aside read: return cached JSON on hit, else run `loader`, cache, return. */
+/**
+ * Cache-aside read: return cached JSON on hit, else run `loader`, cache, return.
+ * Pass `negativeTtl` to briefly cache "not found" (loader → null/undefined) so
+ * unknown lookups don't hit the DB on every request.
+ */
 export async function remember<T>(
   key: string,
   ttlSeconds: number,
-  loader: () => Promise<T>
+  loader: () => Promise<T>,
+  opts?: { negativeTtl?: number }
 ): Promise<T> {
   if (!ENABLED) return loader();
 
@@ -75,7 +111,8 @@ export async function remember<T>(
     if (cached !== null) {
       onOk();
       void bumpStat('hits');
-      return JSON.parse(cached) as T;
+      // Negative hit: we previously cached "not found" for this key.
+      return cached === NEGATIVE_SENTINEL ? (null as T) : (JSON.parse(cached) as T);
     }
   } catch (err) {
     onError('get', err);
@@ -91,14 +128,10 @@ export async function remember<T>(
   const load = (async () => {
     try {
       const value = await loader();
-      // Don't cache empty results (avoids stale negative caching surprises).
       if (value !== null && value !== undefined) {
-        try {
-          await redis.setex(full(key), ttlSeconds, JSON.stringify(value));
-          onOk();
-        } catch (err) {
-          onError('setex', err);
-        }
+        await writeCache(key, JSON.stringify(value), ttlSeconds);
+      } else if (opts?.negativeTtl) {
+        await writeCache(key, NEGATIVE_SENTINEL, opts.negativeTtl);
       }
       return value;
     } finally {
@@ -124,12 +157,7 @@ export async function get<T>(key: string): Promise<T | null> {
 
 export async function set(key: string, value: unknown, ttlSeconds: number): Promise<void> {
   if (!ENABLED || value === null || value === undefined) return;
-  try {
-    await redis.setex(full(key), ttlSeconds, JSON.stringify(value));
-    onOk();
-  } catch (err) {
-    onError('setex', err);
-  }
+  await writeCache(key, JSON.stringify(value), ttlSeconds);
 }
 
 /** Delete one or more logical keys (non-blocking UNLINK). */
