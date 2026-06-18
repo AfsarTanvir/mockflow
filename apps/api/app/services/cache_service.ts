@@ -57,6 +57,11 @@ async function bumpStat(kind: 'hits' | 'misses'): Promise<void> {
 /* Core cache-aside                                                  */
 /* ----------------------------------------------------------------- */
 
+// In-process single-flight: concurrent misses for the same key share ONE loader
+// run (+ one setex), so an expired/invalidated hot key can't stampede Postgres.
+// Per-process by design; entries are removed as soon as the load settles.
+const inflight = new Map<string, Promise<unknown>>();
+
 /** Cache-aside read: return cached JSON on hit, else run `loader`, cache, return. */
 export async function remember<T>(
   key: string,
@@ -77,18 +82,32 @@ export async function remember<T>(
     return loader();
   }
 
-  const value = await loader();
-  // Don't cache empty results (avoids stale negative caching surprises).
-  if (value !== null && value !== undefined) {
-    try {
-      await redis.setex(full(key), ttlSeconds, JSON.stringify(value));
-      onOk();
-    } catch (err) {
-      onError('setex', err);
-    }
-  }
   void bumpStat('misses');
-  return value;
+
+  // Coalesce concurrent misses for this key onto a single in-flight load.
+  const existing = inflight.get(key);
+  if (existing) return existing as Promise<T>;
+
+  const load = (async () => {
+    try {
+      const value = await loader();
+      // Don't cache empty results (avoids stale negative caching surprises).
+      if (value !== null && value !== undefined) {
+        try {
+          await redis.setex(full(key), ttlSeconds, JSON.stringify(value));
+          onOk();
+        } catch (err) {
+          onError('setex', err);
+        }
+      }
+      return value;
+    } finally {
+      inflight.delete(key);
+    }
+  })();
+
+  inflight.set(key, load);
+  return load as Promise<T>;
 }
 
 export async function get<T>(key: string): Promise<T | null> {
