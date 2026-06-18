@@ -54,7 +54,9 @@ export async function resolveMock(
     async () => {
       const p = await ProjectQueries.findBySlug(projectSlug);
       return p ? p.id : null;
-    }
+    },
+    // Briefly remember unknown slugs so bad/guessed slugs don't hit the DB every time.
+    { negativeTtl: 30 }
   );
   if (!projectId) throw notFound(projectSlug);
 
