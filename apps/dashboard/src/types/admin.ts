@@ -1,15 +1,31 @@
 import type { PageMeta } from '@/components/ui/pagination';
-import type { CompanyVisibility, HttpMethod, ProfileRole, ProfileStatus } from '@/types';
+import type {
+  CompanyVisibility,
+  CursorMeta,
+  HttpMethod,
+  ProfileRole,
+  ProfileStatus,
+} from '@/types';
 
 /* ------------------------------------------------------------------ */
 /* Platform-admin (master agency) view models                          */
 /* Mirror the `*View` mappers in apps/api admin_controller.ts.          */
 /* ------------------------------------------------------------------ */
 
-/** Standard paginated envelope returned by every admin list endpoint. */
+/** Offset envelope — every admin directory list (users, companies, …). */
 export interface Paginated<T> {
   data: T[];
   meta: PageMeta;
+}
+
+/**
+ * Keyset envelope — the request-log firehose only. That table is unbounded and
+ * append-only, so it pages by cursor and reports no total. See
+ * `apps/api app/queries/admin_queries.ts`.
+ */
+export interface CursorPaginated<T> {
+  data: T[];
+  meta: CursorMeta;
 }
 
 /** Common list query params accepted by admin list endpoints. */
@@ -108,7 +124,10 @@ export interface AdminEndpointListParams extends AdminListParams {
   method?: HttpMethod;
 }
 
-export interface AdminRequestLogListParams extends AdminListParams {
+/** Cursor params, not page params — and no `search`/`sort`: logs are newest-first. */
+export interface AdminRequestLogListParams {
+  cursor?: string;
+  limit?: number;
   projectId?: string;
   method?: HttpMethod;
   statusCode?: number;

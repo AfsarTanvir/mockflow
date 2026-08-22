@@ -1,12 +1,29 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { getVersions, getVersion, createVersion, restoreVersion } from '@/services/versions';
 import { QueryKey } from '@/types/query-key.enum';
-import type { ProjectVersion } from '@/types';
+import type { CursorPage, ProjectVersion } from '@/types';
 
+const PAGE_SIZE = 25;
+
+type VersionPages = InfiniteData<CursorPage<ProjectVersion>>;
+
+/**
+ * A project's snapshot history, newest first. Cursor-paginated: pages accumulate
+ * via `fetchNextPage()`, so the caller flattens `data.pages` into one list.
+ */
 export const useVersions = (projectId: string) => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: [QueryKey.VERSIONS, projectId],
-    queryFn: () => getVersions(projectId),
+    queryFn: ({ pageParam }) =>
+      getVersions(projectId, { cursor: pageParam ?? undefined, limit: PAGE_SIZE }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.meta.nextCursor,
     staleTime: 30 * 1000,
     enabled: !!projectId,
   });
@@ -26,9 +43,13 @@ export const useCreateVersion = (projectId: string) => {
   return useMutation({
     mutationFn: (message: string | null) => createVersion(projectId, message),
     onSuccess: (newVersion) => {
-      queryClient.setQueryData<ProjectVersion[]>([QueryKey.VERSIONS, projectId], (old) =>
-        old ? [newVersion, ...old] : [newVersion]
-      );
+      // A new snapshot is the newest row, so it belongs at the head of the first
+      // page. Cursors already handed out stay valid — they point further back.
+      queryClient.setQueryData<VersionPages>([QueryKey.VERSIONS, projectId], (old) => {
+        if (!old || old.pages.length === 0) return old;
+        const [first, ...rest] = old.pages;
+        return { ...old, pages: [{ ...first, data: [newVersion, ...first.data] }, ...rest] };
+      });
     },
   });
 };

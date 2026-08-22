@@ -1,3 +1,28 @@
+/* ------------------------------------------------------------------ */
+/* Pagination envelopes (mirror apps/api app/queries/pagination.ts)     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Keyset ("cursor") page — used by the append-only, newest-first feeds:
+ * request logs and version history. There is deliberately no total or page
+ * count; `nextCursor` is opaque and passed straight back as `?cursor=`.
+ */
+export type CursorMeta = {
+  limit: number;
+  hasMore: boolean;
+  nextCursor: string | null;
+};
+
+export type CursorPage<T> = {
+  data: T[];
+  meta: CursorMeta;
+};
+
+export type CursorParams = {
+  cursor?: string;
+  limit?: number;
+};
+
 export type User = {
   id: string;
   name: string;

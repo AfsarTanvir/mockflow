@@ -6,15 +6,20 @@ import * as AccessService from '#services/access_service';
 import * as cache from '#services/cache_service';
 import * as EndpointQueries from '#queries/endpoint_queries';
 import * as VersionQueries from '#queries/version_queries';
+import { cursorPage, resolveKeyset, type CursorInput } from '#queries/pagination';
 
-const MAX_VERSIONS = 50;
-
-/** Version history (latest 50) as lightweight summaries. Viewer+. */
-export async function listForProject(projectId: string, userId: string) {
+/**
+ * One page of version history as lightweight summaries, newest first. Viewer+.
+ *
+ * Keyset-paginated: snapshots are append-only, so a cursor page can never drift
+ * as new ones land, and history is unbounded rather than the former hard 50.
+ */
+export async function listForProject(projectId: string, userId: string, input: CursorInput) {
   await AccessService.assertProjectAccess(projectId, userId, 'viewer');
 
-  const versions = await VersionQueries.listForProject(projectId, MAX_VERSIONS);
-  return versions.map((v) => ({
+  const keyset = resolveKeyset(input);
+  const versions = await VersionQueries.listForProject(projectId, keyset);
+  return cursorPage(versions, keyset, (v) => ({
     id: v.id,
     message: v.message,
     createdAt: v.createdAt,
@@ -23,8 +28,20 @@ export async function listForProject(projectId: string, userId: string) {
   }));
 }
 
-/** Snapshot the current project + endpoints as a new version. Owner/admin only. */
-export async function createVersion(projectId: string, userId: string, message: string | null) {
+/**
+ * Snapshot the current project + endpoints as a new version. Owner/admin only.
+ *
+ * `authorName` comes from the controller (same pattern as the invite flow) so the
+ * response can carry a complete `createdBy` — the dashboard prepends this object
+ * straight into the cached first page, and a half-filled row would render
+ * without its author until the next refetch.
+ */
+export async function createVersion(
+  projectId: string,
+  userId: string,
+  authorName: string,
+  message: string | null
+) {
   const { project } = await AccessService.assertProjectAccess(projectId, userId, 'admin');
 
   const endpoints = await EndpointQueries.listForProject(project.id);
@@ -59,6 +76,7 @@ export async function createVersion(projectId: string, userId: string, message: 
     id: version.id,
     message: version.message,
     createdAt: version.createdAt,
+    createdBy: { id: userId, name: authorName },
     endpointCount: snapshot.endpoints.length,
   };
 }

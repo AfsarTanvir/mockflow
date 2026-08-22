@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   changeProfileRole,
@@ -76,10 +76,16 @@ export const useAdminEndpoints = (params: AdminEndpointListParams) =>
     staleTime: LIST_STALE_TIME,
   });
 
-export const useAdminRequestLogs = (params: AdminRequestLogListParams) =>
-  useQuery({
+/**
+ * The log firehose. Cursor-paginated, so pages accumulate instead of replacing
+ * each other — the caller picks which page of `data.pages` to render.
+ */
+export const useAdminRequestLogs = (params: Omit<AdminRequestLogListParams, 'cursor'>) =>
+  useInfiniteQuery({
     queryKey: [QueryKey.ADMIN_REQUEST_LOGS, params],
-    queryFn: () => getRequestLogs(params),
+    queryFn: ({ pageParam }) => getRequestLogs({ ...params, cursor: pageParam ?? undefined }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.meta.nextCursor,
     staleTime: LIST_STALE_TIME,
   });
 
