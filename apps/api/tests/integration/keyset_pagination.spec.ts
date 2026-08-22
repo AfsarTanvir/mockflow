@@ -6,6 +6,7 @@ import User from '#models/user';
 import Project from '#models/project';
 import * as AdminQueries from '#queries/admin_queries';
 import * as RequestLogService from '#services/request_log_service';
+import * as VersionQueries from '#queries/version_queries';
 import * as VersionService from '#services/version_service';
 import {
   cursorPage,
@@ -54,11 +55,16 @@ test.group('keyset pagination', (group) => {
     );
   }
 
-  async function insertVersion(projectId: string, createdAt: string, message: string) {
+  async function insertVersion(
+    projectId: string,
+    createdAt: string,
+    message: string,
+    endpoints: unknown[] = []
+  ) {
     await db.rawQuery(
       `insert into version_history (project_id, snapshot, message, created_at)
        values (?, ?::jsonb, ?, ?::timestamptz)`,
-      [projectId, JSON.stringify({ project: {}, endpoints: [] }), message, createdAt]
+      [projectId, JSON.stringify({ project: {}, endpoints }), message, createdAt]
     );
   }
 
@@ -254,6 +260,52 @@ test.group('keyset pagination', (group) => {
     );
 
     assert.lengthOf(rows, 55);
+  });
+
+  test('endpointCount is counted in SQL without loading the snapshot', async ({ assert }) => {
+    const { owner, project } = await seedProject();
+    // A fat snapshot: the list must report 3 without pulling these bodies back.
+    const fat = [1, 2, 3].map((i) => ({
+      method: 'GET',
+      path: `/e${i}`,
+      statusCode: 200,
+      responseBody: { blob: 'x'.repeat(5000) },
+      responseHeaders: {},
+      delayMs: 0,
+      isActive: true,
+    }));
+    await insertVersion(project.id, '2026-08-21T19:00:00.000000Z', 'fat', fat);
+    await insertVersion(project.id, '2026-08-21T19:00:01.000000Z', 'empty', []);
+
+    const page = await VersionService.listForProject(project.id, owner.id, { limit: 10 });
+
+    assert.deepEqual(
+      page.data.map((v) => [v.message, v.endpointCount]),
+      [
+        ['empty', 0],
+        ['fat', 3],
+      ]
+    );
+  });
+
+  test('a version list row never carries the snapshot blob', async ({ assert }) => {
+    const { project } = await seedProject();
+    await insertVersion(project.id, '2026-08-21T19:10:00.000000Z', 'v', [{ path: '/x' }]);
+
+    const keyset = resolveKeyset({ limit: 5 });
+    const rows = await VersionQueries.listForProject(project.id, keyset);
+
+    assert.isUndefined(rows[0]!.snapshot);
+    assert.equal(Number(rows[0]!.$extras[VersionQueries.ENDPOINT_COUNT_COLUMN]), 1);
+  });
+
+  /* ---------------- limit clamping ---------------- */
+
+  test('an out-of-range limit is clamped, not trusted', async ({ assert }) => {
+    assert.equal(resolveKeyset({ limit: 100_000 }).limit, 100);
+    assert.equal(resolveKeyset({ limit: 0 }).limit, 1);
+    assert.equal(resolveKeyset({ limit: -5 }).limit, 1);
+    assert.equal(resolveKeyset({}).limit, 50);
   });
 
   /* ---------------- admin firehose ---------------- */

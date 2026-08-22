@@ -24,7 +24,8 @@ export async function listForProject(projectId: string, userId: string, input: C
     message: v.message,
     createdAt: v.createdAt,
     createdBy: v.author ? { id: v.author.id, name: v.author.name } : null,
-    endpointCount: (v.snapshot.endpoints ?? []).length,
+    // Counted in SQL — the list query does not select the snapshot blob.
+    endpointCount: Number(v.$extras[VersionQueries.ENDPOINT_COUNT_COLUMN] ?? 0),
   }));
 }
 

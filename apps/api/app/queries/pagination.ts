@@ -81,6 +81,7 @@ export function offsetPage<T, R>(paginator: Paginator<T>, map: (row: T) => R): O
 /* ------------------------------------------------------------------ */
 
 export const DEFAULT_CURSOR_LIMIT = 50;
+export const MAX_CURSOR_LIMIT = 100;
 
 export interface CursorInput {
   cursor?: string;
@@ -148,8 +149,17 @@ export function decodeCursor(raw?: string): Position | null {
   return { at, id };
 }
 
+/**
+ * Clamps `limit` as well as decoding the cursor. The validators already bound it,
+ * but they only guard the HTTP edge — an internal caller passing `limit: 100000`
+ * would otherwise turn a keyset page into a full table read.
+ */
 export function resolveKeyset(input: CursorInput): Keyset {
-  return { cursor: decodeCursor(input.cursor), limit: input.limit ?? DEFAULT_CURSOR_LIMIT };
+  const requested = input.limit ?? DEFAULT_CURSOR_LIMIT;
+  return {
+    cursor: decodeCursor(input.cursor),
+    limit: Math.min(Math.max(Math.trunc(requested), 1), MAX_CURSOR_LIMIT),
+  };
 }
 
 /** The query-builder surface `applyKeyset` needs (Lucid model + db builders). */
@@ -171,8 +181,14 @@ interface KeysetQuery {
  * The row-wise `(created_at, id) < (…)` comparison is what lets Postgres walk
  * the matching `(…, created_at DESC, id DESC)` index instead of re-sorting.
  */
-export function applyKeyset(query: KeysetQuery, table: string, keyset: Keyset): void {
-  query.select(`${table}.*`);
+export function applyKeyset(
+  query: KeysetQuery,
+  table: string,
+  keyset: Keyset,
+  /** Defaults to the whole row; narrow it to avoid hauling unused blob columns. */
+  columns: unknown[] = [`${table}.*`]
+): void {
+  query.select(...columns);
   query.select(selectKeysetAt(table));
 
   if (keyset.cursor) {
@@ -199,13 +215,18 @@ export function cursorPage<T extends { id: string; $extras: Record<string, any> 
   const page = hasMore ? rows.slice(0, keyset.limit) : rows;
   const last = page[page.length - 1];
 
-  return {
-    data: page.map(map),
-    meta: {
-      limit: keyset.limit,
-      hasMore,
-      nextCursor:
-        hasMore && last ? encodeCursor(String(last.$extras[CURSOR_COLUMN]), last.id) : null,
-    },
-  };
+  let nextCursor: string | null = null;
+  if (hasMore && last) {
+    const at = last.$extras[CURSOR_COLUMN];
+    // Missing means the query skipped applyKeyset. Minting `String(undefined)`
+    // here would hand out a cursor that 400s on the very next request.
+    if (typeof at !== 'string') {
+      throw new Error(
+        `cursorPage: row is missing "${CURSOR_COLUMN}" — build the query with applyKeyset()`
+      );
+    }
+    nextCursor = encodeCursor(at, last.id);
+  }
+
+  return { data: page.map(map), meta: { limit: keyset.limit, hasMore, nextCursor } };
 }
