@@ -48,6 +48,47 @@ export interface MockBlueprint {
 }
 
 /**
+ * How specific a single path segment is. Lower wins: a literal beats a named
+ * parameter, which beats anything that can swallow multiple segments.
+ */
+function segmentRank(segment: string): number {
+  if (segment === '*' || segment.startsWith('(')) return 2;
+  if (segment.startsWith(':')) {
+    // `:id?`, `:id*`, `:id+` are variable-width — the loosest kind of match.
+    return /[?*+]$/.test(segment) ? 2 : 1;
+  }
+  return 0;
+}
+
+/**
+ * Order two path patterns most-specific-first, comparing segment by segment.
+ *
+ * Matching is first-match-wins, so without this an endpoint created earlier
+ * shadows any later one it happens to match: `/users/:id` added before
+ * `/users/me` made the literal route permanently unreachable, with nothing in
+ * the UI to explain why. Definition order is a fine rule when the author
+ * controls it, but here it is `created_at`, which is neither visible nor
+ * reorderable.
+ *
+ * Only colliding patterns matter — if two patterns never match the same path,
+ * their relative order is irrelevant. Ties keep creation order, since
+ * Array#sort is stable and the input is already ordered by `created_at`.
+ */
+export function compareSpecificity(a: string, b: string): number {
+  const aSegments = a.split('/').filter(Boolean);
+  const bSegments = b.split('/').filter(Boolean);
+
+  for (let i = 0; i < Math.min(aSegments.length, bSegments.length); i += 1) {
+    const diff = segmentRank(aSegments[i]!) - segmentRank(bSegments[i]!);
+    if (diff !== 0) return diff;
+  }
+
+  // Same ranks so far: the longer pattern is the more specific one (a trailing
+  // wildcard should not outrank a route that spells the segments out).
+  return bSegments.length - aSegments.length;
+}
+
+/**
  * Build the blueprint from Postgres. Returns null if the project is gone.
  * Uses two queries total (active endpoints, then their scenarios+rules via a
  * single whereIn preload) — no N+1.
@@ -95,16 +136,20 @@ export async function buildBlueprint(projectId: string): Promise<MockBlueprint |
   return {
     isPublic: project.isPublic,
     settings: project.settings,
-    endpoints: endpoints.map((e) => ({
-      id: e.id,
-      method: e.method,
-      path: e.path,
-      statusCode: e.statusCode,
-      responseBody: e.responseBody,
-      responseHeaders: e.responseHeaders,
-      delayMs: e.delayMs,
-      delayMaxMs: e.delayMaxMs,
-      scenarios: byEndpoint.get(e.id) ?? [],
-    })),
+    // Sorted once here rather than per request: the blueprint is the cached
+    // artifact, and resolveMock just takes the first match.
+    endpoints: endpoints
+      .map((e) => ({
+        id: e.id,
+        method: e.method,
+        path: e.path,
+        statusCode: e.statusCode,
+        responseBody: e.responseBody,
+        responseHeaders: e.responseHeaders,
+        delayMs: e.delayMs,
+        delayMaxMs: e.delayMaxMs,
+        scenarios: byEndpoint.get(e.id) ?? [],
+      }))
+      .sort((a, b) => compareSpecificity(a.path, b.path)),
   };
 }

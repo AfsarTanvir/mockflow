@@ -10,7 +10,7 @@ import ScenarioRule from '#models/scenario_rule';
 import RequestLog from '#models/request_log';
 import TeamMember from '#models/team_member';
 import * as cache from '#services/cache_service';
-import { buildBlueprint } from '#services/mock_blueprint';
+import { buildBlueprint, compareSpecificity } from '#services/mock_blueprint';
 import { resolveMock } from '#services/mock_service';
 import { DateTime } from 'luxon';
 
@@ -156,14 +156,40 @@ test.group('mock engine', (group) => {
     assert.deepEqual(res.body, { userId: '42', nested: { echo: 'id=42' } });
   });
 
-  test('endpoints are matched in creation order, first match wins', async ({ assert }) => {
+  test('a literal path wins over a parameter created before it', async ({ assert }) => {
     const { project } = await seedProject();
+    // Creation order deliberately puts the broad pattern first: without
+    // specificity ordering it would shadow /users/me permanently.
     await makeEndpoint(project.id, { path: '/users/:id', responseBody: { via: 'param' } });
     await makeEndpoint(project.id, { path: '/users/me', responseBody: { via: 'literal' } });
 
-    // The older, broader pattern is reached first — documents current behaviour.
-    const res = await call(project.slug, 'GET', '/users/me');
-    assert.deepEqual(res.body, { via: 'param' });
+    const literal = await call(project.slug, 'GET', '/users/me');
+    assert.deepEqual(literal.body, { via: 'literal' });
+
+    // The parameter route still serves everything else.
+    const param = await call(project.slug, 'GET', '/users/42');
+    assert.deepEqual(param.body, { via: 'param' });
+  });
+
+  test('specificity is compared per segment, not just at the first one', async ({ assert }) => {
+    const { project } = await seedProject();
+    await makeEndpoint(project.id, { path: '/a/:x/c', responseBody: { via: 'param' } });
+    await makeEndpoint(project.id, { path: '/a/b/c', responseBody: { via: 'literal' } });
+
+    const res = await call(project.slug, 'GET', '/a/b/c');
+    assert.deepEqual(res.body, { via: 'literal' });
+  });
+
+  test('a wildcard does not outrank a spelled-out route', async ({ assert }) => {
+    const { project } = await seedProject();
+    await makeEndpoint(project.id, { path: '/files/(.*)', responseBody: { via: 'wildcard' } });
+    await makeEndpoint(project.id, { path: '/files/report', responseBody: { via: 'literal' } });
+
+    const literal = await call(project.slug, 'GET', '/files/report');
+    assert.deepEqual(literal.body, { via: 'literal' });
+
+    const other = await call(project.slug, 'GET', '/files/anything/else');
+    assert.deepEqual(other.body, { via: 'wildcard' });
   });
 
   /* ---------------- private project gating ---------------- */
@@ -409,6 +435,29 @@ test.group('mock engine', (group) => {
       bp!.endpoints.map((e) => e.path),
       ['/on']
     );
+  });
+
+  test('buildBlueprint orders endpoints most-specific-first', async ({ assert }) => {
+    const { project } = await seedProject();
+    await makeEndpoint(project.id, { path: '/x/:p' });
+    await makeEndpoint(project.id, { path: '/x/lit' });
+    await makeEndpoint(project.id, { path: '/x/(.*)' });
+
+    const bp = await buildBlueprint(project.id);
+
+    assert.deepEqual(
+      bp!.endpoints.map((e) => e.path),
+      ['/x/lit', '/x/:p', '/x/(.*)']
+    );
+  });
+
+  test('compareSpecificity keeps equally specific paths in creation order', async ({ assert }) => {
+    // A tie must return 0 so Array#sort's stability preserves created_at order.
+    assert.equal(compareSpecificity('/a/:x', '/b/:y'), 0);
+    assert.equal(compareSpecificity('/a/b', '/c/d'), 0);
+    assert.isBelow(compareSpecificity('/a/b', '/a/:x'), 0);
+    assert.isAbove(compareSpecificity('/a/:x', '/a/b'), 0);
+    assert.isBelow(compareSpecificity('/a/:x', '/a/:x?'), 0);
   });
 
   test('buildBlueprint orders scenarios by priority and attaches their rules', async ({
