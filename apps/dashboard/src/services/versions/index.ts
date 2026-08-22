@@ -1,8 +1,15 @@
 import httpClient from '@/http-client';
-import type { ProjectVersion, ProjectVersionDetail } from '@/types';
+import type { CursorPage, CursorParams, ProjectVersion, ProjectVersionDetail } from '@/types';
 
-export async function getVersions(projectId: string): Promise<ProjectVersion[]> {
-  const { data } = await httpClient.get<ProjectVersion[]>(`/api/projects/${projectId}/versions`);
+/** Newest-first snapshot history. Cursor-paginated (no longer capped at 50). */
+export async function getVersions(
+  projectId: string,
+  params: CursorParams = {}
+): Promise<CursorPage<ProjectVersion>> {
+  const { data } = await httpClient.get<CursorPage<ProjectVersion>>(
+    `/api/projects/${projectId}/versions`,
+    { params }
+  );
   return data;
 }
 

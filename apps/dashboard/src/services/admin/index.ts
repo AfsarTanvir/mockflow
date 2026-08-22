@@ -12,6 +12,7 @@ import type {
   AdminRequestLogListParams,
   AdminTeam,
   AdminUser,
+  CursorPaginated,
   ImpersonationResult,
   Paginated,
   PlatformStats,
@@ -68,12 +69,14 @@ export async function getEndpoints(
   return data;
 }
 
+/** Cursor-paginated, unlike the directories above — see `CursorPaginated`. */
 export async function getRequestLogs(
   params: AdminRequestLogListParams
-): Promise<Paginated<AdminRequestLog>> {
-  const { data } = await httpClient.get<Paginated<AdminRequestLog>>('/api/admin/request-logs', {
-    params,
-  });
+): Promise<CursorPaginated<AdminRequestLog>> {
+  const { data } = await httpClient.get<CursorPaginated<AdminRequestLog>>(
+    '/api/admin/request-logs',
+    { params }
+  );
   return data;
 }
 

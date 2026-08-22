@@ -1,5 +1,6 @@
 import vine from '@vinejs/vine';
 import { CACHE_SECTIONS } from '#services/cache_keys';
+import { cursorList } from '#validators/pagination_validator';
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 
@@ -31,9 +32,14 @@ export const adminEndpointListValidator = vine.compile(
   })
 );
 
+/**
+ * Logs are keyset-paginated, so no `page`/`perPage` — and no `search`/`sort`
+ * either: the feed is always newest-first (a different sort key would need its
+ * own composite index to stay a keyset).
+ */
 export const adminRequestLogListValidator = vine.compile(
   vine.object({
-    ...baseList(),
+    ...cursorList(),
     projectId: vine.string().uuid().optional(),
     method: vine.enum(HTTP_METHODS).optional(),
     statusCode: vine.number().min(100).max(599).optional(),

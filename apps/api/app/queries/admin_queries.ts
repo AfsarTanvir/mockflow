@@ -7,16 +7,19 @@ import Team from '#models/team';
 import Project from '#models/project';
 import Endpoint from '#models/endpoint';
 import RequestLog from '#models/request_log';
+import { applyKeyset, type Keyset, type OffsetParams } from '#queries/pagination';
 
 /**
  * UNSCOPED platform-admin data access. These intentionally bypass company
  * scoping — they're only ever reached behind the `superAdmin` middleware.
  * Every list is paginated; sort is whitelisted (never interpolate raw input).
+ *
+ * The directories below use offset pages (the admin tables want totals and
+ * arbitrary column sorting). `listRequestLogs` is the one exception — see the
+ * note on it.
  */
 
-export interface ListOpts {
-  page: number;
-  perPage: number;
+export interface ListOpts extends OffsetParams {
   search?: string;
   sort?: string;
   dir?: 'asc' | 'desc';
@@ -123,25 +126,28 @@ export function listEndpoints(opts: EndpointListOpts) {
   return q.paginate(opts.page, opts.perPage);
 }
 
-export interface RequestLogListOpts extends ListOpts {
+export interface RequestLogFilters {
   projectId?: string;
   method?: string;
   statusCode?: number;
 }
 
-export function listRequestLogs(opts: RequestLogListOpts) {
+/**
+ * The platform-wide log firehose. Keyset-paginated, unlike its sibling
+ * directories: `request_logs` is unbounded and append-only, so `COUNT(*)` and
+ * deep `OFFSET` would both scale with the table while new rows keep shifting
+ * the page boundaries underneath the reader.
+ *
+ * Always newest-first — a user-chosen sort key would need its own composite
+ * index to stay a keyset, and the console exposes no sort control for logs.
+ */
+export function listRequestLogs(filters: RequestLogFilters, keyset: Keyset) {
   const q = RequestLog.query().preload('project').preload('endpoint');
-  if (opts.projectId) q.where('project_id', opts.projectId);
-  if (opts.method) q.where('method', opts.method);
-  if (opts.statusCode) q.where('status_code', opts.statusCode);
-  q.orderBy(
-    sortColumn(
-      { statusCode: 'status_code', duration: 'duration', createdAt: 'created_at' },
-      opts.sort
-    ),
-    opts.dir ?? 'desc'
-  );
-  return q.paginate(opts.page, opts.perPage);
+  if (filters.projectId) q.where('project_id', filters.projectId);
+  if (filters.method) q.where('method', filters.method);
+  if (filters.statusCode) q.where('status_code', filters.statusCode);
+  applyKeyset(q, 'request_logs', keyset);
+  return q;
 }
 
 /* Single-row fetchers (unscoped) for detail / management targets. */

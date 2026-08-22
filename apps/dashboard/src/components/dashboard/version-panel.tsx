@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Clock, RotateCcw, ChevronDown, ChevronUp, Loader2, Save } from 'lucide-react';
 import { useVersions, useCreateVersion, useRestoreVersion, useVersion } from '@/query/versions';
+import { LoadMore } from '@/components/ui/pagination';
 import { useConfirm } from '@/providers/ConfirmProvider';
 import type { TeamRole } from '@/types';
 import { cn } from '@/lib/utils';
@@ -84,7 +85,14 @@ type VersionPanelProps = {
 export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) {
   const canManage = ROLE_RANK[currentUserRole] >= ROLE_RANK['admin'];
 
-  const { data: versions = [], isLoading } = useVersions(projectId);
+  const {
+    data: versionPages,
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useVersions(projectId);
+  const versions = versionPages?.pages.flatMap((page) => page.data) ?? [];
   const { mutate: createVersion, isPending: saving } = useCreateVersion(projectId);
   const { mutate: restoreVersion, isPending: restoring } = useRestoreVersion(projectId);
 
@@ -144,7 +152,9 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
       {/* Version list */}
       <div className="space-y-2">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          History ({versions.length})
+          {/* Loaded so far — the feed is cursor-paginated, so there is no total. */}
+          History ({versions.length}
+          {hasNextPage ? '+' : ''})
         </h3>
 
         {versions.length === 0 ? (
@@ -214,6 +224,13 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
             );
           })
         )}
+
+        <LoadMore
+          hasMore={hasNextPage}
+          isFetching={isFetchingNextPage}
+          onLoadMore={() => fetchNextPage()}
+          label="Load older snapshots"
+        />
       </div>
     </div>
   );

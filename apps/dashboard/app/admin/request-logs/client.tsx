@@ -16,16 +16,34 @@ const METHODS: ('all' | HttpMethod)[] = ['all', 'GET', 'POST', 'PUT', 'PATCH', '
 const selectClass =
   'border-border bg-background text-foreground h-8 rounded-lg border px-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50';
 
+const PAGE_SIZE = 20;
+
 export function AdminRequestLogsClient() {
-  const [page, setPage] = useState(1);
   // Logs accept no text search server-side; the method filter drives the list.
   const [method, setMethod] = useState<'all' | HttpMethod>('all');
+  // Which of the fetched cursor pages is on screen. Stepping back is free —
+  // earlier pages are already cached; stepping forward may fetch one.
+  const [pageIndex, setPageIndex] = useState(0);
 
-  const { data, isLoading, isError, error } = useAdminRequestLogs({
-    page,
-    perPage: 20,
-    method: method === 'all' ? undefined : method,
-  });
+  const { data, isLoading, isError, error, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useAdminRequestLogs({
+      limit: PAGE_SIZE,
+      method: method === 'all' ? undefined : method,
+    });
+
+  const pages = data?.pages ?? [];
+  const current = pages[pageIndex];
+
+  async function goNext() {
+    if (pageIndex + 1 < pages.length) {
+      setPageIndex(pageIndex + 1);
+      return;
+    }
+    // Only advance once the new page actually landed, so a failed fetch leaves
+    // the view where it was.
+    const result = await fetchNextPage();
+    if ((result.data?.pages.length ?? 0) > pageIndex + 1) setPageIndex(pageIndex + 1);
+  }
 
   const columns: Column<AdminRequestLog>[] = [
     { header: 'Method', className: 'w-0', cell: (l) => <MethodBadge method={l.method} /> },
@@ -58,12 +76,18 @@ export function AdminRequestLogsClient() {
       />
       <AdminListView
         columns={columns}
-        rows={data?.data}
-        meta={data?.meta}
+        rows={current?.data}
         isLoading={isLoading}
         isError={isError}
         errorMessage={error?.message}
-        onPageChange={setPage}
+        cursor={{
+          page: pageIndex + 1,
+          hasPrev: pageIndex > 0,
+          hasNext: pageIndex + 1 < pages.length || hasNextPage,
+          isFetching: isFetchingNextPage,
+          onPrev: () => setPageIndex((i) => Math.max(0, i - 1)),
+          onNext: goNext,
+        }}
         rowKey={(l) => l.id}
         emptyTitle="No request logs yet"
         emptyDescription="Traffic to mock endpoints will appear here."
@@ -74,7 +98,7 @@ export function AdminRequestLogsClient() {
             value={method}
             onChange={(e) => {
               setMethod(e.target.value as 'all' | HttpMethod);
-              setPage(1);
+              setPageIndex(0);
             }}
           >
             {METHODS.map((m) => (

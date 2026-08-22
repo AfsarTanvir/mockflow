@@ -1,6 +1,7 @@
 'use client';
 
 import { useRequestLogs } from '@/query/logs';
+import { LoadMore } from '@/components/ui/pagination';
 import type { Project } from '@/types';
 
 const METHOD_COLORS: Record<string, string> = {
@@ -33,7 +34,10 @@ interface Props {
 }
 
 export function LogsPanel({ project }: Props) {
-  const { data: logs = [], isLoading } = useRequestLogs(project.id);
+  const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useRequestLogs(
+    project.id
+  );
+  const logs = data?.pages.flatMap((page) => page.data) ?? [];
 
   if (!project.settings.log_requests) {
     return (
@@ -65,37 +69,46 @@ export function LogsPanel({ project }: Props) {
   }
 
   return (
-    <div className="bg-card rounded-xl border overflow-hidden">
-      <div className="px-4 py-3 border-b">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          Last {logs.length} requests
-        </h2>
+    <>
+      <div className="bg-card rounded-xl border overflow-hidden">
+        <div className="px-4 py-3 border-b">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Last {logs.length} requests
+          </h2>
+        </div>
+        <div className="divide-y">
+          {logs.map((log) => (
+            <div key={log.id} className="flex items-center gap-3 px-4 py-3">
+              <span
+                className={`text-xs font-bold px-2 py-0.5 rounded font-mono shrink-0 ${METHOD_COLORS[log.method] ?? 'bg-muted text-muted-foreground'}`}
+              >
+                {log.method}
+              </span>
+
+              <p className="flex-1 text-sm font-mono text-foreground truncate">{log.path}</p>
+
+              <span className={`text-xs font-medium shrink-0 ${statusColor(log.statusCode)}`}>
+                {log.statusCode}
+              </span>
+
+              <span className="text-xs text-muted-foreground shrink-0 w-14 text-right">
+                {log.duration}ms
+              </span>
+
+              <span className="text-xs text-muted-foreground shrink-0 w-16 text-right">
+                {timeAgo(log.createdAt)}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="divide-y">
-        {logs.map((log) => (
-          <div key={log.id} className="flex items-center gap-3 px-4 py-3">
-            <span
-              className={`text-xs font-bold px-2 py-0.5 rounded font-mono shrink-0 ${METHOD_COLORS[log.method] ?? 'bg-muted text-muted-foreground'}`}
-            >
-              {log.method}
-            </span>
 
-            <p className="flex-1 text-sm font-mono text-foreground truncate">{log.path}</p>
-
-            <span className={`text-xs font-medium shrink-0 ${statusColor(log.statusCode)}`}>
-              {log.statusCode}
-            </span>
-
-            <span className="text-xs text-muted-foreground shrink-0 w-14 text-right">
-              {log.duration}ms
-            </span>
-
-            <span className="text-xs text-muted-foreground shrink-0 w-16 text-right">
-              {timeAgo(log.createdAt)}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
+      <LoadMore
+        hasMore={hasNextPage}
+        isFetching={isFetchingNextPage}
+        onLoadMore={() => fetchNextPage()}
+        label="Load older requests"
+      />
+    </>
   );
 }

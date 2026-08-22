@@ -9,6 +9,7 @@ import {
   adminChangeRoleValidator,
 } from '#validators/admin_validator';
 import { updateCompanyValidator, transferOwnershipValidator } from '#validators/company_validator';
+import { cursorPage, offsetPage, offsetParams, resolveKeyset } from '#queries/pagination';
 import type User from '#models/user';
 import type Company from '#models/company';
 import type Profile from '#models/profile';
@@ -17,28 +18,6 @@ import type Project from '#models/project';
 import type Endpoint from '#models/endpoint';
 import type RequestLog from '#models/request_log';
 
-interface Paginator<T> {
-  all(): T[];
-  total: number;
-  perPage: number;
-  currentPage: number;
-  lastPage: number;
-  hasMorePages: boolean;
-}
-
-function paginated<T>(p: Paginator<T>, map: (row: T) => unknown) {
-  return {
-    data: p.all().map(map),
-    meta: {
-      total: p.total,
-      perPage: p.perPage,
-      currentPage: p.currentPage,
-      lastPage: p.lastPage,
-      hasMore: p.hasMorePages,
-    },
-  };
-}
-
 function listOpts(data: {
   page?: number;
   perPage?: number;
@@ -46,13 +25,7 @@ function listOpts(data: {
   sort?: string;
   dir?: 'asc' | 'desc';
 }) {
-  return {
-    page: data.page ?? 1,
-    perPage: data.perPage ?? 20,
-    search: data.search,
-    sort: data.sort,
-    dir: data.dir,
-  };
+  return { ...offsetParams(data), search: data.search, sort: data.sort, dir: data.dir };
 }
 
 /* ---- output shapers (never leak internal columns) ---- */
@@ -138,14 +111,14 @@ export default class AdminController {
   async users({ request, response }: HttpContext) {
     const data = await request.validateUsing(adminListValidator);
     const result = await AdminService.listUsers(listOpts(data));
-    return response.ok(paginated(result, userView));
+    return response.ok(offsetPage(result, userView));
   }
 
   /** GET /api/admin/companies */
   async companies({ request, response }: HttpContext) {
     const data = await request.validateUsing(adminListValidator);
     const result = await AdminService.listCompanies(listOpts(data));
-    return response.ok(paginated(result, companyView));
+    return response.ok(offsetPage(result, companyView));
   }
 
   /** GET /api/admin/profiles */
@@ -157,21 +130,21 @@ export default class AdminController {
       status: data.status,
       role: data.role,
     });
-    return response.ok(paginated(result, profileView));
+    return response.ok(offsetPage(result, profileView));
   }
 
   /** GET /api/admin/teams */
   async teams({ request, response }: HttpContext) {
     const data = await request.validateUsing(adminListValidator);
     const result = await AdminService.listTeams(listOpts(data));
-    return response.ok(paginated(result, teamView));
+    return response.ok(offsetPage(result, teamView));
   }
 
   /** GET /api/admin/projects */
   async projects({ request, response }: HttpContext) {
     const data = await request.validateUsing(adminListValidator);
     const result = await AdminService.listProjects(listOpts(data));
-    return response.ok(paginated(result, projectView));
+    return response.ok(offsetPage(result, projectView));
   }
 
   /** GET /api/admin/endpoints */
@@ -182,19 +155,26 @@ export default class AdminController {
       projectId: data.projectId,
       method: data.method,
     });
-    return response.ok(paginated(result, endpointView));
+    return response.ok(offsetPage(result, endpointView));
   }
 
-  /** GET /api/admin/request-logs */
+  /**
+   * GET /api/admin/request-logs?limit=&cursor= — the log firehose, newest first.
+   * Keyset-paginated (not offset) because the table is unbounded and its head
+   * moves while the console is open; see `AdminQueries.listRequestLogs`.
+   */
   async requestLogs({ request, response }: HttpContext) {
     const data = await request.validateUsing(adminRequestLogListValidator);
-    const result = await AdminService.listRequestLogs({
-      ...listOpts(data),
-      projectId: data.projectId,
-      method: data.method,
-      statusCode: data.statusCode,
-    });
-    return response.ok(paginated(result, requestLogView));
+    try {
+      const keyset = resolveKeyset(data);
+      const rows = await AdminService.listRequestLogs(
+        { projectId: data.projectId, method: data.method, statusCode: data.statusCode },
+        keyset
+      );
+      return response.ok(cursorPage(rows, keyset, requestLogView));
+    } catch (error) {
+      return respondError(error, response);
+    }
   }
 
   /* ---- company management ---- */

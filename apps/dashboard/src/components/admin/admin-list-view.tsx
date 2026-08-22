@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Pagination, type PageMeta } from '@/components/ui/pagination';
+import { CursorPagination, Pagination, type PageMeta } from '@/components/ui/pagination';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -24,15 +24,32 @@ export interface Column<T> {
   className?: string;
 }
 
+/**
+ * Keyset-paged footer, for the lists whose table is unbounded and append-only
+ * (request logs). No total and no jump-to-page — just a step either way.
+ */
+export interface CursorNav {
+  /** 1-based, display only. */
+  page: number;
+  hasPrev: boolean;
+  hasNext: boolean;
+  isFetching: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+}
+
 interface AdminListViewProps<T> {
   columns: Column<T>[];
   rows: T[] | undefined;
-  meta: PageMeta | undefined;
   isLoading: boolean;
   isError: boolean;
   errorMessage?: string;
-  onPageChange: (page: number) => void;
   rowKey: (row: T) => string;
+  /** Offset paging — pass with `onPageChange`. Mutually exclusive with `cursor`. */
+  meta?: PageMeta;
+  onPageChange?: (page: number) => void;
+  /** Keyset paging. Mutually exclusive with `meta`/`onPageChange`. */
+  cursor?: CursorNav;
   /** When provided, a search box is rendered and wired to these handlers. */
   search?: string;
   onSearchChange?: (value: string) => void;
@@ -48,12 +65,13 @@ interface AdminListViewProps<T> {
 export function AdminListView<T>({
   columns,
   rows,
-  meta,
   isLoading,
   isError,
   errorMessage,
-  onPageChange,
   rowKey,
+  meta,
+  onPageChange,
+  cursor,
   search,
   onSearchChange,
   searchPlaceholder = 'Search…',
@@ -147,7 +165,21 @@ export function AdminListView<T>({
         )}
       </div>
 
-      {meta && rows && rows.length > 0 && <Pagination meta={meta} onPageChange={onPageChange} />}
+      {rows && rows.length > 0 && meta && onPageChange && (
+        <Pagination meta={meta} onPageChange={onPageChange} />
+      )}
+
+      {rows && rows.length > 0 && cursor && (
+        <CursorPagination
+          page={cursor.page}
+          shown={rows.length}
+          hasPrev={cursor.hasPrev}
+          hasNext={cursor.hasNext}
+          isFetching={cursor.isFetching}
+          onPrev={cursor.onPrev}
+          onNext={cursor.onNext}
+        />
+      )}
     </div>
   );
 }

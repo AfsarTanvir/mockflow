@@ -1,13 +1,18 @@
 import type { HttpContext } from '@adonisjs/core/http';
 import { respondError } from '#app/exceptions/respond_error';
 import * as VersionService from '#services/version_service';
+import { cursorListValidator } from '#validators/pagination_validator';
 
 export default class VersionController {
-  /** GET /api/projects/:projectId/versions */
-  async index({ auth, params, response }: HttpContext) {
+  /** GET /api/projects/:projectId/versions?limit=&cursor= — newest first. */
+  async index({ auth, params, request, response }: HttpContext) {
+    const { cursor, limit } = await request.validateUsing(cursorListValidator);
     try {
-      const versions = await VersionService.listForProject(params.projectId, auth.user!.id);
-      return response.ok(versions);
+      const page = await VersionService.listForProject(params.projectId, auth.user!.id, {
+        cursor,
+        limit,
+      });
+      return response.ok(page);
     } catch (error) {
       return respondError(error, response);
     }
@@ -17,7 +22,12 @@ export default class VersionController {
   async store({ auth, params, request, response }: HttpContext) {
     const message: string | null = request.input('message', null);
     try {
-      const version = await VersionService.createVersion(params.projectId, auth.user!.id, message);
+      const version = await VersionService.createVersion(
+        params.projectId,
+        auth.user!.id,
+        auth.user!.name,
+        message
+      );
       return response.created(version);
     } catch (error) {
       return respondError(error, response);

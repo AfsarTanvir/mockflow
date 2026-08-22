@@ -33,7 +33,7 @@ Thumbs.db
 *.tmp
 
 # Logs
-logs/
+/logs/
 *.log
 
 # Database
@@ -49,7 +49,6 @@ temp/
 docker-compose.override.yml
 
 # AdonisJS specific
-ace
 tmp/
 .adonisjs/
 
