@@ -1,4 +1,5 @@
 import { evaluateBody } from './faker_evaluator.js';
+import { normalizeBasePath } from './base_path.js';
 
 interface ProjectData {
   name: string;
@@ -40,7 +41,7 @@ export function buildPostmanCollection(
     return METHOD_ORDER.indexOf(a.method) - METHOD_ORDER.indexOf(b.method);
   });
 
-  const baseUrl = `${apiUrl}/mock/${project.slug}${project.basePath === '/' ? '' : project.basePath}`;
+  const baseUrl = `${apiUrl}/mock/${project.slug}${normalizeBasePath(project.basePath)}`;
 
   const items = sorted.map((ep) => {
     const responseBody = evaluate
