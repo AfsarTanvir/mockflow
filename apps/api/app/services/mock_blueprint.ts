@@ -1,6 +1,7 @@
 import Endpoint from '#models/endpoint';
 import EndpointScenario from '#models/endpoint_scenario';
 import * as ProjectQueries from '#queries/project_queries';
+import { normalizeBasePath } from '#services/base_path';
 import type { RuleSource, RuleOperator } from '#models/scenario_rule';
 
 /**
@@ -42,6 +43,8 @@ export interface BlueprintEndpoint {
 }
 
 export interface MockBlueprint {
+  /** Normalized prefix ('' = root) every endpoint path sits under. */
+  basePath: string;
   isPublic: boolean;
   settings: { cors: boolean; log_requests: boolean; global_headers?: Record<string, string> };
   endpoints: BlueprintEndpoint[];
@@ -134,6 +137,7 @@ export async function buildBlueprint(projectId: string): Promise<MockBlueprint |
   }
 
   return {
+    basePath: normalizeBasePath(project.basePath),
     isPublic: project.isPublic,
     settings: project.settings,
     // Sorted once here rather than per request: the blueprint is the cached
