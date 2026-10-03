@@ -4,11 +4,14 @@ import { Exception } from '@adonisjs/core/exceptions';
 import Profile from '../models/profile.js';
 import ProfileMetadata from '../models/profile_metadata.js';
 import CompanyMetadata from '../models/company_metadata.js';
+import Company from '../models/company.js';
 import type { ProfileRole, ProfileVisibility } from '../models/profile.js';
 import type { ProfileLink, ProfilePreferences } from '../models/profile_metadata.js';
 import { cleanupForInactiveProfile } from './team_membership_service.js';
 import * as AvatarService from './avatar_service.js';
 import { ROLE_RANK } from './role_rank.js';
+import * as cache from './cache_service.js';
+import * as UserQueries from '../queries/user_queries.js';
 import type { MultipartFile } from '@adonisjs/core/bodyparser';
 
 export interface UpdateProfileInput {
@@ -80,6 +83,128 @@ export async function setAvatarFromUpload(
   profile.avatarUrl = url;
   await profile.save();
   await AvatarService.deleteIfLocal(previous);
+  return profile;
+}
+
+export interface AddMemberInput {
+  email: string;
+  role?: Exclude<ProfileRole, 'owner'>;
+}
+
+/**
+ * Manually add an existing MockFlow user to a company (no invite/accept step).
+ * Admin+ only; the actor must outrank the role being granted, same rule as
+ * changeRole — so admins add members/viewers and only the owner adds admins.
+ *
+ * - Unknown email → 404 (they must sign up first).
+ * - Already active or suspended here → 409.
+ * - Previously left/removed (inactive) → the same profile row is reactivated
+ *   with the new role; display name/avatar are NOT re-snapshotted.
+ * - Otherwise a new profile is created, snapshotting the user's name/avatar.
+ * The company roster counter moves in the same transaction.
+ */
+export async function addMember(
+  companyId: string,
+  actor: Profile,
+  input: AddMemberInput
+): Promise<Profile> {
+  const role = input.role ?? 'member';
+
+  if (actor.companyId !== companyId) {
+    throw new Exception('Access denied', { status: 403, code: 'E_FORBIDDEN' });
+  }
+  if (ROLE_RANK[actor.role] < ROLE_RANK.admin) {
+    throw new Exception('Only admin or owner can add members', {
+      status: 403,
+      code: 'E_FORBIDDEN',
+    });
+  }
+  if (ROLE_RANK[actor.role] <= ROLE_RANK[role]) {
+    throw new Exception('You can only add members with a role below your own', {
+      status: 403,
+      code: 'E_FORBIDDEN',
+    });
+  }
+
+  const user = await UserQueries.findByEmailInsensitive(input.email);
+  if (!user) {
+    throw new Exception('No MockFlow account uses this email. Ask them to sign up first.', {
+      status: 404,
+      code: 'E_USER_NOT_FOUND',
+    });
+  }
+
+  let profile: Profile;
+  try {
+    profile = await db.transaction(async (trx) => {
+      const existing = await Profile.query({ client: trx })
+        .where('user_id', user.id)
+        .where('company_id', companyId)
+        .forUpdate()
+        .first();
+
+      if (existing && existing.status !== 'inactive') {
+        throw new Exception(
+          existing.status === 'suspended'
+            ? 'This user is already a member (suspended). Reactivate them instead.'
+            : 'This user is already a member of the company',
+          { status: 409, code: 'E_ALREADY_MEMBER' }
+        );
+      }
+
+      let member: Profile;
+      if (existing) {
+        // Rejoin: same row, prior customisation preserved.
+        existing.useTransaction(trx);
+        existing.role = role;
+        existing.status = 'active';
+        existing.leftAt = null;
+        if (!existing.joinedAt) existing.joinedAt = DateTime.now();
+        await existing.save();
+        member = existing;
+      } else {
+        member = await Profile.create(
+          {
+            userId: user.id,
+            companyId,
+            // Snapshot — never falls back to user.* at read time
+            displayName: user.name,
+            avatarUrl: user.avatarUrl,
+            role,
+            status: 'active',
+            visibility: 'company_member_only',
+            joinedAt: DateTime.now(),
+          },
+          { client: trx }
+        );
+        await ProfileMetadata.create(
+          { profileId: member.id, links: [], preferences: {} },
+          { client: trx }
+        );
+      }
+
+      await CompanyMetadata.query({ client: trx })
+        .where('company_id', companyId)
+        .increment('total_member', 1);
+
+      return member;
+    });
+  } catch (error) {
+    // Two admins adding the same user at once: the (user_id, company_id)
+    // unique index rejects the second insert.
+    if ((error as { code?: string }).code === '23505') {
+      throw new Exception('This user is already a member of the company', {
+        status: 409,
+        code: 'E_ALREADY_MEMBER',
+      });
+    }
+    throw error;
+  }
+
+  // The public company view carries total_member — drop it after commit.
+  const company = await Company.find(companyId);
+  if (company) await cache.invalidateCompany(company.slug);
+
   return profile;
 }
 

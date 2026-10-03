@@ -6,7 +6,11 @@ import type ProfileMetadata from '#models/profile_metadata';
 import * as ProfileQueries from '#queries/profile_queries';
 import * as ProfileService from '#services/profile_service';
 import { AVATAR_EXTNAMES, AVATAR_MAX_SIZE } from '#services/avatar_service';
-import { updateProfileValidator, changeRoleValidator } from '#validators/profile_validator';
+import {
+  updateProfileValidator,
+  changeRoleValidator,
+  addMemberValidator,
+} from '#validators/profile_validator';
 
 /** Safe card for outsiders when visibility = 'public'. Never exposes role/status/contact. */
 function publicCardView(profile: Profile, metadata: ProfileMetadata | null) {
@@ -56,6 +60,24 @@ export default class ProfilesController {
 
     const profiles = await ProfileQueries.listForCompanyWithMetadata(params.companyId);
     return response.ok(profiles.map((p) => fullView(p, p.metadata ?? null)));
+  }
+
+  /**
+   * POST /api/companies/:companyId/profiles — admin+ manually adds an existing
+   * user (by email) to the company. Role defaults to 'member'.
+   */
+  async store({ auth, params, request, response }: HttpContext) {
+    const actor = await ProfileQueries.findActiveByUserAndCompany(auth.user!.id, params.companyId);
+    if (!actor) return response.forbidden({ message: 'Access denied' });
+
+    const data = await request.validateUsing(addMemberValidator);
+    try {
+      const profile = await ProfileService.addMember(params.companyId, actor, data);
+      const metadata = await ProfileQueries.findMetadata(profile.id);
+      return response.created(fullView(profile, metadata));
+    } catch (error) {
+      return respondError(error, response);
+    }
   }
 
   /** GET /api/profiles/me?company=:id */
