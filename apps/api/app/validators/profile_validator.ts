@@ -41,7 +41,17 @@ export const changeRoleValidator = vine.compile(
   })
 );
 
+export const addMemberValidator = vine.compile(
+  vine.object({
+    email: vine.string().trim().email().maxLength(255),
+    role: vine.enum(ASSIGNABLE_ROLES).optional(),
+  })
+);
+
 const profileMessages = new SimpleMessagesProvider({
+  'email.required': msg.required('Email'),
+  'email.email': msg.email('Email'),
+  'email.maxLength': msg.maxLength('Email', 255),
   'displayName.minLength': msg.minLength('Display name', 1),
   'displayName.maxLength': msg.maxLength('Display name', 120),
   'visibility.enum': msg.enum('Visibility', VISIBILITY),
@@ -50,3 +60,4 @@ const profileMessages = new SimpleMessagesProvider({
 
 updateProfileValidator.messagesProvider = profileMessages;
 changeRoleValidator.messagesProvider = profileMessages;
+addMemberValidator.messagesProvider = profileMessages;
