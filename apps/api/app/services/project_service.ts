@@ -6,6 +6,7 @@ import Project from '#models/project';
 import TeamMember from '#models/team_member';
 import TeamMetadata from '#models/team_metadata';
 import { slugify } from '#services/slug_helper';
+import { storedBasePath } from '#services/base_path';
 import * as AccessService from '#services/access_service';
 import * as cache from '#services/cache_service';
 import * as ProjectQueries from '#queries/project_queries';
@@ -66,7 +67,7 @@ export async function createProject(userId: string, input: CreateProjectInput): 
       {
         name: input.name,
         slug: await uniqueProjectSlug(input.name, trx),
-        basePath: input.basePath ?? '/',
+        basePath: storedBasePath(input.basePath),
         ownerId: userId,
         isPublic: input.isPublic ?? false,
         settings: input.settings ?? DEFAULT_SETTINGS,
@@ -156,7 +157,7 @@ export async function createTeamProject(
       {
         name: input.name,
         slug: await uniqueProjectSlug(input.name, trx),
-        basePath: input.basePath ?? '/',
+        basePath: storedBasePath(input.basePath),
         ownerId: userId,
         teamId,
         isPublic: input.isPublic ?? false,
@@ -194,7 +195,7 @@ export async function updateProject(
 
   project.merge({
     ...(input.name !== undefined && { name: input.name }),
-    ...(input.basePath !== undefined && { basePath: input.basePath }),
+    ...(input.basePath !== undefined && { basePath: storedBasePath(input.basePath) }),
     ...(input.isPublic !== undefined && { isPublic: input.isPublic }),
     ...(input.settings !== undefined && { settings: input.settings }),
   });
