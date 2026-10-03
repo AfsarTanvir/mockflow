@@ -9,7 +9,7 @@ import * as CompanyQueries from '#queries/company_queries';
 import * as ProfileQueries from '#queries/profile_queries';
 import * as CompanyService from '#services/company_service';
 import * as cache from '#services/cache_service';
-import { cacheKeys } from '#services/cache_keys';
+import { cacheKeys, cacheTags } from '#services/cache_keys';
 import {
   createCompanyValidator,
   updateCompanyValidator,
@@ -153,12 +153,17 @@ export default class CompaniesController {
     const data = await cache.remember<{
       company: CompanyRecord;
       metadata: CompanyMetaRecord | null;
-    } | null>(cacheKeys.company(params.slug), cache.CACHE_TTL.entity, async () => {
-      const company = await CompanyQueries.findBySlug(params.slug);
-      if (!company) return null;
-      const metadata = await CompanyQueries.findMetadata(company.id);
-      return { company: toCompanyRecord(company), metadata: toMetaRecord(metadata) };
-    });
+    } | null>(
+      cacheKeys.company(params.slug),
+      cache.CACHE_TTL.entity,
+      async () => {
+        const company = await CompanyQueries.findBySlug(params.slug);
+        if (!company) return null;
+        const metadata = await CompanyQueries.findMetadata(company.id);
+        return { company: toCompanyRecord(company), metadata: toMetaRecord(metadata) };
+      },
+      { tags: (d) => (d ? [cacheTags.company(d.company.id)] : []) }
+    );
     if (!data) return response.notFound({ message: 'Company not found' });
 
     // Best-effort authenticate; stay anonymous on missing/invalid token.
