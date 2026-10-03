@@ -10,6 +10,10 @@ export default function CompanyMembersClient({ slug }: { slug: string }) {
   const companyId = memberships.find((m) => m.company.slug === slug)?.company.id ?? '';
   const { data: profiles = [], isLoading } = useProfilesInCompany(companyId);
 
+  // People who left or were removed keep their (inactive) profile row; they
+  // aren't members any more, so don't list them.
+  const members = profiles.filter((p) => p.status !== 'inactive');
+
   return (
     <main className="mx-auto w-full max-w-3xl space-y-4 p-4 sm:p-6">
       <h1 className="text-foreground text-base font-semibold">Members</h1>
@@ -22,11 +26,11 @@ export default function CompanyMembersClient({ slug }: { slug: string }) {
       ) : (
         <MemberGrid
           slug={slug}
-          members={profiles.map((p) => ({
+          members={members.map((p) => ({
             profileId: p.id,
             displayName: p.displayName,
             avatarUrl: p.avatarUrl,
-            role: p.role,
+            role: p.status === 'suspended' ? `${p.role} · suspended` : p.role,
             subtitle: p.jobTitle,
           }))}
         />
