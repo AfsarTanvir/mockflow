@@ -8,7 +8,7 @@ import { buildPostmanCollection } from '#services/postman_exporter';
 async function loadForExport(projectId: string, userId: string) {
   const { project } = await AccessService.assertProjectAccess(projectId, userId, 'viewer');
   const endpoints = await EndpointQueries.listForProject(project.id);
-  const apiUrl = env.get('API_URL', 'http://localhost:3333');
+  const apiUrl = env.get('API_URL', `http://localhost:${env.get('PORT', 3333)}`);
   return { project, endpoints, apiUrl };
 }
 
