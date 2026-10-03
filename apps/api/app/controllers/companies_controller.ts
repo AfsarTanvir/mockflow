@@ -204,7 +204,6 @@ export default class CompaniesController {
     const data = await request.validateUsing(updateCompanyValidator);
     try {
       const updated = await CompanyService.updateCompany(company.id, data);
-      await cache.invalidateCompany(updated.slug);
       const metadata = await CompanyQueries.findMetadata(company.id);
       return response.ok(memberView(toCompanyRecord(updated), toMetaRecord(metadata), actor));
     } catch (error) {
@@ -229,7 +228,6 @@ export default class CompaniesController {
       }
       const baseUrl = `${request.protocol()}://${request.host()}`;
       const updated = await CompanyService.setAvatarFromUpload(company.id, file, baseUrl);
-      await cache.invalidateCompany(updated.slug);
       const metadata = await CompanyQueries.findMetadata(company.id);
       return response.ok(memberView(toCompanyRecord(updated), toMetaRecord(metadata), actor));
     } catch (error) {
@@ -248,7 +246,6 @@ export default class CompaniesController {
     }
 
     await CompanyService.deleteCompany(company.id);
-    await cache.invalidateCompany(company.slug);
     return response.ok({ message: 'Company deleted' });
   }
 
@@ -265,7 +262,6 @@ export default class CompaniesController {
     const { newOwnerProfileId } = await request.validateUsing(transferOwnershipValidator);
     try {
       await CompanyService.transferOwnership(company.id, newOwnerProfileId);
-      await cache.invalidateCompany(company.slug);
       return response.ok({ message: 'Ownership transferred' });
     } catch (error) {
       return respondError(error, response);
