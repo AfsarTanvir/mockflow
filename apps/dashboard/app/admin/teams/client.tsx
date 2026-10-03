@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useAdminTeams } from '@/query/admin';
 import { AdminListView, type Column } from '@/components/admin/admin-list-view';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
+import { ClearCacheButton } from '@/components/admin/clear-cache-button';
 import { Badge } from '@/components/ui/badge';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { formatDate } from '@/lib/format';
@@ -75,6 +76,7 @@ export function AdminTeamsClient() {
         }}
         searchPlaceholder="Search by name or slug…"
         emptyTitle="No teams found"
+        renderActions={(t) => <ClearCacheButton scope="team" id={t.id} />}
       />
     </div>
   );

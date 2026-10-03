@@ -294,6 +294,8 @@ router
     router.get('/cache/entry', [AdminCacheController, 'entry']);
     router.delete('/cache/entry', [AdminCacheController, 'deleteEntry']);
     router.delete('/cache/section/:section', [AdminCacheController, 'deleteSection']);
+    router.get('/cache/scope/:scope/:id', [AdminCacheController, 'scopeKeys']);
+    router.delete('/cache/scope/:scope/:id', [AdminCacheController, 'purgeScope']);
     router.delete('/cache', [AdminCacheController, 'flush']);
   })
   .prefix('/api/admin')
