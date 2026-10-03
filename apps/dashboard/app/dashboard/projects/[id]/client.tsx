@@ -63,7 +63,9 @@ export default function ProjectDetailClient({
   const currentProject = project ?? initialProject;
   const currentUserRole = team?.currentUserRole ?? initialProject.userRole ?? 'viewer';
   const canWrite = currentUserRole !== 'viewer';
-  const mockBaseUrl = `${API_URL}/mock/${currentProject.slug}`;
+  // Endpoint paths sit under the project's base path ("/" = none), same as the API matcher.
+  const basePath = (currentProject.basePath ?? '/').replace(/\/+$/, '');
+  const mockBaseUrl = `${API_URL}/mock/${currentProject.slug}${basePath}`;
 
   function handleCreate(data: EndpointFormPayload) {
     createEndpoint(data, { onSuccess: () => setShowCreateForm(false) });
