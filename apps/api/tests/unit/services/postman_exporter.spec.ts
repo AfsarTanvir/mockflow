@@ -54,6 +54,12 @@ test.group('postman_exporter — collection shape', () => {
     assert.equal(vars[0].value, 'http://localhost:3000/mock/test-project/v1');
   });
 
+  test('normalizes a trailing slash in basePath', ({ assert }) => {
+    const doc = buildPostmanCollection({ ...PROJECT, basePath: '/v1/' }, [], 'http://x', false);
+    const vars = doc.variable as Array<{ value: string }>;
+    assert.equal(vars[0].value, 'http://x/mock/test-project/v1');
+  });
+
   test('empty endpoint list produces empty items array', ({ assert }) => {
     const doc = buildPostmanCollection(PROJECT, [], 'http://x', false);
     assert.deepEqual(doc.item, []);

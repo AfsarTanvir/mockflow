@@ -61,6 +61,12 @@ test.group('openapi_exporter — top-level shape', () => {
     const servers = doc.servers as Array<{ url: string }>;
     assert.equal(servers[0].url, 'http://localhost:3000/mock/test-project/v1');
   });
+
+  test('normalizes a trailing slash in basePath (no "//" in the server URL)', ({ assert }) => {
+    const doc = buildOpenApiDoc({ ...PROJECT, basePath: '/v1/' }, [], 'http://x', false);
+    const servers = doc.servers as Array<{ url: string }>;
+    assert.equal(servers[0].url, 'http://x/mock/test-project/v1');
+  });
 });
 
 test.group('openapi_exporter — path & operation building', () => {
