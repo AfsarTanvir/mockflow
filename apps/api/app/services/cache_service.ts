@@ -9,12 +9,16 @@ import { cacheKeys, CACHE_SECTIONS, type CacheSection } from '#services/cache_ke
  * unavailable or disabled, every operation behaves as a miss / no-op so callers
  * fall back to Postgres. The mock endpoint must never 500 because of the cache.
  *
- * This module owns the single `mockflow:cache:` root prefix (see config/redis.ts
- * for why ioredis keyPrefix is left empty). Callers pass LOGICAL keys built via
+ * This module owns the root prefix (default `mockflow:cache:`, overridable via
+ * CACHE_PREFIX so e.g. tests get their own namespace — see config/redis.ts for
+ * why ioredis keyPrefix is left empty). Callers pass LOGICAL keys built via
  * #services/cache_keys; we prepend/strip the root prefix here.
  */
 
-const ROOT = 'mockflow:cache:';
+const ROOT = (() => {
+  const prefix = env.get('CACHE_PREFIX', 'mockflow:cache:');
+  return prefix.endsWith(':') ? prefix : `${prefix}:`;
+})();
 const ENABLED = env.get('CACHE_ENABLED') !== false; // default true when unset
 export const CACHE_TTL = {
   mock: env.get('CACHE_TTL_MOCK', 300),
