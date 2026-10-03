@@ -1,4 +1,5 @@
 import { evaluateBody } from './faker_evaluator.js';
+import { normalizeBasePath } from './base_path.js';
 
 interface ProjectData {
   id: string;
@@ -92,7 +93,7 @@ export function buildOpenApiDoc(
     (paths[openApiPath] as Record<string, unknown>)[method] = operation;
   }
 
-  const serverUrl = `${apiUrl}/mock/${project.slug}${project.basePath === '/' ? '' : project.basePath}`;
+  const serverUrl = `${apiUrl}/mock/${project.slug}${normalizeBasePath(project.basePath)}`;
 
   return {
     openapi: '3.0.3',

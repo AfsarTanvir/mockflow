@@ -1,10 +1,11 @@
 import vine, { SimpleMessagesProvider } from '@vinejs/vine';
 import { msg } from './messages.js';
+import { BASE_PATH_RE } from '../services/base_path.js';
 
 export const createProjectValidator = vine.compile(
   vine.object({
     name: vine.string().trim().minLength(2).maxLength(100),
-    basePath: vine.string().trim().startsWith('/').maxLength(255).optional(),
+    basePath: vine.string().trim().startsWith('/').maxLength(255).regex(BASE_PATH_RE).optional(),
     isPublic: vine.boolean().optional(),
     settings: vine
       .object({
@@ -19,7 +20,7 @@ export const createProjectValidator = vine.compile(
 export const updateProjectValidator = vine.compile(
   vine.object({
     name: vine.string().trim().minLength(2).maxLength(100).optional(),
-    basePath: vine.string().trim().startsWith('/').maxLength(255).optional(),
+    basePath: vine.string().trim().startsWith('/').maxLength(255).regex(BASE_PATH_RE).optional(),
     isPublic: vine.boolean().optional(),
     settings: vine
       .object({
@@ -37,6 +38,7 @@ const projectMessages = new SimpleMessagesProvider({
   'name.maxLength': msg.maxLength('Name', 100),
   'basePath.startsWith': msg.startsWith('Base path', '/'),
   'basePath.maxLength': msg.maxLength('Base path', 255),
+  'basePath.regex': 'Base path may only contain letters, numbers, "-", "_", ".", "~" and "/"',
 });
 
 createProjectValidator.messagesProvider = projectMessages;

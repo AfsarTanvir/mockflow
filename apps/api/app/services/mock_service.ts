@@ -14,6 +14,7 @@ import {
   type BlueprintEndpoint,
 } from '#services/mock_blueprint';
 import { pickScenario } from '#services/scenario_resolver';
+import { stripBasePath } from '#services/base_path';
 import { evaluateBody } from '#services/faker_evaluator';
 
 export interface MockResponse {
@@ -91,12 +92,16 @@ export async function resolveMock(
     if (!role) throw notFound(projectSlug);
   }
 
-  // 4. Match an active endpoint by method + path (in memory).
+  // 4. Match an active endpoint by method + path (in memory). Endpoint paths are
+  //    relative to the project's base path, so strip it first; a request outside
+  //    the base path can't match anything. (`?? ''`: blueprints cached before
+  //    basePath was added behave as root until they expire.)
+  const relativePath = stripBasePath(incomingPath, blueprint.basePath ?? '');
   let matched: BlueprintEndpoint | null = null;
   let pathParams: Record<string, string> = {};
-  for (const endpoint of blueprint.endpoints) {
+  for (const endpoint of relativePath === null ? [] : blueprint.endpoints) {
     if (endpoint.method !== method) continue;
-    const result = match(endpoint.path, { decode: decodeURIComponent })(incomingPath);
+    const result = match(endpoint.path, { decode: decodeURIComponent })(relativePath!);
     if (result) {
       matched = endpoint;
       pathParams = result.params as Record<string, string>;
@@ -104,7 +109,9 @@ export async function resolveMock(
     }
   }
   if (!matched) {
-    throw new Exception(`No active ${method} endpoint matching "${incomingPath}"`, {
+    const hint =
+      relativePath === null ? ` (this project's endpoints live under "${blueprint.basePath}")` : '';
+    throw new Exception(`No active ${method} endpoint matching "${incomingPath}"${hint}`, {
       status: 404,
       code: 'E_ENDPOINT_NOT_FOUND',
     });

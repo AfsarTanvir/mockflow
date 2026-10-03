@@ -51,7 +51,11 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
   }
 
   const nameError = name.trim().length < 2 ? 'Name must be at least 2 characters' : null;
-  const basePathError = !basePath.startsWith('/') ? 'Base path must start with /' : null;
+  const basePathError = !basePath.startsWith('/')
+    ? 'Base path must start with /'
+    : !/^\/[A-Za-z0-9._~\-/]*$/.test(basePath.trim())
+      ? 'Only letters, numbers, "-", "_", ".", "~" and "/" (no :params or *)'
+      : null;
 
   if (!canEdit) {
     return (
@@ -105,7 +109,9 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
             <p className="text-xs text-destructive mt-1">{basePathError}</p>
           )}
           <p className="text-xs text-muted-foreground mt-1">
-            Prepended to all mock endpoint paths.
+            Prepended to every endpoint path: with <code>/v1</code>, endpoint <code>/users</code>{' '}
+            answers at <code>/mock/{project.slug}/v1/users</code>. Changing it changes all of this
+            project&apos;s mock URLs.
           </p>
         </div>
 

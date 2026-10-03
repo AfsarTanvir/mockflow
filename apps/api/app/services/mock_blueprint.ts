@@ -3,6 +3,7 @@ import EndpointScenario from '#models/endpoint_scenario';
 import * as ProjectQueries from '#queries/project_queries';
 import * as TeamQueries from '#queries/team_queries';
 import { cacheTags } from '#services/cache_keys';
+import { normalizeBasePath } from '#services/base_path';
 import type { RuleSource, RuleOperator } from '#models/scenario_rule';
 
 /**
@@ -52,6 +53,8 @@ export interface BlueprintScope {
 
 export interface MockBlueprint {
   scope: BlueprintScope;
+  /** Normalized prefix ('' = root) every endpoint path sits under. */
+  basePath: string;
   isPublic: boolean;
   settings: { cors: boolean; log_requests: boolean; global_headers?: Record<string, string> };
   endpoints: BlueprintEndpoint[];
@@ -162,6 +165,7 @@ export async function buildBlueprint(projectId: string): Promise<MockBlueprint |
 
   return {
     scope: await projectScope(project),
+    basePath: normalizeBasePath(project.basePath),
     isPublic: project.isPublic,
     settings: project.settings,
     // Sorted once here rather than per request: the blueprint is the cached
