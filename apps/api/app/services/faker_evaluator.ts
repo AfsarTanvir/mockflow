@@ -11,6 +11,14 @@ const FAKER_RE = /\{\{faker\.([a-zA-Z]+)\.([a-zA-Z]+)(?:\(([^)]*)\))?\}\}/g;
  */
 const PARAM_RE = /\{\{param\.(\w+)\}\}/g;
 
+/**
+ * Faker methods a template may not call. Mock bodies are written by users, and
+ * helpers.fake runs Faker's own template language over its argument, which has
+ * allowed arbitrary code execution (GHSA-qxc2-j82w-r537, fixed in Faker 10.5).
+ * Blocked anyway as defence in depth: it adds nothing the templates can't do.
+ */
+const BLOCKED_METHODS = new Set(['helpers.fake']);
+
 function parseFakerArgs(raw: string): unknown[] {
   const s = raw.trim();
   if (!s) return [];
@@ -33,6 +41,7 @@ function parseFakerArgs(raw: string): unknown[] {
 }
 
 function callFaker(category: string, method: string, args: unknown[]): string {
+  if (BLOCKED_METHODS.has(`${category}.${method}`)) return `{{faker.${category}.${method}}}`;
   try {
     const cat = (faker as unknown as Record<string, unknown>)[category];
     if (!cat || typeof cat !== 'object') return `{{faker.${category}.${method}}}`;

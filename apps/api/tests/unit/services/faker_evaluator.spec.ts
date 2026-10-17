@@ -47,6 +47,13 @@ test.group('faker_evaluator', () => {
     assert.isTrue(name.length > 0);
   });
 
+  test('never calls helpers.fake (user-controlled template engine)', ({ assert }) => {
+    const out = evaluateBody({ a: '{{faker.helpers.fake("{{person.firstName}}")}}' }, {}) as {
+      a: string;
+    };
+    assert.isTrue(out.a.startsWith('{{faker.helpers.fake'));
+  });
+
   test('substitutes a faker template with JSON args', ({ assert }) => {
     const result = evaluateBody({ age: '{{faker.number.int({"min":18,"max":18})}}' }, {});
     const age = (result as { age: string }).age;
