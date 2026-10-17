@@ -18,8 +18,8 @@
     "test:integration": "node --import tsx/esm bin/test.ts integration",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write \"**/*.ts\" --ignore-path ../../.prettierignore",
-    "format:check": "prettier --check \"**/*.ts\" --ignore-path ../../.prettierignore"
+    "format": "prettier --write \"**/*.ts\" --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check \"**/*.ts\" --ignore-path ../../.gitignore --ignore-path ../../.prettierignore"
   },
   "imports": {
     "#app/*": "./app/*.js",
