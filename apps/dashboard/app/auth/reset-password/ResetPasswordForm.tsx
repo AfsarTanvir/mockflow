@@ -35,7 +35,7 @@ export default function ResetPasswordForm() {
       const timer = setTimeout(() => router.push('/auth/login'), 2000);
       return () => clearTimeout(timer);
     }
-  }, [isSuccess]);
+  }, [isSuccess, router]);
 
   if (!token) {
     return (

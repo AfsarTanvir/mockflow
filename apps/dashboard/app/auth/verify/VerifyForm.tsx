@@ -16,14 +16,14 @@ export default function VerifyForm() {
 
   useEffect(() => {
     if (token) verify(token);
-  }, [token]);
+  }, [token, verify]);
 
   useEffect(() => {
     if (isSuccess) {
       const timer = setTimeout(() => router.push('/auth/login'), 2500);
       return () => clearTimeout(timer);
     }
-  }, [isSuccess]);
+  }, [isSuccess, router]);
 
   return (
     <div className="bg-muted flex min-h-screen items-center justify-center p-4">
