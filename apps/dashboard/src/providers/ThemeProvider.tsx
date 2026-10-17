@@ -1,11 +1,10 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { THEME_STORAGE_KEY } from '@/lib/theme';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
-
-export const THEME_STORAGE_KEY = 'mockflow-theme';
 
 interface ThemeContextValue {
   theme: Theme;

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import TanstackProvider from '@/providers/TanstackProvider';
-import { ThemeProvider, THEME_STORAGE_KEY } from '@/providers/ThemeProvider';
+import { ThemeProvider } from '@/providers/ThemeProvider';
+import { THEME_STORAGE_KEY } from '@/lib/theme';
 import { ConfirmProvider } from '@/providers/ConfirmProvider';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { TooltipProvider } from '@/components/ui/tooltip';
