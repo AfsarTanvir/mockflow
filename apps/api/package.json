@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node --import tsx/esm ace serve --watch",
     "build": "node --import tsx/esm ace build",
-    "start": "node build/bin/server.js",
+    "start": "ENV_PATH=.. node build/bin/server.js",
     "migration:run": "node --import tsx/esm ace migration:run",
     "migration:rollback": "node --import tsx/esm ace migration:rollback",
     "migration:fresh": "node --import tsx/esm ace migration:fresh --seed",
@@ -18,8 +18,8 @@
     "test:integration": "node --import tsx/esm bin/test.ts integration",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext=.ts",
-    "format": "prettier --write \"**/*.ts\"",
-    "format:check": "prettier --check \"**/*.ts\""
+    "format": "prettier --write \"**/*.ts\" --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check \"**/*.ts\" --ignore-path ../../.prettierignore"
   },
   "imports": {
     "#app/*": "./app/*.js",
