@@ -35,13 +35,16 @@ Personal overrides go in `.env.test.local` (gitignored).
 
 Requires Postgres and, for the cache specs, Redis (`docker compose up -d redis`).
 
-## Install caveat (Japa ↔ @adonisjs/core resolution)
+## Install note: `@adonisjs/core` must be hoisted
 
-The runner needs `@japa/plugin-adonisjs` (and friends) to resolve `@adonisjs/core`.
-npm's workspace hoisting can place the Japa packages in the repo-root `node_modules`
-while `@adonisjs/core` stays in `apps/api/node_modules`, breaking resolution at
-bootstrap (the same quirk that affects `@adonisjs/redis`). If you see
-_"Cannot find package '@adonisjs/core' … from …/@japa/plugin-adonisjs"_, ensure the
-`@japa/*` packages live under `apps/api/node_modules` (a clean reinstall, or moving the
-`@japa` scope there, resolves it). A repo-level fix is an `.npmrc` with a nested
-install strategy.
+`@adonisjs/redis`, `@adonisjs/cors` and `@japa/plugin-adonisjs` sit in the repo-root
+`node_modules` and peer-depend on `@adonisjs/core`, so core has to be there too. npm
+only puts it there when every peer of core is satisfied: notably `@vinejs/vine` must be
+`^4` (Lucid 22 also wants `^3 || ^4`). With VineJS 2, npm nested core under
+`apps/api/node_modules`, and `node ace …`, migrations and this test runner failed at
+boot with _"Cannot find package '@adonisjs/core' imported from …/node_modules/…"_.
+
+If that error comes back after a dependency change, look for a new peer conflict:
+`npm explain @adonisjs/core` and `npm ls --all | grep invalid`. Don't run
+`npm audit fix --force` here: in this workspace it "fixes" advisories by jumping to
+unrelated majors (e.g. `@adonisjs/assembler` 5 for an Adonis 7 app).
