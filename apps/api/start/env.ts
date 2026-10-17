@@ -32,6 +32,14 @@ export default await Env.create(new URL('../', import.meta.url), {
   SMTP_FROM: Env.schema.string.optional(),
   MAILTRAP_TOKEN: Env.schema.string.optional(),
 
+  // Optional local-scheduler (https://github.com/AfsarTanvir/local-scheduler-) for
+  // scheduled mock calls. Unset SCHEDULER_URL => the feature reports "not configured".
+  // SCHEDULER_TARGET_URL is how the scheduler reaches this API (defaults to API_URL);
+  // set it when they run on different hosts, e.g. http://host.docker.internal:3333.
+  SCHEDULER_URL: Env.schema.string.optional(),
+  SCHEDULER_API_KEY: Env.schema.string.optional(),
+  SCHEDULER_TARGET_URL: Env.schema.string.optional(),
+
   // Platform "master agency": the company whose active members are super-admins.
   // Unset => the super-admin feature is dormant (every /api/admin route 403s).
   MASTER_COMPANY_SLUG: Env.schema.string.optional(),
