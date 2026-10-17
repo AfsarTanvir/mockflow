@@ -4,6 +4,7 @@ import type { HttpContext } from '@adonisjs/core/http';
 import RequestLog from '#models/request_log';
 import * as ProjectQueries from '#queries/project_queries';
 import * as AccessService from '#services/access_service';
+import * as ScheduledCallService from '#services/scheduled_call_service';
 import * as cache from '#services/cache_service';
 import { cacheKeys } from '#services/cache_keys';
 import { CACHE_TTL } from '#services/cache_service';
@@ -45,6 +46,23 @@ export async function resolveMock(
   now: number,
   userId?: string
 ): Promise<MockResponse> {
+  // 0. Calls sent by the scheduler carry a per-schedule secret that unlocks that
+  //    schedule's (possibly private) project. A secret no schedule has means the
+  //    schedule was deleted but its scheduler job still fires: answer 410 and
+  //    clean such jobs up in the background.
+  let scheduledProjectId: string | null = null;
+  const scheduleToken = request.header(ScheduledCallService.SCHEDULE_TOKEN_HEADER);
+  if (scheduleToken) {
+    scheduledProjectId = await ScheduledCallService.projectForToken(scheduleToken);
+    if (!scheduledProjectId) {
+      ScheduledCallService.reconcileSoon();
+      throw new Exception('This scheduled call no longer exists', {
+        status: 410,
+        code: 'E_SCHEDULE_GONE',
+      });
+    }
+  }
+
   // 1. Resolve slug → projectId (cached; loader returns null when absent). The
   //    slug→id mapping is immutable for a project's lifetime, so it never needs
   //    invalidation except on delete.
@@ -73,9 +91,10 @@ export async function resolveMock(
   );
   if (!blueprint) throw notFound(projectSlug);
 
-  // 3. Private projects: members only. Return 404 (not 403) so existence stays
-  //    hidden. isPublic lives in the blueprint, so it stays in sync on update.
-  if (!blueprint.isPublic) {
+  // 3. Private projects: members (or this project's own scheduled calls) only.
+  //    Return 404 (not 403) so existence stays hidden. isPublic lives in the
+  //    blueprint, so it stays in sync on update.
+  if (!blueprint.isPublic && scheduledProjectId !== projectId) {
     const project = userId ? await ProjectQueries.findById(projectId) : null;
     const role = project && userId ? await AccessService.resolveProjectRole(project, userId) : null;
     if (!role) throw notFound(projectSlug);
