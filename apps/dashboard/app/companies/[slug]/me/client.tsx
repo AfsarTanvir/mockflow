@@ -15,9 +15,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { ProfileLink, ProfileVisibility } from '@/types';
 
 const selectClass =
-  'border-border bg-background text-foreground h-9 w-full rounded-lg border px-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50';
+  'border-border bg-background text-foreground h-9 w-full rounded-lg border px-2 text-sm outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50';
 const textareaClass =
-  'border-border bg-background text-foreground min-h-24 w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50';
+  'border-border bg-background text-foreground min-h-24 w-full rounded-lg border px-3 py-2 text-sm outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50';
 
 export default function CompanyProfileClient({ slug }: { slug: string }) {
   const { data: memberships = [], isLoading: membershipsLoading } = useMyCompanies();

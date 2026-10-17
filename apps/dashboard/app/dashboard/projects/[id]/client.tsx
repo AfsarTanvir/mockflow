@@ -167,7 +167,7 @@ export default function ProjectDetailClient({
               className={cn(
                 'rounded-md px-4 py-1.5 text-sm font-medium capitalize transition-colors',
                 activeTab === tab
-                  ? 'bg-background text-foreground shadow-sm'
+                  ? 'bg-background text-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -228,7 +228,11 @@ export default function ProjectDetailClient({
       {activeTab === 'logs' && <LogsPanel project={currentProject} />}
 
       {activeTab === 'settings' && (
-        <ProjectSettingsPanel project={currentProject} currentUserRole={currentUserRole} />
+        <ProjectSettingsPanel
+          key={currentProject.id}
+          project={currentProject}
+          currentUserRole={currentUserRole}
+        />
       )}
     </main>
   );

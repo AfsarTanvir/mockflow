@@ -38,7 +38,7 @@ const ROLES: ('all' | ProfileRole)[] = ['all', 'owner', 'admin', 'member', 'view
 const ASSIGNABLE_ROLES: Exclude<ProfileRole, 'owner'>[] = ['admin', 'member', 'viewer'];
 
 const selectClass =
-  'border-border bg-background text-foreground h-8 rounded-lg border px-2 text-sm capitalize outline-none focus-visible:ring-3 focus-visible:ring-ring/50';
+  'border-border bg-background text-foreground h-8 rounded-lg border px-2 text-sm capitalize outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50';
 
 export function AdminProfilesClient() {
   const [page, setPage] = useState(1);

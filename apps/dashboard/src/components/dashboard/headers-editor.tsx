@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 
 type Row = { id: string; key: string; value: string };
@@ -29,11 +29,8 @@ type HeadersEditorProps = {
 };
 
 export function HeadersEditor({ value, onChange }: HeadersEditorProps) {
+  // Seeded once from `value`; internal state owns the rows after that.
   const [rows, setRows] = useState<Row[]>(() => recordToRows(value));
-
-  useEffect(() => {
-    setRows(recordToRows(value));
-  }, []); // only on mount — internal state owns the rows after that
 
   function update(next: Row[]) {
     setRows(next);
@@ -68,14 +65,14 @@ export function HeadersEditor({ value, onChange }: HeadersEditorProps) {
               value={row.key}
               onChange={(e) => setKey(row.id, e.target.value)}
               placeholder="Header name"
-              className="w-44 px-2 py-1.5 border border-input rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-44 px-2 py-1.5 border border-input rounded-md text-xs font-mono focus:outline-hidden focus:ring-2 focus:ring-ring"
             />
             <input
               type="text"
               value={row.value}
               onChange={(e) => setValue(row.id, e.target.value)}
               placeholder="Value"
-              className="flex-1 px-2 py-1.5 border border-input rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+              className="flex-1 px-2 py-1.5 border border-input rounded-md text-xs font-mono focus:outline-hidden focus:ring-2 focus:ring-ring"
             />
             <button
               type="button"

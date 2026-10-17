@@ -181,7 +181,7 @@ function CreateScheduleForm({
               className={cn(
                 'rounded-md px-3 py-1 text-xs font-medium transition-colors',
                 mode === m
-                  ? 'bg-background text-foreground shadow-sm'
+                  ? 'bg-background text-foreground shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -247,7 +247,7 @@ function CreateScheduleForm({
             onChange={(e) => setBody(e.target.value)}
             rows={4}
             placeholder='{"key": "value"}'
-            className="border-input bg-background focus-visible:ring-ring/50 w-full rounded-lg border px-2.5 py-1.5 font-mono text-xs outline-none focus-visible:ring-3"
+            className="border-input bg-background focus-visible:ring-ring/50 w-full rounded-lg border px-2.5 py-1.5 font-mono text-xs outline-hidden focus-visible:ring-3"
           />
           <p className="text-muted-foreground text-xs">
             Sent as <code className="font-mono">application/json</code> unless you set a
@@ -444,7 +444,7 @@ export function ScheduledCallsPanel({
                       variant="ghost"
                       size="sm"
                       data-active={historyId === call.id ? '' : undefined}
-                      className="data-[active]:text-primary"
+                      className="data-active:text-primary"
                       disabled={call.sync !== 'ok'}
                       onClick={() => setHistoryId((id) => (id === call.id ? null : call.id))}
                     >

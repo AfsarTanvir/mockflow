@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "Collaborative API mock server platform",
   "private": true,
+  "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": ">=24"
+  },
   "workspaces": [
     "apps/api",
     "apps/dashboard"
@@ -24,11 +28,14 @@
     "*.{js,ts,tsx,json,md}": "prettier --write"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0",
+    "concurrently": "^9.2.5",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
-    "prettier": "^3.0.0",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "prettier": "^3.0.0"
+  },
+  "overrides": {
+    "monaco-editor": {
+      "dompurify": "3.4.17"
+    }
   }
 }

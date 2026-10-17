@@ -10,6 +10,15 @@
 const COOKIE_NAME = 'mockflow_active_company';
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
+// Cookie writes don't emit events, so writers notify subscribers themselves
+// (see useActiveCompanySlug).
+const listeners = new Set<() => void>();
+
+export function subscribeActiveCompany(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
 /** Client-side: read the cookie. Returns slug or null. */
 export function getActiveCompanyClient(): string | null {
   if (typeof document === 'undefined') return null;
@@ -22,9 +31,10 @@ export function setActiveCompanyClient(slug: string | null): void {
   if (typeof document === 'undefined') return;
   if (slug === null) {
     document.cookie = `${COOKIE_NAME}=; Max-Age=0; Path=/; SameSite=Lax`;
-    return;
+  } else {
+    document.cookie = `${COOKIE_NAME}=${encodeURIComponent(slug)}; Max-Age=${ONE_YEAR_SECONDS}; Path=/; SameSite=Lax`;
   }
-  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(slug)}; Max-Age=${ONE_YEAR_SECONDS}; Path=/; SameSite=Lax`;
+  listeners.forEach((listener) => listener());
 }
 
 /**

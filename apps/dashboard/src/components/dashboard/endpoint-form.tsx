@@ -113,7 +113,7 @@ export function EndpointForm({
           <label className="block text-xs font-medium text-muted-foreground mb-1">Method</label>
           <select
             {...register('method')}
-            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
           >
             {HTTP_METHODS.map((m) => (
               <option key={m} value={m}>
@@ -129,7 +129,7 @@ export function EndpointForm({
             type="text"
             {...register('path')}
             className={cn(
-              'w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring',
+              'w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-hidden focus:ring-2 focus:ring-ring',
               errors.path ? 'border-destructive' : 'border-input'
             )}
             placeholder="/users/:id"
@@ -141,7 +141,7 @@ export function EndpointForm({
           <label className="block text-xs font-medium text-muted-foreground mb-1">Status</label>
           <select
             {...register('statusCode')}
-            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>

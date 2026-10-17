@@ -16,7 +16,7 @@ import type { AdminEndpoint } from '@/types/admin';
 const METHODS: ('all' | HttpMethod)[] = ['all', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
 const selectClass =
-  'border-border bg-background text-foreground h-8 rounded-lg border px-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50';
+  'border-border bg-background text-foreground h-8 rounded-lg border px-2 text-sm outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50';
 
 export function AdminEndpointsClient() {
   const [page, setPage] = useState(1);

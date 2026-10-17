@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Eye, X } from 'lucide-react';
 
 import { getImpersonatedName, stopImpersonation } from '@/lib/impersonation';
@@ -10,19 +10,20 @@ import { getImpersonatedName, stopImpersonation } from '@/lib/impersonation';
  * in the dashboard layout; renders nothing unless an impersonation session is
  * active. Exiting restores the admin token and returns to the admin console.
  */
-export function ImpersonationBanner() {
-  const [name, setName] = useState<string | null>(null);
+// The cookie only changes with a full page load (start/stop impersonation).
+const noSubscription = () => () => {};
 
-  // Read the cookie after mount to avoid an SSR/client hydration mismatch.
-  useEffect(() => {
-    setName(getImpersonatedName());
-  }, []);
+export function ImpersonationBanner() {
+  // null on the server and during hydration, so the markup always matches.
+  const name = useSyncExternalStore(noSubscription, getImpersonatedName, () => null);
 
   if (!name) return null;
 
   function handleExit() {
     stopImpersonation();
-    window.location.href = '/admin/users';
+    // A full load resets every client cache built with the impersonated token;
+    // replace() keeps Back from returning to that user's pages.
+    window.location.replace('/admin/users');
   }
 
   return (

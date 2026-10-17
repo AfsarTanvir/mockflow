@@ -38,7 +38,9 @@ export function AdminUsersClient() {
     if (!ok) return;
     const result = await impersonate.mutateAsync(user.id);
     startImpersonation(result.user.name, result.token);
-    window.location.href = '/dashboard';
+    // Full load so every client cache and the root layout restart as the new
+    // user; replace() keeps Back from landing on admin pages as them.
+    window.location.replace('/dashboard');
   }
 
   const columns: Column<AdminUser>[] = [

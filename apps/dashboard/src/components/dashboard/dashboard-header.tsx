@@ -34,7 +34,7 @@ export function DashboardHeader({ user }: { user: UserType }) {
   const { mutate: signOut, isPending } = useSignOut();
 
   return (
-    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 flex h-14 w-full items-center border-b px-4 backdrop-blur">
+    <header className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-50 flex h-14 w-full items-center border-b px-4 backdrop-blur-sm">
       <div className="flex min-w-0 items-center gap-2">
         <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
         <Separator orientation="vertical" className="h-5" />
@@ -54,7 +54,7 @@ export function DashboardHeader({ user }: { user: UserType }) {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <button className="hover:bg-muted flex items-center gap-2 rounded-lg px-2 py-1.5 outline-none transition-colors" />
+              <button className="hover:bg-muted flex items-center gap-2 rounded-lg px-2 py-1.5 outline-hidden transition-colors" />
             }
           >
             <Avatar className="h-7 w-7">

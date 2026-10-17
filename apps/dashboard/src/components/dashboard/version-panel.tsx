@@ -140,7 +140,7 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
               placeholder="Optional description (e.g. before refactor)"
               maxLength={500}
-              className="flex-1 px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="flex-1 px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
             />
             <button
               onClick={handleSave}

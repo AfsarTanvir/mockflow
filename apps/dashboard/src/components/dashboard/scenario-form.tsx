@@ -111,7 +111,7 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
             onChange={(e) => setName(e.target.value)}
             maxLength={80}
             placeholder="e.g. not-found, rate-limited"
-            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
           />
         </div>
         <div className="w-28">
@@ -121,7 +121,7 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
             value={priority}
             onChange={(e) => setPriority(Number(e.target.value))}
             min={0}
-            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
           />
         </div>
       </div>
@@ -137,7 +137,7 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
           onChange={(e) => setDescription(e.target.value)}
           maxLength={500}
           placeholder="When does this scenario apply?"
-          className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
         />
       </div>
 
@@ -161,7 +161,7 @@ export function ScenarioForm({ mode, initialValues, onSubmit, onCancel, isPendin
             <select
               value={statusCode}
               onChange={(e) => setStatusCode(Number(e.target.value))}
-              className="ml-6 w-32 px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="ml-6 w-32 px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
             >
               {STATUS_OPTIONS.map((s) => (
                 <option key={s} value={s}>

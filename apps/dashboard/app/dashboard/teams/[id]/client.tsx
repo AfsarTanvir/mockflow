@@ -200,7 +200,7 @@ function AddMemberForm({
       <select
         value={profileId}
         onChange={(e) => setProfileId(e.target.value)}
-        className="flex-1 px-2 py-1.5 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+        className="flex-1 px-2 py-1.5 border rounded-lg text-xs focus:outline-hidden focus:ring-2 focus:ring-ring"
       >
         <option value="">Pick a profile to add…</option>
         {eligible.map((p) => (
@@ -212,7 +212,7 @@ function AddMemberForm({
       <select
         value={role}
         onChange={(e) => setRole(e.target.value as WorkspaceTeamRole)}
-        className="px-2 py-1.5 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+        className="px-2 py-1.5 border rounded-lg text-xs focus:outline-hidden focus:ring-2 focus:ring-ring"
       >
         <option value="member">Member</option>
         <option value="admin">Admin</option>

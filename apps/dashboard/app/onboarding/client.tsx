@@ -43,14 +43,14 @@ export default function OnboardingClient() {
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-foreground">Welcome to MockFlow</h1>
             <p className="text-sm text-muted-foreground mt-2">
-              Let's get you set up. Are you starting a new company or joining one?
+              Let&apos;s get you set up. Are you starting a new company or joining one?
             </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <button
               onClick={() => setStep('create')}
-              className="flex flex-col items-start gap-3 rounded-xl border bg-card p-5 text-left hover:border-ring hover:shadow-sm transition-all"
+              className="flex flex-col items-start gap-3 rounded-xl border bg-card p-5 text-left hover:border-ring hover:shadow-xs transition-all"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Building2 className="h-5 w-5" />
@@ -58,7 +58,7 @@ export default function OnboardingClient() {
               <div>
                 <h2 className="text-sm font-semibold text-foreground">Create a company</h2>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Start a new workspace. You'll be the owner.
+                  Start a new workspace. You&apos;ll be the owner.
                 </p>
               </div>
             </button>
@@ -93,7 +93,7 @@ export default function OnboardingClient() {
 
         <form
           onSubmit={handleSubmit(handleCreate)}
-          className="space-y-5 rounded-xl border bg-card p-6 shadow-sm"
+          className="space-y-5 rounded-xl border bg-card p-6 shadow-xs"
           noValidate
         >
           {error && (
@@ -108,7 +108,7 @@ export default function OnboardingClient() {
               type="text"
               {...register('name')}
               placeholder="Acme Inc."
-              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring ${
                 errors.name ? 'border-destructive' : 'border-input'
               }`}
             />
@@ -119,7 +119,7 @@ export default function OnboardingClient() {
             <label className="block text-xs font-medium text-foreground mb-1">Visibility</label>
             <select
               {...register('visibility')}
-              className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
             >
               <option value="private">Private — invite only</option>
               <option value="protected">Protected — listed, join by approval</option>
