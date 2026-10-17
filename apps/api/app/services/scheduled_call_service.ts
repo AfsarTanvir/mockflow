@@ -194,7 +194,11 @@ export interface ScheduledCallView {
   isActive: boolean;
   createdBy: string | null;
   createdAt: string;
-  /** False when another endpoint now serves the call (its endpoint was edited, or a more specific one added). */
+  /**
+   * False when the call no longer reaches its endpoint: another endpoint now
+   * serves the path, or the job's URL is out of date (the project's base path, or
+   * where the scheduler reaches this API, changed after the job was created).
+   */
   matchesEndpoint: boolean;
   /** Live state from the scheduler; null when it couldn't be fetched or the job is gone. */
   live: {
@@ -213,6 +217,7 @@ export interface ScheduledCallView {
  */
 function toView(
   call: ScheduledCall,
+  project: Project,
   endpoints: Endpoint[],
   job: SchedulerJob | null | undefined
 ): ScheduledCallView {
@@ -232,7 +237,8 @@ function toView(
     createdAt: call.createdAt.toISO()!,
     matchesEndpoint:
       !!call.endpointId &&
-      servingEndpoint(call.method, call.path, endpoints)?.id === call.endpointId,
+      servingEndpoint(call.method, call.path, endpoints)?.id === call.endpointId &&
+      (!job?.http || job.http.url === mockUrl(project, call.path)),
     live: job
       ? {
           enabled: job.enabled,
@@ -311,7 +317,7 @@ async function assertCallAccess(
   id: string,
   userId: string,
   minRole: AccessService.ProjectRole
-): Promise<ScheduledCall> {
+): Promise<{ call: ScheduledCall; project: Project }> {
   const call = await ScheduledCallQueries.findById(id);
   if (!call) {
     throw new Exception('Scheduled call not found', {
@@ -319,8 +325,8 @@ async function assertCallAccess(
       code: 'E_SCHEDULED_CALL_NOT_FOUND',
     });
   }
-  await AccessService.assertProjectAccess(call.projectId, userId, minRole);
-  return call;
+  const { project } = await AccessService.assertProjectAccess(call.projectId, userId, minRole);
+  return { call, project };
 }
 
 function projectEndpoints(call: ScheduledCall): Promise<Endpoint[]> {
@@ -335,7 +341,7 @@ export async function listForProject(
   projectId: string,
   userId: string
 ): Promise<ScheduledCallView[]> {
-  await AccessService.assertProjectAccess(projectId, userId, 'viewer');
+  const { project } = await AccessService.assertProjectAccess(projectId, userId, 'viewer');
   const [calls, endpoints] = await Promise.all([
     ScheduledCallQueries.listForProject(projectId),
     EndpointQueries.listForProject(projectId),
@@ -355,7 +361,7 @@ export async function listForProject(
     }
   }
 
-  return calls.map((call, i) => toView(call, endpoints, jobs?.[i]));
+  return calls.map((call, i) => toView(call, project, endpoints, jobs?.[i]));
 }
 
 /** Schedule a call to one of the project's endpoints. Member+. */
@@ -476,7 +482,7 @@ export async function createScheduledCall(
     dropJobsInBackground([job.id]);
     throw err;
   }
-  return toView(call, endpoints, job);
+  return toView(call, project, endpoints, job);
 }
 
 /**
@@ -484,7 +490,7 @@ export async function createScheduledCall(
  * row goes now, and the job is removed the first time it fires afterwards.
  */
 export async function deleteScheduledCall(id: string, userId: string): Promise<void> {
-  const call = await assertCallAccess(id, userId, 'member');
+  const { call } = await assertCallAccess(id, userId, 'member');
   await call.delete();
   await dropJobs([call.schedulerJobId]);
 }
@@ -495,7 +501,7 @@ export async function setScheduledCallActive(
   userId: string,
   active: boolean
 ): Promise<ScheduledCallView> {
-  const call = await assertCallAccess(id, userId, 'member');
+  const { call, project } = await assertCallAccess(id, userId, 'member');
   // The scheduler runs a resumed one-time job at once if its time has passed;
   // that would be a surprise call, so ask for an explicit "Run now" instead.
   if (active && call.mode === 'once' && call.runAt && call.runAt <= DateTime.now()) {
@@ -512,20 +518,20 @@ export async function setScheduledCallActive(
   if (!job) throw lost();
   call.isActive = active;
   await call.save();
-  return toView(call, await projectEndpoints(call), job);
+  return toView(call, project, await projectEndpoints(call), job);
 }
 
 /** Send the call now, outside its schedule. Member+. The run happens in the background. */
 export async function runScheduledCallNow(id: string, userId: string): Promise<ScheduledCallView> {
-  const call = await assertCallAccess(id, userId, 'member');
+  const { call, project } = await assertCallAccess(id, userId, 'member');
   const job = await withScheduler(() => SchedulerClient.runJob(call.schedulerJobId));
   if (!job) throw lost();
-  return toView(call, await projectEndpoints(call), job);
+  return toView(call, project, await projectEndpoints(call), job);
 }
 
 /** Run history from the scheduler, newest first. Viewer+. */
 export async function listRuns(id: string, userId: string): Promise<SchedulerRun[]> {
-  const call = await assertCallAccess(id, userId, 'viewer');
+  const { call } = await assertCallAccess(id, userId, 'viewer');
   const runs = await withScheduler(() => SchedulerClient.listRuns(call.schedulerJobId, 20));
   if (!runs) throw lost();
   return runs;

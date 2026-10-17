@@ -60,6 +60,7 @@ export interface SchedulerJob {
   nextRunAt?: string;
   lastRun?: SchedulerRun;
   createdAt: string;
+  http?: { url: string; method?: string };
 }
 
 export interface HttpJobSpec {
