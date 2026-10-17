@@ -17,6 +17,7 @@ export const CACHE_SECTIONS = [
   'entity:project',
   'entity:team',
   'entity:profile',
+  'scheduler',
 ] as const;
 
 export type CacheSection = (typeof CACHE_SECTIONS)[number];
@@ -30,6 +31,8 @@ export const cacheKeys = {
   project: (id: string) => `entity:project:${id}`,
   team: (id: string) => `entity:team:${id}`,
   profile: (id: string) => `entity:profile:${id}`,
+  /** Whether the local-scheduler is reachable (cached 10 min, see scheduler_status_service). */
+  schedulerStatus: () => 'scheduler:status',
 };
 
 /** The section a logical key belongs to (everything before the final `:id`). */
