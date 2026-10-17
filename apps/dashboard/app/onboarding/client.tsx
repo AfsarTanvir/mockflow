@@ -43,7 +43,7 @@ export default function OnboardingClient() {
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-foreground">Welcome to MockFlow</h1>
             <p className="text-sm text-muted-foreground mt-2">
-              Let's get you set up. Are you starting a new company or joining one?
+              Let&apos;s get you set up. Are you starting a new company or joining one?
             </p>
           </div>
 
@@ -58,7 +58,7 @@ export default function OnboardingClient() {
               <div>
                 <h2 className="text-sm font-semibold text-foreground">Create a company</h2>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Start a new workspace. You'll be the owner.
+                  Start a new workspace. You&apos;ll be the owner.
                 </p>
               </div>
             </button>
