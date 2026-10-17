@@ -1,6 +1,7 @@
 import Endpoint from '#models/endpoint';
 import EndpointScenario from '#models/endpoint_scenario';
 import * as ProjectQueries from '#queries/project_queries';
+import { normalizeBasePath } from '#services/base_path';
 import * as TeamQueries from '#queries/team_queries';
 import { cacheTags } from '#services/cache_keys';
 import type { RuleSource, RuleOperator } from '#models/scenario_rule';
@@ -51,6 +52,8 @@ export interface BlueprintScope {
 }
 
 export interface MockBlueprint {
+  /** Normalized prefix ('' = root) every endpoint path sits under. */
+  basePath: string;
   scope: BlueprintScope;
   isPublic: boolean;
   settings: { cors: boolean; log_requests: boolean; global_headers?: Record<string, string> };
@@ -161,6 +164,7 @@ export async function buildBlueprint(projectId: string): Promise<MockBlueprint |
   }
 
   return {
+    basePath: normalizeBasePath(project.basePath),
     scope: await projectScope(project),
     isPublic: project.isPublic,
     settings: project.settings,
