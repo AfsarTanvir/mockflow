@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, unlink } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Exception } from '@adonisjs/core/exceptions';
 import app from '@adonisjs/core/services/app';
 import type { MultipartFile } from '@adonisjs/core/bodyparser';
@@ -20,8 +22,18 @@ export const AVATAR_MAX_SIZE = '2mb';
 const AVATAR_SUBDIR = 'uploads/avatars';
 const SERVE_PATH = '/uploads/avatars';
 
+/**
+ * `apps/api`, also when running the production build: there the app root is
+ * `apps/api/build`, which `npm run build` wipes, so uploads must not live in it
+ * (and avatars saved by the dev server would 404).
+ */
+function projectRoot(): string {
+  const root = fileURLToPath(app.appRoot);
+  return basename(root.replace(/\/+$/, '')) === 'build' ? dirname(root) : root;
+}
+
 function avatarsDir(...segments: string[]): string {
-  return app.makePath(AVATAR_SUBDIR, ...segments);
+  return join(projectRoot(), AVATAR_SUBDIR, ...segments);
 }
 
 /**
