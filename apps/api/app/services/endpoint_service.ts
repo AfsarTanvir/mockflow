@@ -1,8 +1,10 @@
 import { Exception } from '@adonisjs/core/exceptions';
+import db from '@adonisjs/lucid/services/db';
 import type { Infer } from '@vinejs/vine/types';
 import Endpoint from '#models/endpoint';
 import * as AccessService from '#services/access_service';
 import * as cache from '#services/cache_service';
+import * as ScheduledCallService from '#services/scheduled_call_service';
 import * as EndpointQueries from '#queries/endpoint_queries';
 import { validateEndpointDelayRange } from '#validators/endpoint_validator';
 import type {
@@ -113,11 +115,17 @@ export async function updateEndpoint(
   return endpoint;
 }
 
-/** Delete an endpoint. Member+. */
+/** Delete an endpoint and its scheduled calls. Member+. */
 export async function deleteEndpoint(endpointId: string, userId: string): Promise<void> {
   const { endpoint } = await AccessService.assertEndpointAccess(endpointId, userId, 'member');
-  await endpoint.delete();
+  const jobIds = await db.transaction(async (trx) => {
+    const ids = await ScheduledCallService.deleteForEndpoint(endpoint.id, trx);
+    endpoint.useTransaction(trx);
+    await endpoint.delete();
+    return ids;
+  });
   await cache.invalidateMock(endpoint.projectId);
+  ScheduledCallService.dropJobsInBackground(jobIds);
 }
 
 /** Flip an endpoint's active flag. Member+. */
