@@ -34,6 +34,11 @@ export enum QueryKey {
   // Scenario rules
   RULES = 'RULES',
 
+  // Scheduled calls
+  SCHEDULER_STATUS = 'SCHEDULER_STATUS',
+  SCHEDULED_CALLS = 'SCHEDULED_CALLS',
+  SCHEDULED_CALL_RUNS = 'SCHEDULED_CALL_RUNS',
+
   // Workspace
   MY_COMPANIES = 'MY_COMPANIES',
   COMPANY = 'COMPANY',
