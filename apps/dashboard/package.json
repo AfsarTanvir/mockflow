@@ -7,7 +7,7 @@
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start --port 3001",
-    "lint": "next lint",
+    "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\" --ignore-path ../../.prettierignore",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\" --ignore-path ../../.prettierignore"
   },
@@ -16,11 +16,11 @@
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.16",
-    "eslint": "^8.56.0",
-    "eslint-config-next": "^14.0.4",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.2",
+    "eslint-config-prettier": "^10.1.8",
     "postcss": "^8.4.32",
     "prettier": "^3.1.1",
-    "shadcn": "^4.6.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3"
   },
@@ -33,15 +33,14 @@
     "axios": "^1.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "date-fns": "^2.30.0",
     "lucide-react": "^1.14.0",
+    "monaco-editor": "^0.57.0",
     "next": "^16.2.4",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-hook-form": "^7.49.0",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.22.4",
-    "zustand": "^4.4.1"
+    "zod": "^3.22.4"
   }
 }
