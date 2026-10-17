@@ -21,6 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/providers/ConfirmProvider';
 import { useTeam } from '@/query/teams';
+import { useSchedulerStatus } from '@/query/scheduled-calls';
+import { unavailableMessage } from '@/lib/scheduler-status';
 import type { User, Project, Endpoint } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3333';
@@ -55,10 +57,21 @@ export default function ProjectDetailClient({
   const { data: team } = useTeam(initialProject.id);
   const confirm = useConfirm();
 
+  // Checked automatically when the project opens (cached 10 min in the browser
+  // and in Redis); the Schedule option is disabled unless the scheduler is up.
+  const { data: schedulerStatus, isError: schedulerCheckFailed } = useSchedulerStatus();
+  const scheduler = {
+    available: schedulerStatus?.available === true,
+    message: schedulerCheckFailed
+      ? 'Could not check whether the scheduler is available.'
+      : unavailableMessage(schedulerStatus),
+  };
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('endpoints');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [scenariosOpenId, setScenariosOpenId] = useState<string | null>(null);
+  const [schedulesOpenId, setSchedulesOpenId] = useState<string | null>(null);
 
   const currentProject = project ?? initialProject;
   const currentUserRole = team?.currentUserRole ?? initialProject.userRole ?? 'viewer';
@@ -76,13 +89,22 @@ export default function ProjectDetailClient({
   function handleEditClick(id: string) {
     setShowCreateForm(false);
     setScenariosOpenId(null);
+    setSchedulesOpenId(null);
     setEditingId((prev) => (prev === id ? null : id));
   }
 
   function handleScenariosClick(id: string) {
     setShowCreateForm(false);
     setEditingId(null);
+    setSchedulesOpenId(null);
     setScenariosOpenId((prev) => (prev === id ? null : id));
+  }
+
+  function handleSchedulesClick(id: string) {
+    setShowCreateForm(false);
+    setEditingId(null);
+    setScenariosOpenId(null);
+    setSchedulesOpenId((prev) => (prev === id ? null : id));
   }
 
   async function handleDelete(endpoint: Endpoint) {
@@ -100,6 +122,7 @@ export default function ProjectDetailClient({
     setShowCreateForm(false);
     setEditingId(null);
     setScenariosOpenId(null);
+    setSchedulesOpenId(null);
   }
 
   if (!user) return null;
@@ -173,16 +196,20 @@ export default function ProjectDetailClient({
 
           <EndpointList
             endpoints={endpoints}
+            projectId={currentProject.id}
             isLoading={isLoading}
             canWrite={canWrite}
             mockBaseUrl={mockBaseUrl}
             editingId={editingId}
             scenariosOpenId={scenariosOpenId}
+            schedulesOpenId={schedulesOpenId}
+            scheduler={scheduler}
             isUpdating={updating}
             updateError={updateError}
             onToggle={toggleEndpoint}
             onEditClick={handleEditClick}
             onScenariosClick={handleScenariosClick}
+            onSchedulesClick={handleSchedulesClick}
             onDelete={handleDelete}
             onUpdate={handleUpdate}
             onCreateFirst={() => setShowCreateForm(true)}

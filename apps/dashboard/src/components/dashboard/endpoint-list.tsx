@@ -1,21 +1,25 @@
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Endpoint } from '@/types';
-import { EndpointRow } from './endpoint-row';
+import { EndpointRow, type SchedulerAvailability } from './endpoint-row';
 import type { EndpointFormPayload } from './endpoint-form';
 
 interface EndpointListProps {
   endpoints: Endpoint[];
+  projectId: string;
   isLoading: boolean;
   canWrite: boolean;
   mockBaseUrl: string;
   editingId: string | null;
   scenariosOpenId: string | null;
+  schedulesOpenId: string | null;
+  scheduler: SchedulerAvailability;
   isUpdating: boolean;
   updateError?: Error | null;
   onToggle: (id: string) => void;
   onEditClick: (id: string) => void;
   onScenariosClick: (id: string) => void;
+  onSchedulesClick: (id: string) => void;
   onDelete: (endpoint: Endpoint) => void;
   onUpdate: (id: string, data: EndpointFormPayload) => void;
   onCreateFirst: () => void;
@@ -23,16 +27,20 @@ interface EndpointListProps {
 
 export function EndpointList({
   endpoints,
+  projectId,
   isLoading,
   canWrite,
   mockBaseUrl,
   editingId,
   scenariosOpenId,
+  schedulesOpenId,
+  scheduler,
   isUpdating,
   updateError,
   onToggle,
   onEditClick,
   onScenariosClick,
+  onSchedulesClick,
   onDelete,
   onUpdate,
   onCreateFirst,
@@ -66,15 +74,19 @@ export function EndpointList({
         <EndpointRow
           key={ep.id}
           endpoint={ep}
+          projectId={projectId}
           mockBaseUrl={mockBaseUrl}
           canWrite={canWrite}
           isEditing={editingId === ep.id}
           isScenariosOpen={scenariosOpenId === ep.id}
+          isSchedulesOpen={schedulesOpenId === ep.id}
+          scheduler={scheduler}
           isUpdating={isUpdating}
           updateError={updateError}
           onToggle={onToggle}
           onEditClick={onEditClick}
           onScenariosClick={onScenariosClick}
+          onSchedulesClick={onSchedulesClick}
           onDelete={onDelete}
           onUpdate={onUpdate}
         />
