@@ -4,6 +4,7 @@ import Endpoint from '#models/endpoint';
 import VersionHistory from '#models/version_history';
 import * as AccessService from '#services/access_service';
 import * as cache from '#services/cache_service';
+import * as ScheduledCallService from '#services/scheduled_call_service';
 import * as EndpointQueries from '#queries/endpoint_queries';
 import * as VersionQueries from '#queries/version_queries';
 import { cursorPage, resolveKeyset, type CursorInput } from '#queries/pagination';
@@ -111,7 +112,7 @@ export async function restoreVersion(projectId: string, userId: string, versionI
 
   const { snapshot } = version;
 
-  await db.transaction(async (trx) => {
+  const droppedJobIds = await db.transaction(async (trx) => {
     project.useTransaction(trx);
     project.name = snapshot.project.name;
     project.basePath = snapshot.project.basePath;
@@ -137,10 +138,14 @@ export async function restoreVersion(projectId: string, userId: string, versionI
         { client: trx }
       );
     }
+
+    // Endpoints were re-created with new ids: re-link scheduled calls by path.
+    return ScheduledCallService.relinkAfterRestore(project.id, trx);
   });
 
   // Restore rewrites settings + all endpoints → rebuild the mock blueprint.
   await cache.invalidateMock(project.id);
+  ScheduledCallService.dropJobsInBackground(droppedJobIds);
 
   return {
     message: 'Project restored to selected version',
