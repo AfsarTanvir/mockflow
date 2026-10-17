@@ -181,6 +181,7 @@ export function EndpointRow({
           <ScheduledCallsPanel
             projectId={projectId}
             endpoint={ep}
+            mockBaseUrl={mockBaseUrl}
             canWrite={canWrite}
             schedulerAvailable={scheduler.available}
             schedulerMessage={scheduler.message}

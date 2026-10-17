@@ -24,6 +24,8 @@ import { HeadersEditor } from './headers-editor';
 type Props = {
   projectId: string;
   endpoint: Endpoint;
+  /** The project's mock URL prefix, base path included. */
+  mockBaseUrl: string;
   canWrite: boolean;
   schedulerAvailable: boolean;
   schedulerMessage: string;
@@ -82,11 +84,13 @@ function StateBadge({ call }: { call: ScheduledCall }) {
 function CreateScheduleForm({
   projectId,
   endpoint,
+  mockBaseUrl,
   disabled,
   onDone,
 }: {
   projectId: string;
   endpoint: Endpoint;
+  mockBaseUrl: string;
   disabled: boolean;
   onDone: () => void;
 }) {
@@ -154,6 +158,10 @@ function CreateScheduleForm({
             required
           />
         </div>
+        <p className="text-muted-foreground font-mono text-xs break-all">
+          {mockBaseUrl}
+          {path}
+        </p>
         {hasParams && (
           <p className="text-muted-foreground text-xs">
             Replace the <code className="font-mono">:params</code> in {endpoint.path} with real
@@ -306,6 +314,7 @@ function RunHistory({ callId }: { callId: string }) {
 export function ScheduledCallsPanel({
   projectId,
   endpoint,
+  mockBaseUrl,
   canWrite,
   schedulerAvailable,
   schedulerMessage,
@@ -367,6 +376,7 @@ export function ScheduledCallsPanel({
         <CreateScheduleForm
           projectId={projectId}
           endpoint={endpoint}
+          mockBaseUrl={mockBaseUrl}
           disabled={!schedulerAvailable}
           onDone={() => setShowCreate(false)}
         />
