@@ -383,3 +383,60 @@ export type ScenarioRuleInput = {
   operator: RuleOperator;
   value?: string | null;
 };
+
+// ── Scheduled calls (local-scheduler) ──
+
+export type SchedulerUnavailableReason = 'not_configured' | 'unreachable' | 'unauthorized';
+
+export type SchedulerStatus = {
+  available: boolean;
+  reason: SchedulerUnavailableReason | null;
+  checkedAt: string;
+  /** Seconds until the server re-checks; the browser copy expires with it. */
+  expiresIn: number;
+};
+
+export type ScheduleMode = 'once' | 'repeat';
+
+export type ScheduledCallRun = {
+  id?: number;
+  startedAt: string;
+  finishedAt?: string;
+  status: 'running' | 'success' | 'failed';
+  output?: string;
+  error?: string;
+};
+
+export type ScheduledCall = {
+  id: string;
+  projectId: string;
+  endpointId: string | null;
+  method: HttpMethod;
+  path: string;
+  requestHeaders: Record<string, string>;
+  requestBody: string | null;
+  mode: ScheduleMode;
+  runAt: string | null;
+  intervalSeconds: number | null;
+  isActive: boolean;
+  createdBy: string | null;
+  createdAt: string;
+  matchesEndpoint: boolean;
+  live: {
+    enabled: boolean;
+    running: boolean;
+    nextRunAt: string | null;
+    lastRun: ScheduledCallRun | null;
+  } | null;
+  sync: 'ok' | 'missing' | 'unknown';
+};
+
+export type ScheduledCallInput = {
+  endpointId: string;
+  path: string;
+  requestHeaders?: Record<string, string>;
+  requestBody?: string;
+  mode: ScheduleMode;
+  runAt?: string;
+  intervalSeconds?: number;
+};

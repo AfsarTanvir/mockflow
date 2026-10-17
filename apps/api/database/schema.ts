@@ -288,6 +288,43 @@ export class ScenarioRuleSchema extends BaseModel {
   declare value: string | null
 }
 
+export class ScheduledCallSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'endpointId', 'id', 'intervalSeconds', 'isActive', 'method', 'mode', 'path', 'projectId', 'requestBody', 'requestHeaders', 'runAt', 'schedulerJobId', 'tokenHash', 'updatedAt'] as const
+  $columns = ScheduledCallSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare endpointId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare intervalSeconds: number | null
+  @column()
+  declare isActive: boolean
+  @column()
+  declare method: string
+  @column()
+  declare mode: string
+  @column()
+  declare path: string
+  @column()
+  declare projectId: string
+  @column()
+  declare requestBody: string | null
+  @column()
+  declare requestHeaders: any
+  @column.dateTime()
+  declare runAt: DateTime | null
+  @column()
+  declare schedulerJobId: string
+  @column()
+  declare tokenHash: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class TeamMemberSchema extends BaseModel {
   static $columns = ['createdAt', 'id', 'invitedAt', 'projectId', 'role', 'updatedAt', 'userId'] as const
   $columns = TeamMemberSchema.$columns

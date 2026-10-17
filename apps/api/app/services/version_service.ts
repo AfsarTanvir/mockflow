@@ -7,6 +7,7 @@ import type Project from '#models/project';
 import VersionHistory, { type VersionSnapshot } from '#models/version_history';
 import * as AccessService from '#services/access_service';
 import * as cache from '#services/cache_service';
+import * as ScheduledCallService from '#services/scheduled_call_service';
 import * as EndpointQueries from '#queries/endpoint_queries';
 import * as ScenarioQueries from '#queries/scenario_queries';
 import * as VersionQueries from '#queries/version_queries';
@@ -169,7 +170,7 @@ export async function restoreVersion(projectId: string, userId: string, versionI
   const { snapshot } = version;
   const label = version.message ? `"${version.message}"` : version.createdAt.toISO();
 
-  const backup = await db.transaction(async (trx) => {
+  const { backup, droppedJobIds } = await db.transaction(async (trx) => {
     // 1. Back up what is about to be overwritten.
     project.useTransaction(trx);
     const current = await buildSnapshot(project, trx);
@@ -236,11 +237,15 @@ export async function restoreVersion(projectId: string, userId: string, versionI
       }
     }
 
-    return backupVersion;
+    // 4. Endpoints were re-created with new ids: re-link scheduled calls by path.
+    const dropped = await ScheduledCallService.relinkAfterRestore(project.id, trx);
+
+    return { backup: backupVersion, droppedJobIds: dropped };
   });
 
   // Restore rewrites settings + all endpoints → rebuild the mock blueprint.
   await cache.invalidateMock(project.id);
+  ScheduledCallService.dropJobsInBackground(droppedJobIds);
 
   return {
     message: 'Project restored to selected version',

@@ -9,6 +9,7 @@ import { slugify } from '#services/slug_helper';
 import { storedBasePath } from '#services/base_path';
 import * as AccessService from '#services/access_service';
 import * as cache from '#services/cache_service';
+import * as ScheduledCallService from '#services/scheduled_call_service';
 import { cacheKeys } from '#services/cache_keys';
 import * as ProjectQueries from '#queries/project_queries';
 import * as TeamMemberQueries from '#queries/team_member_queries';
@@ -240,6 +241,9 @@ export async function deleteProject(projectId: string, userId: string): Promise<
     });
   }
 
+  // Rows cascade with the project; their scheduler jobs must be dropped separately.
+  const scheduledJobIds = await ScheduledCallService.jobIdsForProject(projectId);
+
   // Delete + counter decrement must be atomic so total_project can't drift.
   const { teamId, slug } = project;
   await db.transaction(async (trx) => {
@@ -253,4 +257,5 @@ export async function deleteProject(projectId: string, userId: string): Promise<
   });
   // Drop the mock blueprint, the slug→id mapping and the project entity cache.
   await cache.invalidateProjectFull(projectId, slug);
+  ScheduledCallService.dropJobsInBackground(scheduledJobIds);
 }
