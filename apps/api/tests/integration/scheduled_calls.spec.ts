@@ -448,6 +448,49 @@ test.group('scheduled calls', (group) => {
     }
   });
 
+  test('the job URL includes the project base path, and the mock answers there', async ({
+    assert,
+  }) => {
+    const { owner, project, endpoint } = await seed({ isPublic: false });
+    project.basePath = '/v1';
+    await project.save();
+
+    await ScheduledCallService.createScheduledCall(
+      project.id,
+      owner.id,
+      repeatEvery10m(endpoint.id)
+    );
+    const job = onlyJob();
+    assert.match(job.http.url, new RegExp(`/mock/${project.slug}/v1/users/42$`));
+
+    const res = await resolveMock(
+      project.slug,
+      'GET',
+      '/v1/users/42',
+      requestWith({ [ScheduledCallService.SCHEDULE_TOKEN_HEADER]: tokenOf(job.id) }),
+      Date.now()
+    );
+    assert.equal(res.statusCode, 200);
+  });
+
+  test('a base path change after scheduling is flagged (matchesEndpoint false)', async ({
+    assert,
+  }) => {
+    const { owner, project, endpoint } = await seed();
+    await ScheduledCallService.createScheduledCall(
+      project.id,
+      owner.id,
+      repeatEvery10m(endpoint.id)
+    );
+    const [before] = await ScheduledCallService.listForProject(project.id, owner.id);
+    assert.isTrue(before!.matchesEndpoint);
+
+    project.basePath = '/v2';
+    await project.save();
+    const [after] = await ScheduledCallService.listForProject(project.id, owner.id);
+    assert.isFalse(after!.matchesEndpoint);
+  });
+
   /* ---------------- list / pause / resume / run / delete ---------------- */
 
   test('list merges live state; scheduler down → sync unknown', async ({ assert }) => {
