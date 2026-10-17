@@ -27,14 +27,14 @@ export function NotificationBell() {
       <DropdownMenuTrigger
         render={
           <button
-            className="relative flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors outline-none"
+            className="relative flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors outline-hidden"
             aria-label="Notifications"
           />
         }
       >
         <Bell className="h-4 w-4" />
         {count > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive/100 text-[10px] font-bold text-primary-foreground leading-none">
+          <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-primary-foreground leading-none">
             {count > 9 ? '9+' : count}
           </span>
         )}

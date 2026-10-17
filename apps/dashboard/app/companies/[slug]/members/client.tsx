@@ -70,7 +70,7 @@ function AddMemberCard({ companyId, actorRole }: { companyId: string; actorRole:
                 id="memberRole"
                 value={role}
                 onChange={(e) => setRole(e.target.value as AssignableRole)}
-                className="border-input bg-background focus:ring-ring h-9 w-full rounded-lg border px-3 text-sm capitalize focus:outline-none focus:ring-2 sm:w-32"
+                className="border-input bg-background focus:ring-ring h-9 w-full rounded-lg border px-3 text-sm capitalize focus:outline-hidden focus:ring-2 sm:w-32"
               >
                 {roleOptions.map((r) => (
                   <option key={r} value={r} className="capitalize">

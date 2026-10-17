@@ -55,7 +55,7 @@ export function EndpointRow({
       variant="ghost"
       size="sm"
       data-active={isSchedulesOpen ? '' : undefined}
-      className="data-[active]:text-primary"
+      className="data-active:text-primary"
       disabled={scheduleDisabled}
       onClick={() => onSchedulesClick(ep.id)}
     >
@@ -115,7 +115,7 @@ export function EndpointRow({
             variant="ghost"
             size="sm"
             data-active={isScenariosOpen ? '' : undefined}
-            className="data-[active]:text-primary"
+            className="data-active:text-primary"
             onClick={() => onScenariosClick(ep.id)}
           >
             {isScenariosOpen ? 'Close' : 'Scenarios'}
@@ -139,7 +139,7 @@ export function EndpointRow({
                 variant="ghost"
                 size="sm"
                 data-active={isEditing ? '' : undefined}
-                className="data-[active]:text-primary"
+                className="data-active:text-primary"
                 onClick={() => onEditClick(ep.id)}
               >
                 {isEditing ? 'Close' : 'Edit'}

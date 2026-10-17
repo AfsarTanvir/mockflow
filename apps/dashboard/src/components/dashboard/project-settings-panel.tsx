@@ -86,7 +86,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setDirty(true);
             }}
             maxLength={100}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
           />
           {nameError && dirty && <p className="text-xs text-destructive mt-1">{nameError}</p>}
         </div>
@@ -102,7 +102,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setDirty(true);
             }}
             maxLength={255}
-            className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-hidden focus:ring-2 focus:ring-ring"
             placeholder="/"
           />
           {basePathError && dirty && (
@@ -129,7 +129,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setIsPublic((v) => !v);
               setDirty(true);
             }}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
               isPublic ? 'bg-primary' : 'bg-muted'
             }`}
           >
@@ -159,7 +159,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setCors((v) => !v);
               setDirty(true);
             }}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
               cors ? 'bg-primary' : 'bg-muted'
             }`}
           >
@@ -185,7 +185,7 @@ export function ProjectSettingsPanel({ project, currentUserRole }: Props) {
               setLogRequests((v) => !v);
               setDirty(true);
             }}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-1 ${
               logRequests ? 'bg-primary' : 'bg-muted'
             }`}
           >

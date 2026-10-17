@@ -68,14 +68,14 @@ export function HeadersEditor({ value, onChange }: HeadersEditorProps) {
               value={row.key}
               onChange={(e) => setKey(row.id, e.target.value)}
               placeholder="Header name"
-              className="w-44 px-2 py-1.5 border border-input rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-44 px-2 py-1.5 border border-input rounded-md text-xs font-mono focus:outline-hidden focus:ring-2 focus:ring-ring"
             />
             <input
               type="text"
               value={row.value}
               onChange={(e) => setValue(row.id, e.target.value)}
               placeholder="Value"
-              className="flex-1 px-2 py-1.5 border border-input rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+              className="flex-1 px-2 py-1.5 border border-input rounded-md text-xs font-mono focus:outline-hidden focus:ring-2 focus:ring-ring"
             />
             <button
               type="button"

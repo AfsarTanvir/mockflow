@@ -33,7 +33,7 @@ export default function AcceptInviteClient({
 
   return (
     <div className="min-h-screen bg-muted flex items-center justify-center px-4">
-      <div className="bg-card rounded-2xl border shadow-sm p-8 w-full max-w-md">
+      <div className="bg-card rounded-2xl border shadow-xs p-8 w-full max-w-md">
         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
           <span className="text-primary font-bold text-lg">
             {invite.project.name[0].toUpperCase()}

@@ -115,7 +115,7 @@ export default function TeamsListClient({ initialUser }: Props) {
             <Link
               key={t.id}
               href={`/dashboard/teams/${t.id}`}
-              className="block bg-card border rounded-xl p-4 hover:border-ring hover:shadow-sm transition-all"
+              className="block bg-card border rounded-xl p-4 hover:border-ring hover:shadow-xs transition-all"
             >
               <div className="flex items-start gap-3">
                 <div
@@ -201,7 +201,7 @@ function CreateTeamForm({
           type="text"
           {...register('name')}
           placeholder="e.g. Backend, Design, Customer Success"
-          className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
+          className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring ${
             errors.name ? 'border-destructive' : 'border-input'
           }`}
         />
@@ -216,7 +216,7 @@ function CreateTeamForm({
           type="text"
           {...register('description')}
           placeholder="What does this team work on?"
-          className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
         />
       </div>
 
@@ -224,7 +224,7 @@ function CreateTeamForm({
         <label className="block text-xs font-medium text-foreground mb-1">Visibility</label>
         <select
           {...register('visibility')}
-          className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
         >
           <option value="private">Private — only team members can see</option>
           <option value="company_member_only">Company members can see the team exists</option>

@@ -118,7 +118,7 @@ export function TeamPanel({ projectId, currentUserId }: TeamPanelProps) {
                   {...register('email')}
                   placeholder="colleague@example.com"
                   className={cn(
-                    'w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring',
+                    'w-full px-3 py-2 border rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring',
                     errors.email ? 'border-destructive' : 'border-input'
                   )}
                 />
@@ -128,7 +128,7 @@ export function TeamPanel({ projectId, currentUserId }: TeamPanelProps) {
               </div>
               <select
                 {...register('role')}
-                className="w-32 px-3 py-2 border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-32 px-3 py-2 border border-input rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
               >
                 <option value="viewer">Viewer</option>
                 <option value="member">Member</option>
@@ -187,7 +187,7 @@ export function TeamPanel({ projectId, currentUserId }: TeamPanelProps) {
                         body: { role: e.target.value as Exclude<TeamRole, 'owner'> },
                       })
                     }
-                    className="text-xs border border-input rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="text-xs border border-input rounded px-1.5 py-1 focus:outline-hidden focus:ring-1 focus:ring-ring"
                   >
                     <option value="viewer">Viewer</option>
                     <option value="member">Member</option>

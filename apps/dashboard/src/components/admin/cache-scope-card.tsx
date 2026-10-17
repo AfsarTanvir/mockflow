@@ -68,7 +68,7 @@ export function CacheScopeCard() {
                 setLookup(null);
                 setResult(null);
               }}
-              className="border-input bg-background focus:ring-ring h-9 w-full rounded-lg border px-3 text-sm capitalize focus:outline-none focus:ring-2 sm:w-36"
+              className="border-input bg-background focus:ring-ring h-9 w-full rounded-lg border px-3 text-sm capitalize focus:outline-hidden focus:ring-2 sm:w-36"
             >
               {SCOPES.map((s) => (
                 <option key={s} value={s} className="capitalize">
