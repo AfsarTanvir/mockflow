@@ -291,13 +291,15 @@ export type PendingInvite = {
   };
 };
 
+/** `format: 2` snapshots also carry delayMaxMs + scenarios (older ones don't). */
 export type VersionSnapshot = {
+  format?: 2;
   project: {
     name: string;
     slug: string;
     basePath: string;
     isPublic: boolean;
-    settings: { cors: boolean; log_requests: boolean };
+    settings: { cors: boolean; log_requests: boolean; global_headers?: Record<string, string> };
   };
   endpoints: Array<{
     method: string;
@@ -306,7 +308,9 @@ export type VersionSnapshot = {
     responseBody: Record<string, unknown> | null;
     responseHeaders: Record<string, string>;
     delayMs: number;
+    delayMaxMs?: number | null;
     isActive: boolean;
+    scenarios?: Array<{ name: string; isActive: boolean; rules: unknown[] }>;
   }>;
 };
 

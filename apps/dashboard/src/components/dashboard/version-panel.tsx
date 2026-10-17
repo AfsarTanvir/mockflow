@@ -66,6 +66,11 @@ function SnapshotPreview({ projectId, versionId }: { projectId: string; versionI
               </span>
               <span className="text-xs font-mono text-muted-foreground truncate">{ep.path}</span>
               <span className="text-xs text-muted-foreground shrink-0">{ep.statusCode}</span>
+              {!!ep.scenarios?.length && (
+                <span className="text-[10px] text-muted-foreground shrink-0">
+                  {ep.scenarios.length} scenario{ep.scenarios.length === 1 ? '' : 's'}
+                </span>
+              )}
               {!ep.isActive && (
                 <span className="text-[10px] text-muted-foreground shrink-0">inactive</span>
               )}
@@ -109,7 +114,7 @@ export function VersionPanel({ projectId, currentUserRole }: VersionPanelProps) 
   async function handleRestore(versionId: string, label: string) {
     const ok = await confirm({
       title: 'Restore this version?',
-      description: `Restoring "${label}" will replace all current endpoints with the snapshot.`,
+      description: `Restoring "${label}" replaces all current endpoints, scenarios and rules with the snapshot. The current state is saved as a new version first, so you can undo this.`,
       confirmText: 'Restore',
     });
     if (ok) {

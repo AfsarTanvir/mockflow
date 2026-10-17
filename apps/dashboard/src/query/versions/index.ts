@@ -59,9 +59,13 @@ export const useRestoreVersion = (projectId: string) => {
   return useMutation({
     mutationFn: (versionId: string) => restoreVersion(projectId, versionId),
     onSuccess: () => {
-      // Invalidate endpoints and project so the UI reflects restored state
+      // Restore rewrites the project, its endpoints and their scenarios/rules,
+      // and adds an automatic "before restore" version to the history.
       queryClient.invalidateQueries({ queryKey: [QueryKey.ENDPOINTS, projectId] });
       queryClient.invalidateQueries({ queryKey: [QueryKey.PROJECT, projectId] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.SCENARIOS] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.RULES] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.VERSIONS, projectId] });
     },
   });
 };
