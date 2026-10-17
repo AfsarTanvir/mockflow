@@ -7,7 +7,9 @@ import { match } from 'path-to-regexp';
 import env from '#start/env';
 import ScheduledCall from '#models/scheduled_call';
 import type Endpoint from '#models/endpoint';
+import type Project from '#models/project';
 import * as AccessService from '#services/access_service';
+import { normalizeBasePath } from '#services/base_path';
 import { compareSpecificity } from '#services/mock_blueprint';
 import * as SchedulerClient from '#services/scheduler_client';
 import * as SchedulerStatus from '#services/scheduler_status_service';
@@ -144,6 +146,22 @@ function hasControlChar(value: string): boolean {
     if ((code < 0x20 && code !== 0x09) || code === 0x7f) return true;
   }
   return false;
+}
+
+/** Where the scheduler reaches this API: SCHEDULER_TARGET_URL, else API_URL, else localhost:PORT. */
+function targetBaseUrl(): string {
+  const url =
+    env.get('SCHEDULER_TARGET_URL') ??
+    env.get('API_URL', `http://localhost:${env.get('PORT', 3333)}`);
+  return url.replace(/\/+$/, '');
+}
+
+/**
+ * The URL the scheduler calls for a request path. Endpoint paths are relative
+ * to the project's base path, so it goes between the slug and the path.
+ */
+export function mockUrl(project: Pick<Project, 'slug' | 'basePath'>, path: string): string {
+  return `${targetBaseUrl()}/mock/${project.slug}${normalizeBasePath(project.basePath)}${path}`;
 }
 
 /**
@@ -416,10 +434,6 @@ export async function createScheduledCall(
     sendHeaders['Content-Type'] = 'application/json';
   }
 
-  const target = (
-    env.get('SCHEDULER_TARGET_URL') ?? env.get('API_URL', 'http://localhost:3333')
-  ).replace(/\/+$/, '');
-
   // Job first, row second: if the insert fails we delete the job; if the response
   // is lost after the job was created, the job is an orphan and is cleaned up
   // the first time it fires (its token is unknown).
@@ -431,7 +445,7 @@ export async function createScheduledCall(
         : { schedule: intervalToSchedule(intervalSeconds!) }),
       type: 'http',
       http: {
-        url: `${target}/mock/${project.slug}${input.path}`,
+        url: mockUrl(project, input.path),
         method: endpoint.method,
         headers: sendHeaders,
         ...(body !== null && { body }),
