@@ -238,13 +238,19 @@ export function AdminCacheClient() {
           emptyDescription="Nothing matches this section/search."
           renderActions={(r) => (
             <div className="flex justify-end gap-1">
-              <Button variant="ghost" size="icon-sm" onClick={() => setViewKey(r.key)}>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`View ${r.key}`}
+                onClick={() => setViewKey(r.key)}
+              >
                 <Eye className="size-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon-sm"
                 className="text-muted-foreground hover:text-destructive"
+                aria-label={`Delete ${r.key}`}
                 onClick={() => handleDeleteKey(r.key)}
               >
                 <Trash2 className="size-4" />

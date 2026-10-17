@@ -37,6 +37,7 @@ export function DashboardSidebar({ showAdmin = false }: { showAdmin?: boolean })
     <Sidebar collapsible="icon">
       <button
         onClick={handleToggle}
+        aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
         className={cn(
           'bg-background hover:bg-accent absolute top-5 -right-3 z-20 flex h-6 w-6 items-center justify-center rounded-full border shadow-xs transition-transform',
           open && 'rotate-180'
