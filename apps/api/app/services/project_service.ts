@@ -9,6 +9,7 @@ import { slugify } from '#services/slug_helper';
 import { storedBasePath } from '#services/base_path';
 import * as AccessService from '#services/access_service';
 import * as cache from '#services/cache_service';
+import { cacheKeys } from '#services/cache_keys';
 import * as ProjectQueries from '#queries/project_queries';
 import * as TeamMemberQueries from '#queries/team_member_queries';
 import * as TeamQueries from '#queries/team_queries';
@@ -58,11 +59,20 @@ export async function listForUser(userId: string) {
 }
 
 /**
+ * A mock request for this slug before the project existed may have left a
+ * negative ("not found") cache entry; drop it so the new project answers now
+ * rather than after the negative TTL.
+ */
+async function clearNegativeSlug(slug: string): Promise<void> {
+  await cache.del(cacheKeys.mockSlug(slug));
+}
+
+/**
  * Create a project and register the creator as its owner in team_members,
  * atomically.
  */
 export async function createProject(userId: string, input: CreateProjectInput): Promise<Project> {
-  return db.transaction(async (trx) => {
+  const created = await db.transaction(async (trx) => {
     const project = await Project.create(
       {
         name: input.name,
@@ -87,6 +97,8 @@ export async function createProject(userId: string, input: CreateProjectInput): 
 
     return project;
   });
+  await clearNegativeSlug(created.slug);
+  return created;
 }
 
 /**
@@ -152,7 +164,7 @@ export async function createTeamProject(
     });
   }
 
-  return db.transaction(async (trx) => {
+  const created = await db.transaction(async (trx) => {
     const project = await Project.create(
       {
         name: input.name,
@@ -177,6 +189,8 @@ export async function createTeamProject(
 
     return project;
   });
+  await clearNegativeSlug(created.slug);
+  return created;
 }
 
 /** A single project plus the requester's role. Any team member (viewer+) may read. */

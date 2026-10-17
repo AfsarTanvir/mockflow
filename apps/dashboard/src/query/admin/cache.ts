@@ -7,9 +7,11 @@ import {
   getCacheEntry,
   getCacheKeys,
   getCacheOverview,
+  getCacheScopeKeys,
+  purgeCacheScope,
 } from '@/services/admin/cache';
 import { QueryKey } from '@/types/query-key.enum';
-import type { CacheKeyListParams } from '@/types/admin';
+import type { CacheKeyListParams, CacheScope } from '@/types/admin';
 
 const STALE = 10 * 1000;
 
@@ -54,6 +56,27 @@ export const useAdminDeleteCacheSection = () => {
   return useMutation({
     mutationFn: (section: string) => deleteCacheSection(section),
     onSuccess: invalidate,
+  });
+};
+
+/** Look up what's cached for a scope. Disabled until an id is given. */
+export const useAdminCacheScopeKeys = (scope: CacheScope, id: string | null) =>
+  useQuery({
+    queryKey: [QueryKey.ADMIN_CACHE_SCOPE, scope, id],
+    queryFn: () => getCacheScopeKeys(scope, id as string),
+    enabled: !!id,
+    staleTime: 0,
+  });
+
+export const useAdminPurgeCacheScope = () => {
+  const qc = useQueryClient();
+  const invalidate = useCacheInvalidate();
+  return useMutation({
+    mutationFn: ({ scope, id }: { scope: CacheScope; id: string }) => purgeCacheScope(scope, id),
+    onSuccess: () => {
+      invalidate();
+      qc.invalidateQueries({ queryKey: [QueryKey.ADMIN_CACHE_SCOPE] });
+    },
   });
 };
 

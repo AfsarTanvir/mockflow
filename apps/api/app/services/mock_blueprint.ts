@@ -2,6 +2,8 @@ import Endpoint from '#models/endpoint';
 import EndpointScenario from '#models/endpoint_scenario';
 import * as ProjectQueries from '#queries/project_queries';
 import { normalizeBasePath } from '#services/base_path';
+import * as TeamQueries from '#queries/team_queries';
+import { cacheTags } from '#services/cache_keys';
 import type { RuleSource, RuleOperator } from '#models/scenario_rule';
 
 /**
@@ -42,9 +44,17 @@ export interface BlueprintEndpoint {
   scenarios: BlueprintScenario[];
 }
 
+/** Which project/team/company a blueprint belongs to — drives its cache tags. */
+export interface BlueprintScope {
+  projectId: string;
+  teamId: string | null;
+  companyId: string | null;
+}
+
 export interface MockBlueprint {
   /** Normalized prefix ('' = root) every endpoint path sits under. */
   basePath: string;
+  scope: BlueprintScope;
   isPublic: boolean;
   settings: { cors: boolean; log_requests: boolean; global_headers?: Record<string, string> };
   endpoints: BlueprintEndpoint[];
@@ -89,6 +99,23 @@ export function compareSpecificity(a: string, b: string): number {
   // Same ranks so far: the longer pattern is the more specific one (a trailing
   // wildcard should not outrank a route that spells the segments out).
   return bSegments.length - aSegments.length;
+}
+
+/** Resolve a project's owning team/company (company only exists for team projects). */
+export async function projectScope(project: {
+  id: string;
+  teamId: string | null;
+}): Promise<BlueprintScope> {
+  const team = project.teamId ? await TeamQueries.findById(project.teamId) : null;
+  return { projectId: project.id, teamId: team?.id ?? null, companyId: team?.companyId ?? null };
+}
+
+/** Cache tags for anything cached on behalf of a project. */
+export function scopeTags(scope: BlueprintScope): string[] {
+  const tags = [cacheTags.project(scope.projectId)];
+  if (scope.teamId) tags.push(cacheTags.team(scope.teamId));
+  if (scope.companyId) tags.push(cacheTags.company(scope.companyId));
+  return tags;
 }
 
 /**
@@ -138,6 +165,7 @@ export async function buildBlueprint(projectId: string): Promise<MockBlueprint |
 
   return {
     basePath: normalizeBasePath(project.basePath),
+    scope: await projectScope(project),
     isPublic: project.isPublic,
     settings: project.settings,
     // Sorted once here rather than per request: the blueprint is the cached

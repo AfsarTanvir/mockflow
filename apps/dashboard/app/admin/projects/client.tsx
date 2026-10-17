@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useAdminProjects } from '@/query/admin';
 import { AdminListView, type Column } from '@/components/admin/admin-list-view';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
+import { ClearCacheButton } from '@/components/admin/clear-cache-button';
 import { PersonCell } from '@/components/admin/person-cell';
 import { Badge } from '@/components/ui/badge';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
@@ -66,6 +67,7 @@ export function AdminProjectsClient() {
         }}
         searchPlaceholder="Search by name or slug…"
         emptyTitle="No projects found"
+        renderActions={(p) => <ClearCacheButton scope="project" id={p.id} />}
       />
     </div>
   );

@@ -54,6 +54,23 @@ test.group('faker_evaluator', () => {
     assert.equal(age, '18');
   });
 
+  test('renders faker dates as a bare ISO string (no extra quotes)', ({ assert }) => {
+    const result = evaluateBody({ at: '{{faker.date.recent}}' }, {});
+    const at = (result as { at: string }).at;
+    assert.match(at, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    assert.isFalse(Number.isNaN(Date.parse(at)));
+  });
+
+  test('renders a faker date inside a longer string', ({ assert }) => {
+    const result = evaluateBody({ msg: 'Created {{faker.date.past}}' }, {});
+    assert.match((result as { msg: string }).msg, /^Created \d{4}-\d{2}-\d{2}T[\d:.]+Z$/);
+  });
+
+  test('still JSON-stringifies non-date object results', ({ assert }) => {
+    const result = evaluateBody({ tags: '{{faker.helpers.arrayElements(["a"])}}' }, {});
+    assert.equal((result as { tags: string }).tags, '["a"]');
+  });
+
   test('falls back to literal template when faker category is unknown', ({ assert }) => {
     const result = evaluateBody({ x: '{{faker.nonexistent.method()}}' }, {});
     assert.match((result as { x: string }).x, /\{\{faker\.nonexistent\.method\}\}/);

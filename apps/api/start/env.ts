@@ -2,8 +2,10 @@ import { Env } from '@adonisjs/core/env';
 
 export default await Env.create(new URL('../', import.meta.url), {
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),
-  APP_PORT: Env.schema.number.optional(),
-  APP_HOST: Env.schema.string.optional(),
+  // The HTTP server binds to PORT/HOST (read by Adonis itself; defaults 3333 /
+  // localhost). Keep API_URL in step with PORT so exported mock URLs resolve.
+  PORT: Env.schema.number.optional(),
+  HOST: Env.schema.string.optional(),
   APP_SECRET: Env.schema.string(),
 
   DB_CONNECTION: Env.schema.string(),
@@ -21,6 +23,9 @@ export default await Env.create(new URL('../', import.meta.url), {
   CACHE_ENABLED: Env.schema.boolean.optional(),
   CACHE_TTL_MOCK: Env.schema.number.optional(),
   CACHE_TTL_ENTITY: Env.schema.number.optional(),
+  // Root namespace for every cache key (default `mockflow:cache:`). Tests use
+  // their own (see .env.test) so they can never touch the dev cache.
+  CACHE_PREFIX: Env.schema.string.optional(),
 
   API_URL: Env.schema.string.optional(),
   APP_URL: Env.schema.string.optional(),
