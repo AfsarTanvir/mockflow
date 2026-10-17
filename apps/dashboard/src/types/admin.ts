@@ -191,6 +191,22 @@ export interface CacheKeyListParams {
   perPage?: number;
 }
 
+/** A cache scope: everything cached on behalf of one project / team / company. */
+export type CacheScope = 'project' | 'team' | 'company';
+
+export interface CacheScopeKeys {
+  scope: CacheScope;
+  id: string;
+  keys: string[];
+}
+
+export interface CacheScopePurgeResult {
+  message: string;
+  scope: CacheScope;
+  id: string;
+  deleted: number;
+}
+
 export type CacheKeyList = {
   data: CacheKeyInfo[];
   meta: PageMeta & { truncated: boolean };

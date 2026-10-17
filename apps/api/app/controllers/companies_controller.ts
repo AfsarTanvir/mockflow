@@ -9,7 +9,7 @@ import * as CompanyQueries from '#queries/company_queries';
 import * as ProfileQueries from '#queries/profile_queries';
 import * as CompanyService from '#services/company_service';
 import * as cache from '#services/cache_service';
-import { cacheKeys } from '#services/cache_keys';
+import { cacheKeys, cacheTags } from '#services/cache_keys';
 import {
   createCompanyValidator,
   updateCompanyValidator,
@@ -153,12 +153,17 @@ export default class CompaniesController {
     const data = await cache.remember<{
       company: CompanyRecord;
       metadata: CompanyMetaRecord | null;
-    } | null>(cacheKeys.company(params.slug), cache.CACHE_TTL.entity, async () => {
-      const company = await CompanyQueries.findBySlug(params.slug);
-      if (!company) return null;
-      const metadata = await CompanyQueries.findMetadata(company.id);
-      return { company: toCompanyRecord(company), metadata: toMetaRecord(metadata) };
-    });
+    } | null>(
+      cacheKeys.company(params.slug),
+      cache.CACHE_TTL.entity,
+      async () => {
+        const company = await CompanyQueries.findBySlug(params.slug);
+        if (!company) return null;
+        const metadata = await CompanyQueries.findMetadata(company.id);
+        return { company: toCompanyRecord(company), metadata: toMetaRecord(metadata) };
+      },
+      { tags: (d) => (d ? [cacheTags.company(d.company.id)] : []) }
+    );
     if (!data) return response.notFound({ message: 'Company not found' });
 
     // Best-effort authenticate; stay anonymous on missing/invalid token.
@@ -199,7 +204,6 @@ export default class CompaniesController {
     const data = await request.validateUsing(updateCompanyValidator);
     try {
       const updated = await CompanyService.updateCompany(company.id, data);
-      await cache.invalidateCompany(updated.slug);
       const metadata = await CompanyQueries.findMetadata(company.id);
       return response.ok(memberView(toCompanyRecord(updated), toMetaRecord(metadata), actor));
     } catch (error) {
@@ -224,7 +228,6 @@ export default class CompaniesController {
       }
       const baseUrl = `${request.protocol()}://${request.host()}`;
       const updated = await CompanyService.setAvatarFromUpload(company.id, file, baseUrl);
-      await cache.invalidateCompany(updated.slug);
       const metadata = await CompanyQueries.findMetadata(company.id);
       return response.ok(memberView(toCompanyRecord(updated), toMetaRecord(metadata), actor));
     } catch (error) {
@@ -243,7 +246,6 @@ export default class CompaniesController {
     }
 
     await CompanyService.deleteCompany(company.id);
-    await cache.invalidateCompany(company.slug);
     return response.ok({ message: 'Company deleted' });
   }
 
@@ -260,7 +262,6 @@ export default class CompaniesController {
     const { newOwnerProfileId } = await request.validateUsing(transferOwnershipValidator);
     try {
       await CompanyService.transferOwnership(company.id, newOwnerProfileId);
-      await cache.invalidateCompany(company.slug);
       return response.ok({ message: 'Ownership transferred' });
     } catch (error) {
       return respondError(error, response);

@@ -7,6 +7,18 @@ export function findById(id: string, client?: TransactionClientContract) {
   return EndpointScenario.find(id, { client });
 }
 
+/** Scenarios (with rules) for a set of endpoints, in resolution order. */
+export function listForEndpointsWithRules(
+  endpointIds: string[],
+  client?: TransactionClientContract
+) {
+  return EndpointScenario.query({ client })
+    .whereIn('endpoint_id', endpointIds)
+    .preload('rules', (q) => q.orderBy('created_at', 'asc'))
+    .orderBy('priority', 'asc')
+    .orderBy('created_at', 'asc');
+}
+
 export function listForEndpoint(endpointId: string, client?: TransactionClientContract) {
   return EndpointScenario.query({ client })
     .where('endpoint_id', endpointId)

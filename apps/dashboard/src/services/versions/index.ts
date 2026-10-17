@@ -30,6 +30,21 @@ export async function createVersion(
   return data;
 }
 
-export async function restoreVersion(projectId: string, versionId: string): Promise<void> {
-  await httpClient.post(`/api/projects/${projectId}/versions/${versionId}/restore`);
+export type RestoreVersionResult = {
+  message: string;
+  versionId: string;
+  endpointCount: number;
+  scenarioCount: number;
+  /** The automatic "before restore" snapshot of the state that was replaced. */
+  backupVersionId: string;
+};
+
+export async function restoreVersion(
+  projectId: string,
+  versionId: string
+): Promise<RestoreVersionResult> {
+  const { data } = await httpClient.post<RestoreVersionResult>(
+    `/api/projects/${projectId}/versions/${versionId}/restore`
+  );
+  return data;
 }

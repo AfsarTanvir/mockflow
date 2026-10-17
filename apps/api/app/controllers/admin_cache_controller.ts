@@ -2,7 +2,11 @@ import type { HttpContext } from '@adonisjs/core/http';
 import { respondError } from '#app/exceptions/respond_error';
 import * as AdminCacheService from '#services/admin_cache_service';
 import { isCacheSection } from '#services/cache_keys';
-import { cacheKeyListValidator, cacheKeyValidator } from '#validators/admin_validator';
+import {
+  cacheKeyListValidator,
+  cacheKeyValidator,
+  cacheScopeValidator,
+} from '#validators/admin_validator';
 
 /** Super-admin Cache console. Gated by [auth, superAdmin] on the route group. */
 export default class AdminCacheController {
@@ -54,6 +58,27 @@ export default class AdminCacheController {
     try {
       const deleted = await AdminCacheService.deleteSection(params.section);
       return response.ok({ message: 'Section cleared', section: params.section, deleted });
+    } catch (error) {
+      return respondError(error, response);
+    }
+  }
+
+  /** GET /api/admin/cache/scope/:scope/:id — keys cached for a project/team/company. */
+  async scopeKeys({ params, response }: HttpContext) {
+    try {
+      const { scope, id } = await cacheScopeValidator.validate(params);
+      return response.ok(await AdminCacheService.scopeKeys(scope, id));
+    } catch (error) {
+      return respondError(error, response);
+    }
+  }
+
+  /** DELETE /api/admin/cache/scope/:scope/:id — clear everything cached for that scope. */
+  async purgeScope({ params, response }: HttpContext) {
+    try {
+      const { scope, id } = await cacheScopeValidator.validate(params);
+      const deleted = await AdminCacheService.purgeScope(scope, id);
+      return response.ok({ message: 'Scope cleared', scope, id, deleted });
     } catch (error) {
       return respondError(error, response);
     }
