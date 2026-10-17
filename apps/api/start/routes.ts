@@ -20,6 +20,7 @@ const TeamMembershipsController = () => import('../app/controllers/team_membersh
 const AdminController = () => import('../app/controllers/admin_controller.js');
 const AdminCacheController = () => import('../app/controllers/admin_cache_controller.js');
 const UploadsController = () => import('../app/controllers/uploads_controller.js');
+const ScheduledCallsController = () => import('../app/controllers/scheduled_calls_controller.js');
 
 /*
 |--------------------------------------------------------------------------
@@ -165,6 +166,36 @@ router
     router.post('/:id/import/postman/apply', [ImportController, 'postmanApply']);
   })
   .prefix('/api/projects')
+  .use(middleware.auth());
+
+/*
+|--------------------------------------------------------------------------
+| Scheduled Calls (Protected) — mock calls sent by the external local-scheduler
+|--------------------------------------------------------------------------
+*/
+router
+  .group(() => {
+    router.get('/api/scheduler/status', [ScheduledCallsController, 'schedulerStatus']);
+
+    router
+      .get('/api/projects/:projectId/scheduled-calls', [ScheduledCallsController, 'index'])
+      .where('projectId', router.matchers.uuid());
+    router
+      .post('/api/projects/:projectId/scheduled-calls', [ScheduledCallsController, 'store'])
+      .where('projectId', router.matchers.uuid())
+      .use(middleware.throttle({ max: 20, windowMs: 60_000 }));
+
+    router
+      .group(() => {
+        router.delete('/:id', [ScheduledCallsController, 'destroy']);
+        router.post('/:id/pause', [ScheduledCallsController, 'pause']);
+        router.post('/:id/resume', [ScheduledCallsController, 'resume']);
+        router.post('/:id/run', [ScheduledCallsController, 'run']);
+        router.get('/:id/runs', [ScheduledCallsController, 'runs']);
+      })
+      .prefix('/api/scheduled-calls')
+      .where('id', router.matchers.uuid());
+  })
   .use(middleware.auth());
 
 /*
