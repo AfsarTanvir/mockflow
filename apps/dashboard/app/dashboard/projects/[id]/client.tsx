@@ -228,7 +228,11 @@ export default function ProjectDetailClient({
       {activeTab === 'logs' && <LogsPanel project={currentProject} />}
 
       {activeTab === 'settings' && (
-        <ProjectSettingsPanel project={currentProject} currentUserRole={currentUserRole} />
+        <ProjectSettingsPanel
+          key={currentProject.id}
+          project={currentProject}
+          currentUserRole={currentUserRole}
+        />
       )}
     </main>
   );

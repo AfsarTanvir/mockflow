@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 
 type Row = { id: string; key: string; value: string };
@@ -29,11 +29,8 @@ type HeadersEditorProps = {
 };
 
 export function HeadersEditor({ value, onChange }: HeadersEditorProps) {
+  // Seeded once from `value`; internal state owns the rows after that.
   const [rows, setRows] = useState<Row[]>(() => recordToRows(value));
-
-  useEffect(() => {
-    setRows(recordToRows(value));
-  }, []); // only on mount — internal state owns the rows after that
 
   function update(next: Row[]) {
     setRows(next);
