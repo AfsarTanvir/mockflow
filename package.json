@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "Collaborative API mock server platform",
   "private": true,
+  "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": ">=24"
+  },
   "workspaces": [
     "apps/api",
     "apps/dashboard"
