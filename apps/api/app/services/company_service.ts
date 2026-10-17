@@ -10,6 +10,7 @@ import type { CompanyVisibility } from '../models/company.js';
 import type { BillingAddress, CompanySettings } from '../models/company_metadata.js';
 import { slugify } from './slug_helper.js';
 import * as AvatarService from './avatar_service.js';
+import * as cache from './cache_service.js';
 import type { MultipartFile } from '@adonisjs/core/bodyparser';
 
 export interface CreateCompanyInput {
@@ -113,7 +114,7 @@ export async function updateCompany(
   companyId: string,
   input: Partial<CreateCompanyInput>
 ): Promise<Company> {
-  return db.transaction(async (trx) => {
+  const updated = await db.transaction(async (trx) => {
     const company = await Company.find(companyId, { client: trx });
     if (!company) throw new Exception('Company not found', { status: 404 });
 
@@ -139,6 +140,9 @@ export async function updateCompany(
 
     return company;
   });
+  // Every caller (owner UI and admin console) gets the same cache sync.
+  await cache.invalidateCompany(updated.slug);
+  return updated;
 }
 
 /** Replace a company's logo/avatar with a freshly uploaded image. Caller checks owner/admin. */
@@ -155,6 +159,7 @@ export async function setAvatarFromUpload(
   company.avatarUrl = url;
   await company.save();
   await AvatarService.deleteIfLocal(previous);
+  await cache.invalidateCompany(company.slug);
   return company;
 }
 
@@ -169,6 +174,11 @@ export async function deleteCompany(companyId: string): Promise<void> {
   const company = await Company.find(companyId);
   if (!company) throw new Exception('Company not found', { status: 404 });
   await company.delete();
+  // The delete cascades to teams → team projects; drop their cached mocks and
+  // the company's public view in one tag purge (plus the explicit key, which
+  // may predate tagging).
+  await cache.purgeCompany(company.id);
+  await cache.invalidateCompany(company.slug);
 }
 
 /**
@@ -184,7 +194,7 @@ export async function transferOwnership(
   companyId: string,
   newOwnerProfileId: string
 ): Promise<void> {
-  await db.transaction(async (trx) => {
+  const slug = await db.transaction(async (trx) => {
     const company = await Company.find(companyId, { client: trx });
     if (!company) throw new Exception('Company not found', { status: 404 });
 
@@ -220,5 +230,7 @@ export async function transferOwnership(
     company.useTransaction(trx);
     company.ownerUserId = newOwner.userId;
     await company.save();
+    return company.slug;
   });
+  await cache.invalidateCompany(slug);
 }

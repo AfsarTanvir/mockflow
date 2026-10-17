@@ -1,5 +1,5 @@
 import vine from '@vinejs/vine';
-import { CACHE_SECTIONS } from '#services/cache_keys';
+import { CACHE_SCOPES, CACHE_SECTIONS } from '#services/cache_keys';
 import { cursorList } from '#validators/pagination_validator';
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
@@ -60,6 +60,13 @@ export const cacheKeyListValidator = vine.compile(
     search: vine.string().trim().maxLength(200).optional(),
     page: vine.number().min(1).optional(),
     perPage: vine.number().min(1).max(100).optional(),
+  })
+);
+
+export const cacheScopeValidator = vine.compile(
+  vine.object({
+    scope: vine.enum(CACHE_SCOPES),
+    id: vine.string().trim().uuid(),
   })
 );
 

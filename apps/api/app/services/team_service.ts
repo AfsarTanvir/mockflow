@@ -6,6 +6,7 @@ import CompanyMetadata from '../models/company_metadata.js';
 import type { TeamVisibility } from '../models/team.js';
 import type { TeamExternalLink, TeamSettings } from '../models/team_metadata.js';
 import { slugify } from './slug_helper.js';
+import * as cache from './cache_service.js';
 
 export interface CreateTeamInput {
   name: string;
@@ -105,4 +106,6 @@ export async function deleteTeam(teamId: string): Promise<void> {
       .where('company_id', companyId)
       .decrement('total_team', 1);
   });
+  // The delete cascades to the team's projects — drop their cached mocks too.
+  await cache.purgeTeam(teamId);
 }

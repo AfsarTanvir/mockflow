@@ -1,5 +1,10 @@
 import * as cache from '#services/cache_service';
-import { isCacheSection, type CacheSection } from '#services/cache_keys';
+import {
+  cacheTags,
+  isCacheSection,
+  type CacheScope,
+  type CacheSection,
+} from '#services/cache_keys';
 
 /**
  * Read/aggregate/clear helpers for the admin Cache console. Thin orchestration
@@ -73,6 +78,16 @@ export async function deleteSection(section: string): Promise<number> {
     throw new Error(`Unknown cache section "${section}"`);
   }
   return cache.delByPrefix(`${section}:`);
+}
+
+/** Keys currently cached for one project / team / company (via its tag index). */
+export async function scopeKeys(scope: CacheScope, id: string) {
+  return { scope, id, keys: await cache.tagMembers(cacheTags[scope](id)) };
+}
+
+/** Delete everything cached for one project / team / company. Returns keys removed. */
+export async function purgeScope(scope: CacheScope, id: string): Promise<number> {
+  return cache.purgeTag(cacheTags[scope](id));
 }
 
 export async function flushAll(): Promise<number> {

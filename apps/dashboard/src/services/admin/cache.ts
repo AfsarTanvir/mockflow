@@ -1,5 +1,13 @@
 import httpClient from '@/http-client';
-import type { CacheEntry, CacheKeyList, CacheKeyListParams, CacheOverview } from '@/types/admin';
+import type {
+  CacheEntry,
+  CacheKeyList,
+  CacheKeyListParams,
+  CacheOverview,
+  CacheScope,
+  CacheScopeKeys,
+  CacheScopePurgeResult,
+} from '@/types/admin';
 
 /** Super-admin Redis cache console API client (routes gated by superAdmin). */
 
@@ -24,6 +32,23 @@ export async function deleteCacheKey(key: string): Promise<void> {
 
 export async function deleteCacheSection(section: string): Promise<void> {
   await httpClient.delete(`/api/admin/cache/section/${encodeURIComponent(section)}`);
+}
+
+/** Keys currently cached for one project / team / company. */
+export async function getCacheScopeKeys(scope: CacheScope, id: string): Promise<CacheScopeKeys> {
+  const { data } = await httpClient.get<CacheScopeKeys>(`/api/admin/cache/scope/${scope}/${id}`);
+  return data;
+}
+
+/** Clear everything cached for one project / team / company. */
+export async function purgeCacheScope(
+  scope: CacheScope,
+  id: string
+): Promise<CacheScopePurgeResult> {
+  const { data } = await httpClient.delete<CacheScopePurgeResult>(
+    `/api/admin/cache/scope/${scope}/${id}`
+  );
+  return data;
 }
 
 export async function flushCache(): Promise<void> {
