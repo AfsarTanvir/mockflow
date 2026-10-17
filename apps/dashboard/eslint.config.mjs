@@ -14,11 +14,6 @@ const config = [
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       '@next/next/no-html-link-for-pages': 'off',
-      // React Compiler rules new in eslint-plugin-react-hooks 7 (Next 16). They flag
-      // patterns that work today (reading localStorage in an effect, a full-page
-      // redirect via window.location); warn until those spots are refactored.
-      'react-hooks/set-state-in-effect': 'warn',
-      'react-hooks/immutability': 'warn',
     },
   },
 ];
