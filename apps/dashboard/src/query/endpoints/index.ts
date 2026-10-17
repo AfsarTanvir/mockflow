@@ -31,6 +31,8 @@ export const useCreateEndpoint = (projectId: string) => {
         ...old,
         endpoint,
       ]);
+      // A new, more specific endpoint can take over a scheduled call's path.
+      queryClient.invalidateQueries({ queryKey: [QueryKey.SCHEDULED_CALLS, projectId] });
     },
   });
 };
@@ -44,6 +46,8 @@ export const useUpdateEndpoint = (projectId: string) => {
       queryClient.setQueryData<Endpoint[]>([QueryKey.ENDPOINTS, projectId], (old = []) =>
         old.map((e) => (e.id === updated.id ? updated : e))
       );
+      // Which endpoint serves a scheduled call can change with any endpoint edit.
+      queryClient.invalidateQueries({ queryKey: [QueryKey.SCHEDULED_CALLS, projectId] });
     },
   });
 };
@@ -57,6 +61,8 @@ export const useDeleteEndpoint = (projectId: string) => {
       queryClient.setQueryData<Endpoint[]>([QueryKey.ENDPOINTS, projectId], (old = []) =>
         old.filter((e) => e.id !== id)
       );
+      // Which endpoint serves a scheduled call can change with any endpoint edit.
+      queryClient.invalidateQueries({ queryKey: [QueryKey.SCHEDULED_CALLS, projectId] });
     },
   });
 };
@@ -70,6 +76,8 @@ export const useToggleEndpoint = (projectId: string) => {
       queryClient.setQueryData<Endpoint[]>([QueryKey.ENDPOINTS, projectId], (old = []) =>
         old.map((e) => (e.id === updated.id ? updated : e))
       );
+      // Which endpoint serves a scheduled call can change with any endpoint edit.
+      queryClient.invalidateQueries({ queryKey: [QueryKey.SCHEDULED_CALLS, projectId] });
     },
   });
 };

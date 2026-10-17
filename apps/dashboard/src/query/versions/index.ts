@@ -62,6 +62,8 @@ export const useRestoreVersion = (projectId: string) => {
       // Invalidate endpoints and project so the UI reflects restored state
       queryClient.invalidateQueries({ queryKey: [QueryKey.ENDPOINTS, projectId] });
       queryClient.invalidateQueries({ queryKey: [QueryKey.PROJECT, projectId] });
+      // Restore re-links scheduled calls to the re-created endpoints (new ids).
+      queryClient.invalidateQueries({ queryKey: [QueryKey.SCHEDULED_CALLS, projectId] });
     },
   });
 };
