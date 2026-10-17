@@ -22,6 +22,20 @@ export async function getProfilesInCompany(companyId: string): Promise<Profile[]
   return data;
 }
 
+export interface AddCompanyMemberBody {
+  email: string;
+  role?: Exclude<ProfileRole, 'owner'>;
+}
+
+/** Owner/admin manually adds an existing MockFlow user (by email) to the company. */
+export async function addCompanyMember(
+  companyId: string,
+  body: AddCompanyMemberBody
+): Promise<Profile> {
+  const { data } = await httpClient.post<Profile>(`/api/companies/${companyId}/profiles`, body);
+  return data;
+}
+
 export async function getMyProfile(companyId: string): Promise<Profile> {
   const { data } = await httpClient.get<Profile>(`/api/profiles/me?company=${companyId}`);
   return data;

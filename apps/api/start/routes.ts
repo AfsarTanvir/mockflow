@@ -187,6 +187,7 @@ router
 
     // Profiles nested under a company
     router.get('/:companyId/profiles', [ProfilesController, 'index']);
+    router.post('/:companyId/profiles', [ProfilesController, 'store']);
 
     // Teams nested under a company
     router.get('/:companyId/teams', [TeamsController, 'index']);
