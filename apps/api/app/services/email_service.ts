@@ -43,7 +43,7 @@ export async function sendVerificationEmail({
   const verifyUrl = `${appUrl}/auth/verify?token=${verificationToken}`;
 
   if (!hasEmailTransport()) {
-    console.log(`[MockFlow] Email verification URL for ${toEmail}: ${verifyUrl}`);
+    console.info(`[MockFlow] Email verification URL for ${toEmail}: ${verifyUrl}`);
     return;
   }
 
@@ -51,7 +51,7 @@ export async function sendVerificationEmail({
   const from = getFromAddress();
   const usingMailtrapApi = !!process.env.MAILTRAP_TOKEN;
 
-  console.log(`[MockFlow] Sending verification email`, {
+  console.info(`[MockFlow] Sending verification email`, {
     to: toEmail,
     from,
     transport: usingMailtrapApi ? 'mailtrap-api' : 'smtp',
@@ -122,7 +122,7 @@ export async function sendVerificationEmail({
   });
 
   const transportInfo = info as unknown as Record<string, unknown>;
-  console.log(`[MockFlow] Verification email sent to ${toEmail}`, {
+  console.info(`[MockFlow] Verification email sent to ${toEmail}`, {
     messageId: transportInfo.messageId,
     response: transportInfo.response,
     accepted: transportInfo.accepted,
@@ -143,14 +143,14 @@ export async function sendPasswordResetEmail({
   const resetUrl = `${appUrl}/auth/reset-password?token=${resetToken}`;
 
   if (!hasEmailTransport()) {
-    console.log(`[MockFlow] Password reset URL for ${toEmail}: ${resetUrl}`);
+    console.info(`[MockFlow] Password reset URL for ${toEmail}: ${resetUrl}`);
     return;
   }
 
   const transport = createTransport();
   const from = getFromAddress();
 
-  console.log(`[MockFlow] Sending password reset email to ${toEmail}`);
+  console.info(`[MockFlow] Sending password reset email to ${toEmail}`);
 
   await transport.sendMail({
     from,
@@ -231,7 +231,7 @@ export async function sendInviteEmail({
   const inviteUrl = `${appUrl}/invite/${inviteToken}`;
 
   if (!hasEmailTransport()) {
-    console.log(`[MockFlow] Invite URL for ${toEmail}: ${inviteUrl}`);
+    console.info(`[MockFlow] Invite URL for ${toEmail}: ${inviteUrl}`);
     return;
   }
 
