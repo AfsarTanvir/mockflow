@@ -5,6 +5,7 @@ import { Database, Eye, Trash2 } from 'lucide-react';
 
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { AdminListView, type Column } from '@/components/admin/admin-list-view';
+import { CacheScopeCard } from '@/components/admin/cache-scope-card';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -158,6 +159,8 @@ export function AdminCacheClient() {
           </>
         )}
       </div>
+
+      <CacheScopeCard />
 
       {/* Sections */}
       <div className="space-y-2">

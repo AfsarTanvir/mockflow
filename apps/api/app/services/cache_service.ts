@@ -2,19 +2,29 @@ import redis from '@adonisjs/redis/services/main';
 import logger from '@adonisjs/core/services/logger';
 import { DateTime } from 'luxon';
 import env from '#start/env';
-import { cacheKeys, CACHE_SECTIONS, type CacheSection } from '#services/cache_keys';
+import {
+  cacheKeys,
+  cacheTags,
+  tagSetKey,
+  CACHE_SECTIONS,
+  type CacheSection,
+} from '#services/cache_keys';
 
 /**
  * Redis cache (cache-aside) with mandatory graceful degradation: if Redis is
  * unavailable or disabled, every operation behaves as a miss / no-op so callers
  * fall back to Postgres. The mock endpoint must never 500 because of the cache.
  *
- * This module owns the single `mockflow:cache:` root prefix (see config/redis.ts
- * for why ioredis keyPrefix is left empty). Callers pass LOGICAL keys built via
+ * This module owns the root prefix (default `mockflow:cache:`, overridable via
+ * CACHE_PREFIX so e.g. tests get their own namespace — see config/redis.ts for
+ * why ioredis keyPrefix is left empty). Callers pass LOGICAL keys built via
  * #services/cache_keys; we prepend/strip the root prefix here.
  */
 
-const ROOT = 'mockflow:cache:';
+const ROOT = (() => {
+  const prefix = env.get('CACHE_PREFIX', 'mockflow:cache:');
+  return prefix.endsWith(':') ? prefix : `${prefix}:`;
+})();
 const ENABLED = env.get('CACHE_ENABLED') !== false; // default true when unset
 export const CACHE_TTL = {
   mock: env.get('CACHE_TTL_MOCK', 300),
@@ -27,6 +37,9 @@ const MAX_VALUE_BYTES = 512 * 1024;
 // Marks a cached "not found" so unknown lookups (e.g. bad/guessed slugs) don't
 // hit Postgres on every request. A bare token can never equal a JSON value.
 const NEGATIVE_SENTINEL = '__cache_miss__';
+// Tag index sets must outlive every key they list, so each write refreshes the
+// set's TTL to the longest TTL any cached value can have (+ jitter headroom).
+const TAG_TTL = Math.ceil(Math.max(CACHE_TTL.mock, CACHE_TTL.entity) * 1.1) + 60;
 
 const full = (key: string) => ROOT + key;
 const strip = (fullKey: string) =>
@@ -54,8 +67,17 @@ function jitter(ttlSeconds: number): number {
 }
 
 const oversizeWarned = new Set<string>();
-/** Best-effort SET with jittered TTL, skipping values over the size cap. */
-async function writeCache(key: string, serialized: string, ttlSeconds: number): Promise<void> {
+/**
+ * Best-effort SET with jittered TTL, skipping values over the size cap. When
+ * `tags` are given, the key is also added to each tag's index set in the same
+ * MULTI, so a cached value is never written without its scope membership.
+ */
+async function writeCache(
+  key: string,
+  serialized: string,
+  ttlSeconds: number,
+  tags: string[] = []
+): Promise<void> {
   if (serialized.length > MAX_VALUE_BYTES) {
     if (!oversizeWarned.has(key)) {
       oversizeWarned.add(key);
@@ -66,7 +88,15 @@ async function writeCache(key: string, serialized: string, ttlSeconds: number): 
     return;
   }
   try {
-    await redis.setex(full(key), jitter(ttlSeconds), serialized);
+    if (tags.length === 0) {
+      await redis.setex(full(key), jitter(ttlSeconds), serialized);
+    } else {
+      const tx = redis.multi().setex(full(key), jitter(ttlSeconds), serialized);
+      for (const tag of tags) {
+        tx.sadd(full(tagSetKey(tag)), key).expire(full(tagSetKey(tag)), TAG_TTL);
+      }
+      await tx.exec();
+    }
     onOk();
   } catch (err) {
     onError('setex', err);
@@ -97,12 +127,15 @@ const inflight = new Map<string, Promise<unknown>>();
  * Cache-aside read: return cached JSON on hit, else run `loader`, cache, return.
  * Pass `negativeTtl` to briefly cache "not found" (loader → null/undefined) so
  * unknown lookups don't hit the DB on every request.
+ * Pass `tags` (or a function of the loaded value) to index the key under its
+ * project/team/company scope so it can be purged with purgeTag(). Negative
+ * entries are never tagged.
  */
 export async function remember<T>(
   key: string,
   ttlSeconds: number,
   loader: () => Promise<T>,
-  opts?: { negativeTtl?: number }
+  opts?: { negativeTtl?: number; tags?: string[] | ((value: T) => string[]) }
 ): Promise<T> {
   if (!ENABLED) return loader();
 
@@ -129,7 +162,8 @@ export async function remember<T>(
     try {
       const value = await loader();
       if (value !== null && value !== undefined) {
-        await writeCache(key, JSON.stringify(value), ttlSeconds);
+        const tags = typeof opts?.tags === 'function' ? opts.tags(value) : (opts?.tags ?? []);
+        await writeCache(key, JSON.stringify(value), ttlSeconds, tags);
       } else if (opts?.negativeTtl) {
         await writeCache(key, NEGATIVE_SENTINEL, opts.negativeTtl);
       }
@@ -155,9 +189,14 @@ export async function get<T>(key: string): Promise<T | null> {
   }
 }
 
-export async function set(key: string, value: unknown, ttlSeconds: number): Promise<void> {
+export async function set(
+  key: string,
+  value: unknown,
+  ttlSeconds: number,
+  tags: string[] = []
+): Promise<void> {
   if (!ENABLED || value === null || value === undefined) return;
-  await writeCache(key, JSON.stringify(value), ttlSeconds);
+  await writeCache(key, JSON.stringify(value), ttlSeconds, tags);
 }
 
 /** Delete one or more logical keys (non-blocking UNLINK). */
@@ -191,6 +230,48 @@ export async function delByPrefix(logicalPrefix: string): Promise<number> {
     onError('delByPrefix', err);
   }
   return deleted;
+}
+
+// Atomically delete every key listed in a tag set, then the set itself. Runs as
+// one script so a concurrent write can't add a member between read and delete.
+// Returns how many member keys actually existed.
+const PURGE_TAG_SCRIPT = `
+local members = redis.call('SMEMBERS', KEYS[1])
+local deleted = 0
+for i = 1, #members do
+  deleted = deleted + redis.call('UNLINK', ARGV[1] .. members[i])
+end
+redis.call('UNLINK', KEYS[1])
+return deleted
+`;
+
+/**
+ * Delete everything cached under one scope tag (e.g. `company:<id>`). Cost is
+ * proportional to that scope's keys, not the size of the cache.
+ */
+export async function purgeTag(tag: string): Promise<number> {
+  if (!ENABLED) return 0;
+  try {
+    const deleted = await redis.eval(PURGE_TAG_SCRIPT, 1, full(tagSetKey(tag)), ROOT);
+    onOk();
+    return Number(deleted) || 0;
+  } catch (err) {
+    onError('purgeTag', err);
+    return 0;
+  }
+}
+
+/** Logical keys currently indexed under a tag (for inspection). */
+export async function tagMembers(tag: string): Promise<string[]> {
+  if (!ENABLED) return [];
+  try {
+    const members = await redis.smembers(full(tagSetKey(tag)));
+    onOk();
+    return members.sort();
+  } catch (err) {
+    onError('smembers', err);
+    return [];
+  }
 }
 
 /** Flush the entire cache namespace (only keys under the root prefix). */
@@ -320,11 +401,29 @@ export async function invalidateMock(projectId: string): Promise<void> {
 
 /** Project deleted → drop blueprint, slug mapping and entity cache. */
 export async function invalidateProjectFull(projectId: string, slug: string): Promise<void> {
+  // Explicit keys first (covers values cached before tagging existed), then
+  // anything else indexed under the project.
   await del(
     cacheKeys.mockBlueprint(projectId),
     cacheKeys.mockSlug(slug),
     cacheKeys.project(projectId)
   );
+  await purgeTag(cacheTags.project(projectId));
+}
+
+/** Everything cached for one project (mock slug + blueprint, …). */
+export function purgeProject(projectId: string): Promise<number> {
+  return purgeTag(cacheTags.project(projectId));
+}
+
+/** Everything cached for a team's projects. */
+export function purgeTeam(teamId: string): Promise<number> {
+  return purgeTag(cacheTags.team(teamId));
+}
+
+/** Everything cached for a company: its public view + all its team projects' mocks. */
+export function purgeCompany(companyId: string): Promise<number> {
+  return purgeTag(cacheTags.company(companyId));
 }
 
 export async function invalidateProjectEntity(projectId: string): Promise<void> {

@@ -10,7 +10,9 @@ import {
   reactivateProfile,
   leaveProfile,
   removeProfile,
+  addCompanyMember,
   type UpdateProfileBody,
+  type AddCompanyMemberBody,
 } from '@/services/profiles';
 import { QueryKey } from '@/types/query-key.enum';
 import type { ProfileRole } from '@/types';
@@ -51,6 +53,19 @@ function invalidateProfileCaches(
   queryClient.invalidateQueries({ queryKey: [QueryKey.MY_COMPANIES] });
   if (profileId) queryClient.invalidateQueries({ queryKey: [QueryKey.PROFILE, profileId] });
 }
+
+export const useAddCompanyMember = (companyId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: AddCompanyMemberBody) => addCompanyMember(companyId, body),
+    onSuccess: () => {
+      invalidateProfileCaches(queryClient, companyId);
+      // Team "add member" pickers and the company overview counts read these too.
+      queryClient.invalidateQueries({ queryKey: [QueryKey.COMPANY] });
+    },
+  });
+};
 
 export const useUpdateProfile = (id: string, companyId: string) => {
   const queryClient = useQueryClient();

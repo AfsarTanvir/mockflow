@@ -8,8 +8,14 @@ import * as ScheduledCallService from '#services/scheduled_call_service';
 import * as cache from '#services/cache_service';
 import { cacheKeys } from '#services/cache_keys';
 import { CACHE_TTL } from '#services/cache_service';
-import { buildBlueprint, type BlueprintEndpoint } from '#services/mock_blueprint';
+import {
+  buildBlueprint,
+  projectScope,
+  scopeTags,
+  type BlueprintEndpoint,
+} from '#services/mock_blueprint';
 import { pickScenario } from '#services/scenario_resolver';
+import { stripBasePath } from '#services/base_path';
 import { evaluateBody } from '#services/faker_evaluator';
 
 export interface MockResponse {
@@ -66,15 +72,19 @@ export async function resolveMock(
   // 1. Resolve slug → projectId (cached; loader returns null when absent). The
   //    slug→id mapping is immutable for a project's lifetime, so it never needs
   //    invalidation except on delete.
+  let slugTags: string[] = [];
   const projectId = await cache.remember<string | null>(
     cacheKeys.mockSlug(projectSlug),
     CACHE_TTL.mock,
     async () => {
       const p = await ProjectQueries.findBySlug(projectSlug);
-      return p ? p.id : null;
+      if (!p) return null;
+      slugTags = scopeTags(await projectScope(p));
+      return p.id;
     },
-    // Briefly remember unknown slugs so bad/guessed slugs don't hit the DB every time.
-    { negativeTtl: 30 }
+    // Briefly remember unknown slugs so bad/guessed slugs don't hit the DB every
+    // time; known slugs are tagged with their project/team/company scope.
+    { negativeTtl: 30, tags: () => slugTags }
   );
   if (!projectId) throw notFound(projectSlug);
 
@@ -87,7 +97,8 @@ export async function resolveMock(
     async () => {
       cacheStatus = 'miss';
       return buildBlueprint(projectId);
-    }
+    },
+    { tags: (bp) => (bp ? scopeTags(bp.scope) : []) }
   );
   if (!blueprint) throw notFound(projectSlug);
 
@@ -100,12 +111,16 @@ export async function resolveMock(
     if (!role) throw notFound(projectSlug);
   }
 
-  // 4. Match an active endpoint by method + path (in memory).
+  // 4. Match an active endpoint by method + path (in memory). Endpoint paths are
+  //    relative to the project's base path, so strip it first; a request outside
+  //    the base path can't match anything. (`?? ''`: blueprints cached before
+  //    basePath was added behave as root until they expire.)
+  const relativePath = stripBasePath(incomingPath, blueprint.basePath ?? '');
   let matched: BlueprintEndpoint | null = null;
   let pathParams: Record<string, string> = {};
-  for (const endpoint of blueprint.endpoints) {
+  for (const endpoint of relativePath === null ? [] : blueprint.endpoints) {
     if (endpoint.method !== method) continue;
-    const result = match(endpoint.path, { decode: decodeURIComponent })(incomingPath);
+    const result = match(endpoint.path, { decode: decodeURIComponent })(relativePath!);
     if (result) {
       matched = endpoint;
       pathParams = result.params as Record<string, string>;
@@ -113,7 +128,9 @@ export async function resolveMock(
     }
   }
   if (!matched) {
-    throw new Exception(`No active ${method} endpoint matching "${incomingPath}"`, {
+    const hint =
+      relativePath === null ? ` (this project's endpoints live under "${blueprint.basePath}")` : '';
+    throw new Exception(`No active ${method} endpoint matching "${incomingPath}"${hint}`, {
       status: 404,
       code: 'E_ENDPOINT_NOT_FOUND',
     });

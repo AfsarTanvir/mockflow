@@ -40,6 +40,9 @@ function callFaker(category: string, method: string, args: unknown[]): string {
     if (typeof fn !== 'function') return `{{faker.${category}.${method}}}`;
     const result = (fn as Function).apply(cat, args);
     if (result === null || result === undefined) return '';
+    // Dates are objects too, but JSON.stringify would wrap them in quotes
+    // ("\"2026-…Z\"") inside the already-quoted JSON string value.
+    if (result instanceof Date) return result.toISOString();
     if (typeof result === 'object') return JSON.stringify(result);
     return String(result);
   } catch {

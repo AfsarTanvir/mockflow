@@ -7,6 +7,7 @@ import { useAdminCompanies, useAdminDeleteCompany } from '@/query/admin';
 import { AdminListView, type Column } from '@/components/admin/admin-list-view';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { PersonCell } from '@/components/admin/person-cell';
+import { ClearCacheButton } from '@/components/admin/clear-cache-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -104,24 +105,27 @@ export function AdminCompaniesClient() {
         searchPlaceholder="Search by name or slug…"
         emptyTitle="No companies found"
         renderActions={(c) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="ghost" size="icon-sm" aria-label="Company actions">
-                  <MoreHorizontal className="size-4" />
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => handleDelete(c)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="mr-2 size-4" />
-                Delete company
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center justify-end gap-1">
+            <ClearCacheButton scope="company" id={c.id} />
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="ghost" size="icon-sm" aria-label="Company actions">
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => handleDelete(c)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 size-4" />
+                  Delete company
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       />
     </div>

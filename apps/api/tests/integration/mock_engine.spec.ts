@@ -57,7 +57,7 @@ test.group('mock engine', (group) => {
   type Settings = { cors: boolean; log_requests: boolean; global_headers?: Record<string, string> };
 
   async function seedProject(
-    opts: { isPublic?: boolean; settings?: Partial<Settings> } = {}
+    opts: { isPublic?: boolean; basePath?: string; settings?: Partial<Settings> } = {}
   ): Promise<{ owner: User; project: Project }> {
     const id = uniq();
     const owner = await User.create({
@@ -69,7 +69,7 @@ test.group('mock engine', (group) => {
     const project = await Project.create({
       name: 'P',
       slug: `p-${id}`,
-      basePath: '/',
+      basePath: opts.basePath ?? '/',
       ownerId: owner.id,
       isPublic: opts.isPublic ?? true,
       settings: {
@@ -128,6 +128,33 @@ test.group('mock engine', (group) => {
 
     assert.equal(res.statusCode, 200);
     assert.deepEqual(res.body, { pong: true });
+  });
+
+  /* ---------------- base path ---------------- */
+
+  test('endpoints answer under the project base path', async ({ assert }) => {
+    const { project } = await seedProject({ basePath: '/v1' });
+    await makeEndpoint(project.id, { path: '/users/:id', responseBody: { id: '{{param.id}}' } });
+
+    const res = await call(project.slug, 'GET', '/v1/users/42');
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(res.body, { id: '42' });
+  });
+
+  test('a request outside the base path is a 404', async ({ assert }) => {
+    const { project } = await seedProject({ basePath: '/v1' });
+    await makeEndpoint(project.id, { path: '/users' });
+
+    assert.equal(await status(call(project.slug, 'GET', '/users')), 404);
+    assert.equal(await status(call(project.slug, 'GET', '/v10/users')), 404);
+  });
+
+  test('the base path itself maps to the "/" endpoint', async ({ assert }) => {
+    const { project } = await seedProject({ basePath: '/v1' });
+    await makeEndpoint(project.id, { path: '/', responseBody: { root: true } });
+
+    const res = await call(project.slug, 'GET', '/v1');
+    assert.deepEqual(res.body, { root: true });
   });
 
   test('the same path under a different method does not match', async ({ assert }) => {

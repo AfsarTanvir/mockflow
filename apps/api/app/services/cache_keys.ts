@@ -23,7 +23,7 @@ export const CACHE_SECTIONS = [
 export type CacheSection = (typeof CACHE_SECTIONS)[number];
 
 export const cacheKeys = {
-  /** slug → { projectId, isPublic, ownerId, teamId } (mock entry resolution). */
+  /** slug → projectId (mock entry resolution). */
   mockSlug: (slug: string) => `mock:slug:${slug}`,
   /** Full per-project mock resolution data (settings + endpoints + scenarios + rules). */
   mockBlueprint: (projectId: string) => `mock:blueprint:${projectId}`,
@@ -34,6 +34,24 @@ export const cacheKeys = {
   /** Whether the local-scheduler is reachable (cached 10 min, see scheduler_status_service). */
   schedulerStatus: () => 'scheduler:status',
 };
+
+/**
+ * Scope tags. Every cached value is also indexed under the project / team /
+ * company it belongs to (a Redis SET at `tag:<scope>:<id>` listing its keys),
+ * so a whole scope can be purged in one call without scanning the keyspace —
+ * see cache_service.purgeTag / purgeProject / purgeTeam / purgeCompany.
+ */
+export const CACHE_SCOPES = ['project', 'team', 'company'] as const;
+export type CacheScope = (typeof CACHE_SCOPES)[number];
+
+export const cacheTags = {
+  project: (id: string) => `project:${id}`,
+  team: (id: string) => `team:${id}`,
+  company: (id: string) => `company:${id}`,
+};
+
+/** Logical key of the SET that indexes a tag's member keys. */
+export const tagSetKey = (tag: string) => `tag:${tag}`;
 
 /** The section a logical key belongs to (everything before the final `:id`). */
 export function sectionOf(key: string): string {

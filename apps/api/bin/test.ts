@@ -2,6 +2,12 @@ import 'reflect-metadata';
 import { Ignitor, prettyPrintError } from '@adonisjs/core';
 import { configure, processCLIArgs, run } from '@japa/runner';
 
+/**
+ * Tests always run as NODE_ENV=test so Adonis layers .env.test over .env:
+ * a separate database and cache namespace, never the dev ones.
+ */
+process.env.NODE_ENV = 'test';
+
 const APP_ROOT = new URL('../', import.meta.url);
 
 const IMPORTER = (filePath: string) => {
@@ -21,13 +27,14 @@ new Ignitor(APP_ROOT, { importer: IMPORTER })
   })
   .testRunner()
   .configure(async (app) => {
-    const { runnerHooks, plugins } = await import('../tests/bootstrap.js');
+    const { runnerHooks, plugins, configureSuite } = await import('../tests/bootstrap.js');
     processCLIArgs(process.argv.splice(2));
     configure({
       ...app.rcFile.tests,
       plugins: plugins(app),
       setup: runnerHooks.setup,
       teardown: runnerHooks.teardown,
+      configureSuite,
     });
   })
   .run(() => run())
