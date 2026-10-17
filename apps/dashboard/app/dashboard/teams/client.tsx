@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +8,7 @@ import { Plus, Users, Globe, Lock, Building2 } from 'lucide-react';
 import { useMyCompanies } from '@/query/companies';
 import { useMyProfile } from '@/query/profiles';
 import { useWorkspaceTeams, useCreateWorkspaceTeam } from '@/query/teams';
-import { getActiveCompanyClient } from '@/lib/active-company';
+import { useActiveCompanySlug } from '@/hooks/use-active-company';
 import { createTeamSchema, type CreateTeamInput } from '@/schema/teams';
 import type { User, TeamVisibility } from '@/types';
 
@@ -40,11 +40,7 @@ function VisibilityBadge({ visibility }: { visibility: TeamVisibility }) {
 
 export default function TeamsListClient({ initialUser }: Props) {
   const { data: memberships = [], isLoading: companiesLoading } = useMyCompanies();
-  const [activeSlug, setActiveSlug] = useState<string | null>(null);
-
-  useEffect(() => {
-    setActiveSlug(getActiveCompanyClient());
-  }, []);
+  const activeSlug = useActiveCompanySlug();
 
   const active = memberships.find((m) => m.company.slug === activeSlug) ?? memberships[0];
   const companyId = active?.company.id ?? '';

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useMyCompanies } from '@/query/companies';
-import { getActiveCompanyClient, setActiveCompanyClient } from '@/lib/active-company';
+import { setActiveCompanyClient } from '@/lib/active-company';
+import { useActiveCompanySlug } from '@/hooks/use-active-company';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,33 +39,22 @@ export function CompanySwitcher() {
   const router = useRouter();
   const pathname = usePathname();
   const { data: memberships = [], isLoading } = useMyCompanies();
-  const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  const cookieSlug = useActiveCompanySlug();
 
-  // The URL is the source of truth on company routes; else fall back to the cookie.
-  useEffect(() => {
-    const fromUrl = pathname.match(/^\/companies\/([^/]+)/)?.[1];
-    if (fromUrl) {
-      setActiveSlug(decodeURIComponent(fromUrl));
-      setActiveCompanyClient(decodeURIComponent(fromUrl));
-    } else {
-      setActiveSlug(getActiveCompanyClient());
-    }
-  }, [pathname]);
+  // The URL is the source of truth on company routes; else the cookie. Once the
+  // memberships are known, a missing or stale slug falls back to the first one.
+  const fromUrl = pathname.match(/^\/companies\/([^/]+)/)?.[1];
+  const candidate = fromUrl ? decodeURIComponent(fromUrl) : cookieSlug;
+  const isMember = memberships.some((m) => m.company.slug === candidate);
+  const activeSlug =
+    memberships.length === 0 || (candidate && isMember) ? candidate : memberships[0].company.slug;
 
-  // If we have memberships but no active slug (or it points at a company the
-  // user no longer belongs to), fall back to the first membership.
+  // Remember the choice for the server (and the next visit).
   useEffect(() => {
-    if (memberships.length === 0) return;
-    const validSlugs = new Set(memberships.map((m) => m.company.slug));
-    if (!activeSlug || !validSlugs.has(activeSlug)) {
-      const next = memberships[0].company.slug;
-      setActiveSlug(next);
-      setActiveCompanyClient(next);
-    }
-  }, [memberships, activeSlug]);
+    if (activeSlug && activeSlug !== cookieSlug) setActiveCompanyClient(activeSlug);
+  }, [activeSlug, cookieSlug]);
 
   function handlePick(slug: string) {
-    setActiveSlug(slug);
     setActiveCompanyClient(slug);
     router.push(`/companies/${slug}`);
   }
