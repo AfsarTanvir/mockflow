@@ -38,7 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <DashboardHeader user={user} />
         <div className="flex flex-1">
           <AdminSidebar />
-          <SidebarInset className="bg-muted/30">{children}</SidebarInset>
+          <SidebarInset className="bg-muted/30 min-w-0">{children}</SidebarInset>
         </div>
       </div>
     </SidebarProvider>
