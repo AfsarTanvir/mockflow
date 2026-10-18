@@ -10,6 +10,7 @@ export enum QueryKey {
 
   // Endpoints
   ENDPOINTS = 'ENDPOINTS',
+  MY_ENDPOINTS = 'MY_ENDPOINTS',
   ENDPOINT = 'ENDPOINT',
 
   // Team

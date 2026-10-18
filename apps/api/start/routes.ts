@@ -94,6 +94,7 @@ router
   .group(() => {
     router.get('/api/projects/:projectId/endpoints', [EndpointsController, 'index']);
     router.post('/api/projects/:projectId/endpoints', [EndpointsController, 'store']);
+    router.get('/api/endpoints', [EndpointsController, 'mine']);
     router.get('/api/endpoints/:id', [EndpointsController, 'show']);
     router.put('/api/endpoints/:id', [EndpointsController, 'update']);
     router.delete('/api/endpoints/:id', [EndpointsController, 'destroy']);

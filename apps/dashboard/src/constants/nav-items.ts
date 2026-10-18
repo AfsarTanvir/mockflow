@@ -40,7 +40,6 @@ export const dashboardNavGroups: NavGroup[] = [
         label: 'Endpoints',
         icon: Zap,
         href: '/dashboard/endpoints',
-        disabled: true,
       },
       {
         label: 'Team',
