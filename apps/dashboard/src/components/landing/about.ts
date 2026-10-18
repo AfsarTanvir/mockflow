@@ -6,11 +6,8 @@ export const AUTHOR = {
   name: 'Afsar Tanvir',
   initials: 'AT',
   role: 'Full-stack developer · creator of MockFlow',
-  email: 'afsartanvir786@gmail.com',
-  github: [
-    { handle: 'AfsarTanvir', url: 'https://github.com/AfsarTanvir' },
-    { handle: 'AfsarTanvir786', url: 'https://github.com/AfsarTanvir786' },
-  ],
+  email: 'afsartanvir805@gmail.com',
+  github: [{ handle: 'AfsarTanvir', url: 'https://github.com/AfsarTanvir' }],
 };
 
 export const REPO_URL = 'https://github.com/AfsarTanvir/mockflow';
