@@ -5,6 +5,7 @@ import {
   Users,
   UsersRound,
   Settings,
+  BookOpen,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -56,6 +57,12 @@ export const dashboardNavGroups: NavGroup[] = [
         label: 'Settings',
         icon: Settings,
         href: '/dashboard/me',
+      },
+      {
+        // Generated from the API's routes (GET /api/docs on the API server).
+        label: 'API docs',
+        icon: BookOpen,
+        href: `${process.env.NEXT_PUBLIC_API_URL}/api/docs`,
       },
     ],
   },
