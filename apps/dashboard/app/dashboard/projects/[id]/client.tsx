@@ -177,63 +177,71 @@ export default function ProjectDetailClient({
         </div>
       </div>
 
-      {activeTab === 'endpoints' && (
-        <>
-          {showCreateForm && canWrite && (
-            <div className="bg-card mb-6 rounded-xl border p-5 sm:p-6">
-              <h3 className="text-foreground mb-5 text-sm font-semibold">New Endpoint</h3>
-              <EndpointForm
-                mode="create"
-                onSubmit={handleCreate}
-                onCancel={() => setShowCreateForm(false)}
-                isPending={creating}
-                error={createError}
-              />
-            </div>
-          )}
+      {/* Keyed by tab, so each tab's content eases in when it opens. */}
+      <div
+        key={activeTab}
+        className="animate-in fade-in slide-in-from-bottom-1 duration-200 ease-out motion-reduce:animate-none"
+      >
+        {activeTab === 'endpoints' && (
+          <>
+            {showCreateForm && canWrite && (
+              <div className="bg-card mb-6 rounded-xl border p-5 sm:p-6">
+                <h3 className="text-foreground mb-5 text-sm font-semibold">New Endpoint</h3>
+                <EndpointForm
+                  mode="create"
+                  onSubmit={handleCreate}
+                  onCancel={() => setShowCreateForm(false)}
+                  isPending={creating}
+                  error={createError}
+                />
+              </div>
+            )}
 
-          <h2 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
-            Endpoints ({endpoints.length})
-          </h2>
+            <h2 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
+              Endpoints ({endpoints.length})
+            </h2>
 
-          <EndpointList
-            endpoints={endpoints}
-            projectId={currentProject.id}
-            isLoading={isLoading}
-            canWrite={canWrite}
-            mockBaseUrl={mockBaseUrl}
-            editingId={editingId}
-            scenariosOpenId={scenariosOpenId}
-            schedulesOpenId={schedulesOpenId}
-            scheduler={scheduler}
-            isUpdating={updating}
-            updateError={updateError}
-            onToggle={toggleEndpoint}
-            onEditClick={handleEditClick}
-            onScenariosClick={handleScenariosClick}
-            onSchedulesClick={handleSchedulesClick}
-            onDelete={handleDelete}
-            onUpdate={handleUpdate}
-            onCreateFirst={() => setShowCreateForm(true)}
+            <EndpointList
+              endpoints={endpoints}
+              projectId={currentProject.id}
+              isLoading={isLoading}
+              canWrite={canWrite}
+              mockBaseUrl={mockBaseUrl}
+              editingId={editingId}
+              scenariosOpenId={scenariosOpenId}
+              schedulesOpenId={schedulesOpenId}
+              scheduler={scheduler}
+              isUpdating={updating}
+              updateError={updateError}
+              onToggle={toggleEndpoint}
+              onEditClick={handleEditClick}
+              onScenariosClick={handleScenariosClick}
+              onSchedulesClick={handleSchedulesClick}
+              onDelete={handleDelete}
+              onUpdate={handleUpdate}
+              onCreateFirst={() => setShowCreateForm(true)}
+            />
+          </>
+        )}
+
+        {activeTab === 'team' && (
+          <TeamPanel projectId={currentProject.id} currentUserId={user.id} />
+        )}
+
+        {activeTab === 'history' && (
+          <VersionPanel projectId={currentProject.id} currentUserRole={currentUserRole} />
+        )}
+
+        {activeTab === 'logs' && <LogsPanel project={currentProject} />}
+
+        {activeTab === 'settings' && (
+          <ProjectSettingsPanel
+            key={currentProject.id}
+            project={currentProject}
+            currentUserRole={currentUserRole}
           />
-        </>
-      )}
-
-      {activeTab === 'team' && <TeamPanel projectId={currentProject.id} currentUserId={user.id} />}
-
-      {activeTab === 'history' && (
-        <VersionPanel projectId={currentProject.id} currentUserRole={currentUserRole} />
-      )}
-
-      {activeTab === 'logs' && <LogsPanel project={currentProject} />}
-
-      {activeTab === 'settings' && (
-        <ProjectSettingsPanel
-          key={currentProject.id}
-          project={currentProject}
-          currentUserRole={currentUserRole}
-        />
-      )}
+        )}
+      </div>
     </main>
   );
 }
