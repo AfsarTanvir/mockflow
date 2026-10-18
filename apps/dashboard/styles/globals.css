@@ -61,6 +61,49 @@
 
 }
 
+/* Landing-page motion. Everything here is switched off under
+   prefers-reduced-motion (see the end of this file). */
+@theme {
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-blink: blink 1s steps(1) infinite;
+  --animate-gradient-x: gradient-x 8s ease infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(24px, -18px) scale(1.06);
+    }
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  @keyframes gradient-x {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+}
+
 /* next/font sets --font-geist-sans on <html>; inline so the utility reads it at use. */
 @theme inline {
   --font-sans: var(--font-geist-sans), sans-serif;
@@ -233,5 +276,37 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Elements revealed on scroll start hidden only once JS has marked them. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-reveal='shown'] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
   }
 }
