@@ -158,7 +158,7 @@ export function EndpointRow({
       </div>
 
       {isEditing && canWrite && (
-        <div className="px-4 py-5 sm:px-6">
+        <div className="animate-in fade-in slide-in-from-top-1 px-4 py-5 duration-200 ease-out motion-reduce:animate-none sm:px-6">
           <EndpointForm
             mode="edit"
             initialValues={ep}
@@ -171,13 +171,13 @@ export function EndpointRow({
       )}
 
       {isScenariosOpen && (
-        <div className="px-4 py-5 sm:px-6">
+        <div className="animate-in fade-in slide-in-from-top-1 px-4 py-5 duration-200 ease-out motion-reduce:animate-none sm:px-6">
           <ScenariosManager endpointId={ep.id} canWrite={canWrite} />
         </div>
       )}
 
       {isSchedulesOpen && (
-        <div className="px-4 py-5 sm:px-6">
+        <div className="animate-in fade-in slide-in-from-top-1 px-4 py-5 duration-200 ease-out motion-reduce:animate-none sm:px-6">
           <ScheduledCallsPanel
             projectId={projectId}
             endpoint={ep}

@@ -1,0 +1,24 @@
+/* Imported by src/components/ui/card.tsx, so it loads wherever cards render. */
+
+/* Clickable cards in lists (a card inside a link, or a list card holding
+   one) lift slightly on hover. */
+a > [data-slot='card'],
+.grid > [data-slot='card']:has(a[href]) {
+  transition:
+    translate 0.2s ease-out,
+    box-shadow 0.2s ease-out,
+    border-color 0.2s ease-out;
+}
+a:hover > [data-slot='card'],
+.grid > [data-slot='card']:has(a[href]):hover {
+  translate: 0 -2px;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  a:hover > [data-slot='card'],
+  .grid > [data-slot='card']:has(a[href]):hover {
+    translate: none;
+  }
+}
