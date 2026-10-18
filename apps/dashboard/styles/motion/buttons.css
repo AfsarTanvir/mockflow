@@ -1,0 +1,32 @@
+/* Loaded after globals.css (app/layout.tsx); `@layer base` joins Tailwind's base layer. */
+
+/* Press feedback for every button (ui Button and plain <button>). `scale` is
+   its own CSS property, so it composes with any transform a button already
+   has (rotating chevrons, sliding toggles) instead of replacing it. */
+@layer base {
+  button,
+  [role='button'] {
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+/* Unlayered so it also wins over transition-colors & co. on the button: the
+   list covers everything those utilities animate, plus scale. Durations from
+   utilities (duration-300) still apply. */
+button,
+[role='button'] {
+  transition-property:
+    color, background-color, border-color, outline-color, text-decoration-color, fill, stroke,
+    opacity, box-shadow, transform, translate, scale, rotate;
+}
+button:not(:disabled):active,
+[role='button']:not([aria-disabled='true']):active {
+  scale: 0.97;
+}
+/* Same selectors as above, so this wins on specificity too. */
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active,
+  [role='button']:not([aria-disabled='true']):active {
+    scale: none;
+  }
+}
