@@ -59,6 +59,7 @@
     "@adonisjs/redis": "^10.0.0",
     "@adonisjs/tsconfig": "^2.0.0",
     "@faker-js/faker": "^10.6.0",
+    "@foadonis/openapi": "^1.1.0",
     "@poppinss/ts-exec": "^1.4.4",
     "@vinejs/vine": "^4.4.0",
     "luxon": "^3.4.4",

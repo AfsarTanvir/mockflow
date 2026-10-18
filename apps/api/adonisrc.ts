@@ -6,7 +6,11 @@ export default defineConfig({
   | Commands
   |--------------------------------------------------------------------------
   */
-  commands: [() => import('@adonisjs/core/commands'), () => import('@adonisjs/lucid/commands')],
+  commands: [
+    () => import('@adonisjs/core/commands'),
+    () => import('@adonisjs/lucid/commands'),
+    () => import('@foadonis/openapi/commands'),
+  ],
 
   /*
   |--------------------------------------------------------------------------
@@ -26,6 +30,7 @@ export default defineConfig({
     () => import('@adonisjs/cors/cors_provider'),
     () => import('@adonisjs/redis/redis_provider'),
     () => import('#providers/cache_provider'),
+    () => import('@foadonis/openapi/openapi_provider'),
   ],
 
   preloads: [() => import('#start/kernel'), () => import('#start/routes')],

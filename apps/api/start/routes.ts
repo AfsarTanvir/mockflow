@@ -1,4 +1,6 @@
 import router from '@adonisjs/core/services/router';
+import openapi from '@foadonis/openapi/services/main';
+import { buildDocument } from '#services/api_docs_service';
 import { middleware } from './kernel.js';
 
 const AuthController = () => import('../app/controllers/auth_controller.js');
@@ -339,6 +341,16 @@ router
 |--------------------------------------------------------------------------
 */
 router.any('/mock/:projectSlug/*', [MockController, 'execute']);
+
+/*
+|--------------------------------------------------------------------------
+| API docs — generated from these routes and their controllers (Scalar UI)
+|--------------------------------------------------------------------------
+*/
+router.get('/api/docs', ({ response }) =>
+  response.header('Content-Type', 'text/html').send(openapi.generateUi('/api/docs.json'))
+);
+router.get('/api/docs.json', async ({ response }) => response.ok(await buildDocument()));
 
 /*
 |--------------------------------------------------------------------------
