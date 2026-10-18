@@ -7,6 +7,7 @@ import { ConfirmProvider } from '@/providers/ConfirmProvider';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import '../styles/globals.css';
+import '../styles/motion/buttons.css';
 import { Geist } from 'next/font/google';
 import { cn } from '@/lib/utils';
 
