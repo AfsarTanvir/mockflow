@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import TanstackProvider from '@/providers/TanstackProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
-import { THEME_STORAGE_KEY } from '@/lib/theme';
+import { DEFAULT_THEME, THEME_STORAGE_KEY } from '@/lib/theme';
 import { ConfirmProvider } from '@/providers/ConfirmProvider';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 // Runs before paint to set the theme class, preventing a light/dark flash.
-const themeInitScript = `(function(){try{var t=localStorage.getItem('${THEME_STORAGE_KEY}')||'light';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;r.classList.toggle('dark',d);r.style.colorScheme=d?'dark':'light';}catch(e){}})();`;
+const themeInitScript = `(function(){try{var t=localStorage.getItem('${THEME_STORAGE_KEY}')||'${DEFAULT_THEME}';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;r.classList.toggle('dark',d);r.style.colorScheme=d?'dark':'light';}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

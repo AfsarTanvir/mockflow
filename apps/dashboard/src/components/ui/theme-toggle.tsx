@@ -18,6 +18,12 @@ const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: 'system', label: 'System', icon: Monitor },
 ];
 
+const LABEL: Record<Theme, string> = {
+  light: 'Light',
+  dark: 'Dark',
+  system: 'System (follows your OS)',
+};
+
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
@@ -27,7 +33,8 @@ export function ThemeToggle() {
         render={
           <button
             type="button"
-            aria-label="Toggle theme"
+            aria-label={`Theme: ${LABEL[theme]}`}
+            title={`Theme: ${LABEL[theme]}`}
             className={cn(
               buttonVariants({ variant: 'ghost', size: 'icon' }),
               'text-muted-foreground'
@@ -35,8 +42,14 @@ export function ThemeToggle() {
           />
         }
       >
-        <Sun className="size-4 dark:hidden" />
-        <Moon className="hidden size-4 dark:block" />
+        {theme === 'system' ? (
+          <Monitor className="size-4" />
+        ) : (
+          <>
+            <Sun className="size-4 dark:hidden" />
+            <Moon className="hidden size-4 dark:block" />
+          </>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={4} className="w-36">
         {OPTIONS.map(({ value, label, icon: Icon }) => (

@@ -66,5 +66,8 @@ next-env.d.ts
 # Written by `next dev` (Next 16.4+) and re-created whenever missing
 apps/dashboard/AGENTS.md
 
+# Local notes for Claude Code
+CLAUDE.md
+
 # Uploaded files (avatars, etc.) — served from local disk in dev
 apps/api/uploads/
