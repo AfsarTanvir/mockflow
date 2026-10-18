@@ -32,7 +32,7 @@ function initials(name: string) {
 
 export default function TeamDetailClient({ initialUser, teamId }: Props) {
   const router = useRouter();
-  const { data: team, isLoading: teamLoading } = useWorkspaceTeam(teamId);
+  const { data: team, isLoading: teamLoading, isError: teamError } = useWorkspaceTeam(teamId);
   const companyId = team?.companyId ?? '';
 
   const { data: myProfile } = useMyProfile(companyId);
@@ -58,6 +58,22 @@ export default function TeamDetailClient({ initialUser, teamId }: Props) {
     deleteTeam(teamId, {
       onSuccess: () => router.push('/dashboard/teams'),
     });
+  }
+
+  if (teamError) {
+    return (
+      <main className="max-w-4xl mx-auto mt-8 px-6 pb-12">
+        <p className="text-sm text-muted-foreground">
+          This team doesn&apos;t exist, or you&apos;re not a member of it.
+        </p>
+        <Link
+          href="/dashboard/teams"
+          className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-3"
+        >
+          Back to teams
+        </Link>
+      </main>
+    );
   }
 
   if (teamLoading || !team) {
