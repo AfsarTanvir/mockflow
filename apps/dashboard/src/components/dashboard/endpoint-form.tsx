@@ -9,6 +9,7 @@ import type { Endpoint } from '@/types';
 import { JsonEditor } from './json-editor';
 import { HeadersEditor } from './headers-editor';
 import { DelaySlider } from './delay-slider';
+import { EndpointExamples, type EndpointExample } from './endpoint-examples';
 import { cn } from '@/lib/utils';
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
@@ -67,11 +68,13 @@ export function EndpointForm({
     initialValues?.delayMaxMs ?? (initialValues?.delayMs ?? 0) + 200
   );
   const [localError, setLocalError] = useState<string | null>(null);
+  const [showExamples, setShowExamples] = useState(false);
 
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<CreateEndpointInput>({
     resolver: zodResolver(createEndpointSchema),
@@ -83,6 +86,13 @@ export function EndpointForm({
       isActive: initialValues?.isActive ?? true,
     },
   });
+
+  function applyExample(ex: EndpointExample) {
+    setValue('method', ex.method, { shouldDirty: true });
+    setValue('path', ex.path, { shouldDirty: true, shouldValidate: true });
+    setValue('statusCode', ex.statusCode, { shouldDirty: true });
+    setResponseBodyText(JSON.stringify(ex.body, null, 2));
+  }
 
   function handleFormSubmit(data: CreateEndpointInput) {
     setLocalError(null);
@@ -185,9 +195,25 @@ export function EndpointForm({
 
       {/* Row 3: Response Body */}
       <div>
-        <label className="block text-xs font-medium text-muted-foreground mb-2">
-          Response Body
-        </label>
+        <div className="mb-2 flex items-center justify-between">
+          <label className="block text-xs font-medium text-muted-foreground">Response Body</label>
+          <button
+            type="button"
+            aria-expanded={showExamples}
+            onClick={() => setShowExamples((v) => !v)}
+            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            {showExamples ? 'Hide examples' : 'Examples & faker variables'}
+            <ChevronDown
+              className={cn('h-3.5 w-3.5 transition-transform', showExamples && 'rotate-180')}
+            />
+          </button>
+        </div>
+        {showExamples && (
+          <div className="mb-3">
+            <EndpointExamples onUse={applyExample} />
+          </div>
+        )}
         <JsonEditor value={responseBodyText} onChange={setResponseBodyText} />
       </div>
 
