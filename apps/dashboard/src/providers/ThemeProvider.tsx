@@ -1,7 +1,14 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useSyncExternalStore } from 'react';
-import { THEME_STORAGE_KEY } from '@/lib/theme';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
+import { DEFAULT_THEME as DEFAULT, THEME_STORAGE_KEY } from '@/lib/theme';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
@@ -16,9 +23,24 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 const THEMES: readonly Theme[] = ['light', 'dark', 'system'];
+const DEFAULT_THEME: Theme = DEFAULT;
 
-function applyTheme(resolved: ResolvedTheme): void {
+function resolve(theme: Theme): ResolvedTheme {
+  if (theme !== 'system') return theme;
+  return window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light';
+}
+
+/**
+ * Sets the <html> class. `animate` fades colours for a moment (a user or OS
+ * switch), but never on first load, where the inline script already set it.
+ */
+function applyTheme(resolved: ResolvedTheme, animate: boolean): void {
   const root = document.documentElement;
+  if (root.classList.contains('dark') === (resolved === 'dark')) return;
+  if (animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    root.classList.add('theme-transition');
+    window.setTimeout(() => root.classList.remove('theme-transition'), 300);
+  }
   root.classList.toggle('dark', resolved === 'dark');
   root.style.colorScheme = resolved;
 }
@@ -36,7 +58,7 @@ function readStoredTheme(): Theme {
   } catch {
     /* storage unavailable */
   }
-  return chosenTheme ?? 'light';
+  return chosenTheme ?? DEFAULT_THEME;
 }
 
 function subscribeTheme(listener: () => void) {
@@ -64,9 +86,9 @@ function subscribeSystem(listener: () => void) {
  * keeps React in sync and reacts to user, other-tab and system changes.
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Default to light until every screen is tokenized for dark mode; users can
-  // still opt into dark/system via the toggle. Server render = the defaults.
-  const theme = useSyncExternalStore(subscribeTheme, readStoredTheme, (): Theme => 'light');
+  // The server can't know the stored choice or the OS appearance, so it renders
+  // the defaults; the inline script has already set the right class.
+  const theme = useSyncExternalStore(subscribeTheme, readStoredTheme, () => DEFAULT_THEME);
   const systemDark = useSyncExternalStore(
     subscribeSystem,
     () => window.matchMedia(DARK_QUERY).matches,
@@ -74,10 +96,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
   const resolvedTheme: ResolvedTheme = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme;
 
-  // Keep the <html> class in step (the DOM is the external system here).
+  // Keep the <html> class in step (the DOM is the external system here). It
+  // reads the live values rather than resolvedTheme: on the hydration render
+  // that still holds the server defaults and would undo the inline script.
+  const mounted = useRef(false);
   useEffect(() => {
-    applyTheme(resolvedTheme);
-  }, [resolvedTheme]);
+    applyTheme(resolve(readStoredTheme()), mounted.current);
+    mounted.current = true;
+  }, [theme, systemDark]);
 
   const setTheme = useCallback((next: Theme) => {
     chosenTheme = next;

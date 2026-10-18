@@ -4,3 +4,6 @@
  * 'use client' file is only a client reference on the server, not the value.
  */
 export const THEME_STORAGE_KEY = 'mockflow-theme';
+
+/** Like macOS "Auto": follow the OS appearance until the user picks a theme. */
+export const DEFAULT_THEME = 'system';
