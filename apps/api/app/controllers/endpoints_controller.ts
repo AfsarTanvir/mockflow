@@ -4,6 +4,15 @@ import * as EndpointService from '#services/endpoint_service';
 import { createEndpointValidator, updateEndpointValidator } from '#validators/endpoint_validator';
 
 export default class EndpointsController {
+  /** GET /api/endpoints — every endpoint in the user's personal projects */
+  async mine({ auth, response }: HttpContext) {
+    try {
+      return response.ok(await EndpointService.listForUser(auth.user!.id));
+    } catch (error) {
+      return respondError(error, response);
+    }
+  }
+
   /** GET /api/projects/:projectId/endpoints */
   async index({ auth, params, response }: HttpContext) {
     try {

@@ -4,6 +4,7 @@ import type { Infer } from '@vinejs/vine/types';
 import Endpoint from '#models/endpoint';
 import * as AccessService from '#services/access_service';
 import * as cache from '#services/cache_service';
+import * as ProjectService from '#services/project_service';
 import * as ScheduledCallService from '#services/scheduled_call_service';
 import * as EndpointQueries from '#queries/endpoint_queries';
 import { validateEndpointDelayRange } from '#validators/endpoint_validator';
@@ -19,6 +20,26 @@ export type UpdateEndpointInput = Infer<typeof updateEndpointValidator>;
 export async function listForProject(projectId: string, userId: string) {
   await AccessService.assertProjectAccess(projectId, userId, 'viewer');
   return EndpointQueries.listForProject(projectId);
+}
+
+/**
+ * Every endpoint in the user's personal projects (the ones the dashboard's
+ * Projects page lists), each with the project it belongs to.
+ */
+export async function listForUser(userId: string) {
+  // serialize() is untyped; these are the Project columns used below.
+  type Row = { id: string; name: string; slug: string; basePath: string; userRole: string };
+  const projects = (await ProjectService.listForUser(userId)) as Row[];
+  if (projects.length === 0) return [];
+  const byId = new Map(projects.map((p) => [p.id, p]));
+  const endpoints = await EndpointQueries.listForProjects([...byId.keys()]);
+  return endpoints.map((e): Record<string, unknown> & { project: Row } => {
+    const p = byId.get(e.projectId)!;
+    return {
+      ...e.serialize(),
+      project: { id: p.id, name: p.name, slug: p.slug, basePath: p.basePath, userRole: p.userRole },
+    };
+  });
 }
 
 /** Create an endpoint. Member+. Rejects delay-range and (method, path) conflicts. */
