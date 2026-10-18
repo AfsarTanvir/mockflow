@@ -216,6 +216,11 @@ export type Endpoint = {
   updatedAt: string;
 };
 
+/** GET /api/endpoints: an endpoint plus the project it belongs to. */
+export type EndpointWithProject = Endpoint & {
+  project: { id: string; name: string; slug: string; basePath: string; userRole: string };
+};
+
 export type ProjectSettings = {
   cors: boolean;
   log_requests: boolean;

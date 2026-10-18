@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getEndpoints,
+  getMyEndpoints,
   createEndpoint,
   updateEndpoint,
   deleteEndpoint,
@@ -15,6 +16,14 @@ export const useEndpoints = (projectId: string) => {
     queryFn: () => getEndpoints(projectId),
     staleTime: 2 * 60 * 1000,
     enabled: !!projectId,
+  });
+};
+
+export const useMyEndpoints = () => {
+  return useQuery({
+    queryKey: [QueryKey.MY_ENDPOINTS],
+    queryFn: getMyEndpoints,
+    staleTime: 30 * 1000,
   });
 };
 
@@ -33,6 +42,7 @@ export const useCreateEndpoint = (projectId: string) => {
       ]);
       // A new, more specific endpoint can take over a scheduled call's path.
       queryClient.invalidateQueries({ queryKey: [QueryKey.SCHEDULED_CALLS, projectId] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.MY_ENDPOINTS] });
     },
   });
 };
@@ -48,6 +58,7 @@ export const useUpdateEndpoint = (projectId: string) => {
       );
       // Which endpoint serves a scheduled call can change with any endpoint edit.
       queryClient.invalidateQueries({ queryKey: [QueryKey.SCHEDULED_CALLS, projectId] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.MY_ENDPOINTS] });
     },
   });
 };
@@ -63,6 +74,7 @@ export const useDeleteEndpoint = (projectId: string) => {
       );
       // Which endpoint serves a scheduled call can change with any endpoint edit.
       queryClient.invalidateQueries({ queryKey: [QueryKey.SCHEDULED_CALLS, projectId] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.MY_ENDPOINTS] });
     },
   });
 };
@@ -78,6 +90,7 @@ export const useToggleEndpoint = (projectId: string) => {
       );
       // Which endpoint serves a scheduled call can change with any endpoint edit.
       queryClient.invalidateQueries({ queryKey: [QueryKey.SCHEDULED_CALLS, projectId] });
+      queryClient.invalidateQueries({ queryKey: [QueryKey.MY_ENDPOINTS] });
     },
   });
 };
