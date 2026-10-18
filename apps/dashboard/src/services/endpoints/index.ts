@@ -1,9 +1,15 @@
 import httpClient from '@/http-client';
-import type { Endpoint } from '@/types';
+import type { Endpoint, EndpointWithProject } from '@/types';
 import type { CreateEndpointInput, UpdateEndpointInput } from '@/schema/endpoints';
 
 export async function getEndpoints(projectId: string): Promise<Endpoint[]> {
   const { data } = await httpClient.get<Endpoint[]>(`/api/projects/${projectId}/endpoints`);
+  return data;
+}
+
+/** Every endpoint in the user's personal projects. */
+export async function getMyEndpoints(): Promise<EndpointWithProject[]> {
+  const { data } = await httpClient.get<EndpointWithProject[]>('/api/endpoints');
   return data;
 }
 

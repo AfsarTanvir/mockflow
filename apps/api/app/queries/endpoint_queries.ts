@@ -11,6 +11,11 @@ export function listForProject(projectId: string, client?: TransactionClientCont
   return Endpoint.query({ client }).where('project_id', projectId).orderBy('created_at', 'asc');
 }
 
+/** Endpoints of several projects, newest first (the dashboard's Endpoints page). */
+export function listForProjects(projectIds: string[]) {
+  return Endpoint.query().whereIn('project_id', projectIds).orderBy('created_at', 'desc');
+}
+
 /** Active endpoints for a project filtered by HTTP method (mock matching). */
 export function listActiveByMethod(
   projectId: string,
